@@ -23293,9 +23293,14 @@ See www.iec.ch/CCv1 for copyright details
             </tr>`))}
     </table>`}renderDiff(){return m`${this.renderAttributeDiff()}${this.renderChildDiffs()}`}render(){if(this.ourHash===this.theirHash)return p;const r=this.ours??this.theirs;if(!r)return p;const e=(j(r)||r.tagName).split(">").pop();let t="inherit";this.ours||(t="var(--oscd-primary);"),this.theirs||(t="var(--oscd-error);");const a=m`<style>
       button {
-        top: ${this.depth*24}px;
+        top: ${this.depth*24+64}px;
         z-index: ${1e4-this.depth};
         color: ${t};
+      }
+      @media (max-width: 599px) {
+        button
+          top: ${this.depth*24+56}px;
+        }
       }
     </style>`;let s=r.getAttribute("desc")||"";return s&&(s=`: ${s}`),e!==r.tagName&&(s=`${r.tagName}${s}`),m`${a}<button
         @click=${()=>{this.expanded=!this.expanded}}
