@@ -23291,12 +23291,17 @@ See www.iec.ch/CCv1 for copyright details
                 <span>${i}</span>
               </td>
             </tr>`))}
-    </table>`}renderDiff(){return m`${this.renderAttributeDiff()}${this.renderChildDiffs()}`}render(){if(this.ourHash===this.theirHash)return p;const r=this.ours??this.theirs;if(!r)return p;const e=(j(r)||r.tagName).split(">").pop();let t=`top: ${this.depth*24}px; z-index: ${1e4-this.depth};`;this.ours||(t+="color: var(--oscd-primary);"),this.theirs||(t+="color: var(--oscd-error);");let a=r.getAttribute("desc")||"";return a&&(a=`: ${a}`),e!==r.tagName&&(a=`${r.tagName}${a}`),m`<button
-        style="${t}"
+    </table>`}renderDiff(){return m`${this.renderAttributeDiff()}${this.renderChildDiffs()}`}render(){if(this.ourHash===this.theirHash)return p;const r=this.ours??this.theirs;if(!r)return p;const e=(j(r)||r.tagName).split(">").pop();let t="inherit";this.ours||(t="var(--oscd-primary);"),this.theirs||(t="var(--oscd-error);");const a=m`<style>
+      button {
+        top: ${this.depth*24}px;
+        z-index: ${1e4-this.depth};
+        color: ${t};
+      }
+    </style>`;let s=r.getAttribute("desc")||"";return s&&(s=`: ${s}`),e!==r.tagName&&(s=`${r.tagName}${s}`),m`${a}<button
         @click=${()=>{this.expanded=!this.expanded}}
       >
         <md-icon>${this.expanded?"arrow_drop_down":"arrow_right"}</md-icon>
-        ${e} <small>${a}</small>
+        ${e} <small>${s}</small>
       </button>
       ${this.expanded?this.renderDiff():""} `}};le.styles=A`
     small {
