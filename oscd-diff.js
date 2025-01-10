@@ -23291,14 +23291,19 @@ See www.iec.ch/CCv1 for copyright details
                 <span>${i}</span>
               </td>
             </tr>`))}
-    </table>`}renderDiff(){return m`${this.renderAttributeDiff()}${this.renderChildDiffs()}`}render(){if(this.ourHash===this.theirHash)return p;const r=this.ours??this.theirs;if(!r)return p;const e=(j(r)||r.tagName).split(">").pop();let t=`top: ${this.depth*24}px; z-index: ${1e4-this.depth};`;this.ours||(t+="color: var(--oscd-primary);"),this.theirs||(t+="color: var(--oscd-error);");let a=r.getAttribute("desc")||"";return a&&(a=`: ${a}`),e!==r.tagName&&(a=`${r.tagName}${a}`),m`<button
-        style="${t}"
+    </table>`}renderDiff(){return m`${this.renderAttributeDiff()}${this.renderChildDiffs()}`}render(){if(this.ourHash===this.theirHash)return p;const r=this.ours??this.theirs;if(!r)return p;const e=(j(r)||r.tagName).split(">").pop(),t=1e4-this.depth;let a=`top: ${this.depth*24}px; z-index: ${t};`;this.ours||(a+="color: var(--oscd-primary);"),this.theirs||(a+="color: var(--oscd-error);");let s=r.getAttribute("desc")||"";return s&&(s=`: ${s}`),e!==r.tagName&&(s=`${r.tagName}${s}`),m`<button
+        style="${a}"
         @click=${()=>{this.expanded=!this.expanded}}
       >
         <md-icon>${this.expanded?"arrow_drop_down":"arrow_right"}</md-icon>
-        ${e} <small>${a}</small>
+        ${e} <small>${s}</small>
       </button>
-      ${this.expanded?this.renderDiff():""} `}};le.styles=A`
+      ${this.expanded?this.renderDiff():""}
+      <style>
+        :host {
+          z-index: ${t};
+        }
+      </style>`}};le.styles=A`
     small {
       font-size: 0.8em;
       font-weight: 300;
@@ -23405,6 +23410,7 @@ See www.iec.ch/CCv1 for copyright details
     :host {
       font-family: var(--oscd-text-font);
       display: block;
+      position: relative;
       background: var(--oscd-base2);
       color: var(--oscd-base01);
     }
@@ -23473,6 +23479,9 @@ See www.iec.ch/CCv1 for copyright details
         .theirs=${this.docs[this.docName2]?.documentElement}
         .hashers=${this.hashers}
       ></diff-tree> `}static{this.styles=A`
+    diff-tree {
+      margin-left: 256px;
+    }
     i {
       color: #555a;
     }
