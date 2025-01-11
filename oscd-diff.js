@@ -23360,15 +23360,16 @@ See www.iec.ch/CCv1 for copyright details
       transition: max-height 0.5s ease-in-out;
     }
     tr:not(:focus) span {
-      max-height: 60px;
+      max-height: 20px;
       overflow: hidden;
     }
     tr:not(:focus):hover span {
-      max-height: 120px;
+      max-height: 60px;
     }
     tr {
       background: var(--tr-bg);
       color: var(--tr-fg);
+      vertical-align: top;
     }
     tr:nth-child(2n) {
       --tr-bg: var(--oscd-base3);
@@ -23471,149 +23472,43 @@ See www.iec.ch/CCv1 for copyright details
     :host([odd]) button {
       background: var(--oscd-base3);
     }
-  `,fe([d()],le.prototype,"ours",2),fe([d()],le.prototype,"theirs",2),fe([d()],le.prototype,"hashers",2),fe([d({type:Number})],le.prototype,"depth",2),fe([d({type:Boolean,reflect:!0})],le.prototype,"odd",1),fe([L("md-icon-button")],le.prototype,"expandButton",2),fe([d({type:Boolean,reflect:!0})],le.prototype,"expanded",2),le=fe([g("diff-tree")],le);var Bd=Object.defineProperty,He=(r,e,t,a)=>{for(var s=void 0,o=r.length-1,i;o>=0;o--)(i=r[o])&&(s=i(e,t,s)||s);return s&&Bd(e,t,s),s};class Re extends S{constructor(){super(...arguments),this.docName="",this.docs={},this.hashers=new WeakMap}get docName1(){return this.doc1?.value||""}get docName2(){return this.doc2?.value||""}get tagName(){return this.tag?.value||""}render(){return m`<table>
-        <tr>
-          <td>
-            <select id="doc1">
-              ${Object.keys(this.docs).map(e=>m`<option value="${e}">${e}</option>`)}
-            </select>
-          </td>
-          <td>-></td>
-          <td>
-            <select id="doc2">
-              ${Object.keys(this.docs).map(e=>m`<option value="${e}">${e}</option>`)}
-            </select>
-          </td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>
-            <select id="tag">
-              <option value="SCL" selected>SCL</option>
-            </select>
-          </td>
-          <td>
-            <button
-              @click=${()=>{const e=this.docs[this.docName1],t=this.docs[this.docName2];if(!e||!t)return;this.hashers.has(e)||this.hashers.set(e,Er()),this.hashers.has(t)||this.hashers.set(t,Er()),this.requestUpdate();const a=this.hashers.get(e),s=this.hashers.get(t);console.time(`hash1${this.docName1}`);const o=a.hash(e.documentElement);console.timeEnd(`hash1${this.docName1}`),console.time(`hash2${this.docName2}`);const i=s.hash(t.documentElement);console.timeEnd(`hash2${this.docName2}`),console.log(o,i)}}
-              }
-            >
-              diff
-            </button>
-          </td>
-        </tr>
-      </table>
+  `,fe([d()],le.prototype,"ours",2),fe([d()],le.prototype,"theirs",2),fe([d()],le.prototype,"hashers",2),fe([d({type:Number})],le.prototype,"depth",2),fe([d({type:Boolean,reflect:!0})],le.prototype,"odd",1),fe([L("md-icon-button")],le.prototype,"expandButton",2),fe([d({type:Boolean,reflect:!0})],le.prototype,"expanded",2),le=fe([g("diff-tree")],le);var Bd=Object.defineProperty,He=(r,e,t,a)=>{for(var s=void 0,o=r.length-1,i;o>=0;o--)(i=r[o])&&(s=i(e,t,s)||s);return s&&Bd(e,t,s),s};class Re extends S{constructor(){super(...arguments),this.docName="",this.docs={},this.hashers=new WeakMap}get docName1(){return this.doc1?.value||""}get docName2(){return this.doc2?.value||""}get tagName(){return this.tag?.value||""}render(){return m`<div
+        style="display: grid; gap: 8px; grid-template-columns: min-content min-content; margin-bottom: 1em;"
+      >
+        <md-filled-select required id="doc1" label="Document 1">
+          ${Object.keys(this.docs).map(e=>m`<md-select-option value="${e}"
+                >${e}</md-select-option
+              >`)}
+        </md-filled-select>
+        <md-filled-select
+          required
+          id="doc2"
+          label="Document 2"
+          style="--md-sys-color-primary: var(--oscd-secondary)"
+        >
+          ${Object.keys(this.docs).map(e=>m`<md-select-option value="${e}"
+                >${e}</md-select-option
+              >`)}
+        </md-filled-select>
+        <md-filled-button
+          @click=${()=>{const e=this.docs[this.docName1],t=this.docs[this.docName2];if(!e||!t)return;this.hashers.has(e)||this.hashers.set(e,Er()),this.hashers.has(t)||this.hashers.set(t,Er()),this.requestUpdate();const a=this.hashers.get(e),s=this.hashers.get(t);console.time(`hash1${this.docName1}`);const o=a.hash(e.documentElement);console.timeEnd(`hash1${this.docName1}`),console.time(`hash2${this.docName2}`);const i=s.hash(t.documentElement);console.timeEnd(`hash2${this.docName2}`),console.log(o,i)}}
+          }
+        >
+          diff
+        </md-filled-button>
+      </div>
       <diff-tree
         .ours=${this.docs[this.docName1]?.documentElement}
         .theirs=${this.docs[this.docName2]?.documentElement}
         .hashers=${this.hashers}
       ></diff-tree> `}static{this.styles=A`
-    i {
-      color: #555a;
-    }
-    th {
-      font-weight: 300;
-      opacity: 0.8;
-      width: 1%;
-      white-space: nowrap;
-    }
-    th:first-child {
-      text-align: right;
-      color: var(--oscd-base1);
-      padding-right: 0.5em;
-    }
-    td.arrow {
-      width: 2em;
-      text-align: center;
-      color: var(--oscd-base1);
-    }
-    .odd > table > tr > th:first-child,
-    td.arrow {
-      color: var(--oscd-base0);
-    }
-    th:nth-child(2) {
-      text-align: left;
-      color: var(--oscd-base0);
-      background: var(--oscd-base2);
-      padding-right: 1em;
-    }
-    .diff > table td:nth-child(3) {
-      text-align: right;
-    }
-    td:nth-child(5) {
-      text-align: left;
-    }
-    tr:nth-child(2n) td,
-    tr:nth-child(2n) th {
-      background: var(--oscd-base2);
-    }
-    tr:nth-child(2n + 1) td,
-    tr:nth-child(2n + 1) th {
-      background: var(--oscd-base3);
-    }
-    table {
-      border: 0.25em solid var(--oscd-base2);
-      table-layout: auto;
-      border-collapse: collapse;
-      width: max-content;
-      margin-left: 1.2em;
-      margin-bottom: 0.3em;
-      background: none;
-    }
-    .odd > table {
-      border: 0.25em solid var(--oscd-base3);
-    }
-    details:first-of-type {
-      border-top-left-radius: 0.5em;
-    }
-    table + details:first-of-type {
-      border-top-left-radius: 0px;
-    }
-    details {
-      padding-top: 0.1em;
-      padding-bottom: 0.1em;
-      padding-right: 0px;
-      margin-left: 1em;
-      background: var(--oscd-base3);
-    }
-    details.odd {
-      background: var(--oscd-base2);
-      color: var(--oscd-base01);
-    }
-    span {
-      font-weight: 700;
-    }
-    details.diff > span {
-      background: linear-gradient(90deg, #fcc, #cfc);
-    }
-    summary {
-      padding-left: 0.5em;
-      padding-right: 0.5em;
-      line-height: 1.5;
-      font-weight: 300;
-      border-radius: 0.5em;
-      width: fit-content;
-    }
-    summary.old {
-      color: var(--oscd-error);
-    }
-    summary.old:before {
-      font-weight: 700;
-      content: '- ';
-    }
-    summary.new {
-      color: var(--oscd-primary);
-    }
-    summary.new:before {
-      font-weight: 700;
-      content: '+ ';
-    }
-    body {
-      background: floralwhite;
-      color: var(--oscd-base00);
-    }
     * {
-      font-family: var(--oscd-text-font);
       cursor: default;
+    }
+    :host {
+      font-family: var(--oscd-text-font);
+      display: block;
+      padding: 0.5rem;
       --oscd-primary: var(--oscd-theme-primary, #2aa198);
       --oscd-secondary: var(--oscd-theme-secondary, #6c71c4);
       --oscd-error: var(--oscd-theme-error, #dc322f);
@@ -23626,9 +23521,15 @@ See www.iec.ch/CCv1 for copyright details
       --oscd-base2: var(--oscd-theme-base2, #eee8d5);
       --oscd-base3: var(--oscd-theme-base3, #fdf6e3);
       --oscd-text-font: var(--oscd-theme-text-font, 'Roboto');
-    }
-    :host {
-      display: block;
-      padding: 0.5rem;
+      --md-sys-color-primary: var(--oscd-primary);
+      --md-sys-color-secondary: var(--oscd-secondary);
+      --md-sys-color-secondary-container: var(--oscd-base2);
+      --md-sys-color-on-primary: var(--oscd-base3);
+      --md-sys-color-on-secondary: var(--oscd-base3);
+      --md-sys-color-on-surface: var(--oscd-base00);
+      --md-sys-color-on-surface-variant: var(--oscd-base01);
+      --md-sys-color-surface: var(--oscd-base2);
+      --md-sys-color-surface-container: var(--oscd-base3);
+      --md-sys-color-surface-container-highest: var(--oscd-base3);
     }
   `}}He([L("#doc1")],Re.prototype,"doc1"),He([L("#doc2")],Re.prototype,"doc2"),He([L("#tag")],Re.prototype,"tag"),He([d()],Re.prototype,"docName"),He([d()],Re.prototype,"doc"),He([d()],Re.prototype,"docs");export{Re as default};
