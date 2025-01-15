@@ -4,6 +4,7 @@ import { identity } from '@openenergytools/scl-lib';
 
 import { Description } from './hash.js';
 import type { newHasher } from './hash.js';
+import { getDisplayIcon } from './icons.js';
 
 function filterObject(
   obj: object,
@@ -267,6 +268,7 @@ export class DiffTree extends LitElement {
         }}
       >
         <md-icon>${this.expanded ? 'arrow_drop_down' : 'arrow_right'}</md-icon>
+        <md-icon class="display">${getDisplayIcon(element)}</md-icon>
         ${id} <small>${desc}</small>
       </button>
       ${this.expanded ? this.renderDiff() : ''} ${style}`;
@@ -283,6 +285,12 @@ export class DiffTree extends LitElement {
     }
     md-icon {
       height: 20px;
+    }
+    md-icon.display {
+      --md-icon-size: 20px;
+      position: relative;
+      top: 3px;
+      left: -3px;
     }
     div {
       margin-left: 1em;
