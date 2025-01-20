@@ -23425,18 +23425,6 @@ See www.iec.ch/CCv1 for copyright details
     }
     * {
       cursor: default;
-      --oscd-primary: var(--oscd-theme-primary, #2aa198);
-      --oscd-secondary: var(--oscd-theme-secondary, #6c71c4);
-      --oscd-error: var(--oscd-theme-error, #dc322f);
-      --oscd-base03: var(--oscd-theme-base03, #002b36);
-      --oscd-base02: var(--oscd-theme-base02, #073642);
-      --oscd-base01: var(--oscd-theme-base01, #586e75);
-      --oscd-base00: var(--oscd-theme-base00, #657b83);
-      --oscd-base0: var(--oscd-theme-base0, #839496);
-      --oscd-base1: var(--oscd-theme-base1, #93a1a1);
-      --oscd-base2: var(--oscd-theme-base2, #eee8d5);
-      --oscd-base3: var(--oscd-theme-base3, #fdf6e3);
-      --oscd-text-font: var(--oscd-theme-text-font, 'Roboto');
     }
     :host {
       font-family: var(--oscd-text-font);
@@ -23509,17 +23497,6 @@ See www.iec.ch/CCv1 for copyright details
       font-family: var(--oscd-text-font);
       display: block;
       padding: 0.5rem;
-      --oscd-primary: var(--oscd-theme-primary, #2aa198);
-      --oscd-secondary: var(--oscd-theme-secondary, #6c71c4);
-      --oscd-error: var(--oscd-theme-error, #dc322f);
-      --oscd-base03: var(--oscd-theme-base03, #002b36);
-      --oscd-base02: var(--oscd-theme-base02, #073642);
-      --oscd-base01: var(--oscd-theme-base01, #586e75);
-      --oscd-base00: var(--oscd-theme-base00, #657b83);
-      --oscd-base0: var(--oscd-theme-base0, #839496);
-      --oscd-base1: var(--oscd-theme-base1, #93a1a1);
-      --oscd-base2: var(--oscd-theme-base2, #eee8d5);
-      --oscd-base3: var(--oscd-theme-base3, #fdf6e3);
       --oscd-text-font: var(--oscd-theme-text-font, 'Roboto');
       --md-sys-color-primary: var(--oscd-primary);
       --md-sys-color-secondary: var(--oscd-secondary);
