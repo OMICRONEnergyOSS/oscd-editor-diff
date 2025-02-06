@@ -216,9 +216,9 @@ export class DiffTree extends LitElement {
 
     const element = this.ours ?? this.theirs;
     if (!element) return nothing;
-    const id = (<string>(identity(element) || element.tagName))
-      .split('>')
-      .pop();
+    const id = this.depth
+      ? (<string>(identity(element) || element.tagName)).split('>').pop()
+      : identity(element) || element.tagName;
     let color = 'inherit';
     if (!this.ours) color = 'var(--oscd-secondary)';
     if (!this.theirs) color = 'var(--oscd-primary)';

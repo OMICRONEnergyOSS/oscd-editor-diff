@@ -39,16 +39,16 @@ const identifiers: Record<string, string[]> = {
   DAI: ['name', 'ix'],
   SMV: ['ldInst', 'cbName'],
   LNode: ['iedName', 'ldInst', 'prefix', 'lnClass', 'lnInst', 'lnType'],
-  /* FCDA: [
-    "ldInst",
-    "prefix",
-    "lnClass",
-    "lnInst",
-    "doName",
-    "daName",
-    "fc",
-    "ix",
-    ], */
+  FCDA: [
+    'ldInst',
+    'prefix',
+    'lnClass',
+    'lnInst',
+    'doName',
+    'daName',
+    'fc',
+    'ix',
+  ],
   ConnectedAP: ['iedName', 'apName'],
   ExtRef: [
     'iedName',
@@ -671,33 +671,60 @@ const defaults: Record<string, Record<string, string>> = {
   },
 };
 
+export type Configurable = {
+  include: boolean;
+  vals: string[];
+  except: string[];
+};
+export type HasherOptions = {
+  selectors: Configurable;
+  attributes: Configurable;
+  namespaces: Configurable;
+};
+
 export function hasher(
   db: HashDB,
   eDb: ElementDB,
-  {
-    ignoreAttrs = new Set([
-      'desc',
-      'id',
-      'name',
-      'DO.type',
-      'DA.type',
-      'BDA.type',
-      'inst',
-      'lnType',
-    ]),
-    hashENS,
-  }: { ignoreAttrs?: Set<string>; hashENS?: string[] } = {},
+  { selectors, attributes, namespaces }: HasherOptions = {
+    selectors: { include: false, vals: [], except: [] },
+    attributes: { include: false, vals: [], except: [] },
+    namespaces: { include: false, vals: [], except: [] },
+  },
 ): (e: Element) => string {
   function describeAttributes(e: Element) {
     const description: Record<string, string | number | boolean> = {};
 
-    Array.from(e.attributes)
-      .map(a => a.localName)
-      .filter(a => !ignoreAttrs.has(a))
-      .filter(a => !ignoreAttrs.has(`${e.tagName}.${a}`))
-      .filter(
-        a => !((e.tagName in identifiers && a in identifiers[e.tagName]) ?? []),
+    const includedAttributes = Array.from(e.attributes).filter(a => {
+      const ns = a.namespaceURI ?? '';
+      const name = ns ? `${ns}:${a.localName}` : a.localName;
+      if (
+        namespaces.include &&
+        (!namespaces.vals.includes(ns) || namespaces.except.includes(ns))
       )
+        return false;
+      if (
+        !namespaces.include &&
+        namespaces.vals.includes(ns) &&
+        !namespaces.except.includes(ns)
+      )
+        return false;
+      if (
+        attributes.include &&
+        (!attributes.vals.includes(name) || attributes.except.includes(name))
+      )
+        return false;
+      if (
+        !attributes.include &&
+        attributes.vals.includes(name) &&
+        !attributes.except.includes(name)
+      )
+        return false;
+      return true;
+    });
+
+    includedAttributes
+      .map(a => a.localName)
+      .filter(a => !(e.tagName in identifiers && a in identifiers[e.tagName]))
       .sort()
       .forEach(name => {
         if (e.tagName in defaults && name in defaults[e.tagName])
@@ -712,9 +739,37 @@ export function hasher(
 
   function describeChildren(e: Element, ...tags: string[]) {
     const description: Record<string, string[]> = {};
-    const children = Array.from(e.children);
+
+    const includedChildren = Array.from(e.children).filter(c => {
+      if (
+        selectors.include &&
+        (!selectors.vals.some(sel => c.matches(sel)) ||
+          selectors.except.some(sel => c.matches(sel)))
+      )
+        return false;
+      if (
+        !selectors.include &&
+        selectors.vals.some(sel => c.matches(sel)) &&
+        !selectors.except.some(sel => c.matches(sel))
+      )
+        return false;
+      if (
+        (namespaces.include &&
+          !namespaces.vals.includes(c.namespaceURI ?? '')) ||
+        namespaces.except.includes(c.namespaceURI ?? '')
+      )
+        return false;
+      if (
+        !namespaces.include &&
+        namespaces.vals.includes(c.namespaceURI ?? '') &&
+        !namespaces.except.includes(c.namespaceURI ?? '')
+      )
+        return false;
+      return true;
+    });
+
     tags.forEach(tag => {
-      const hashes = children
+      const hashes = includedChildren
         .filter(c => c.tagName === tag)
         .map(hash)
         .sort();
@@ -763,15 +818,22 @@ export function hasher(
         .sort((a, b) => a.localName.localeCompare(b.localName))
         .sort((a, b) => a.namespaceURI!.localeCompare(b.namespaceURI!))
         .forEach(attr => {
-          if (hashENS && !hashENS.includes(attr.namespaceURI!)) return;
+          if (
+            namespaces.include &&
+            (!namespaces.vals.includes(attr.namespaceURI!) ||
+              namespaces.except.includes(attr.namespaceURI!))
+          )
+            return;
+          if (
+            !namespaces.include &&
+            namespaces.vals.includes(attr.namespaceURI!) &&
+            !namespaces.except.includes(attr.namespaceURI!)
+          )
+            return;
           if (!(attr.namespaceURI! in eNS)) eNS[attr.namespaceURI!] = {};
           eNS[attr.namespaceURI!][attr.localName] = attr.value;
         });
       description.eNS = eNS;
-    }
-    if (!ignoreAttrs.has('desc')) {
-      const desc = e.getAttribute('desc');
-      if (desc) description.desc = desc;
     }
     return description;
   }
@@ -817,57 +879,26 @@ export function hasher(
   }
 
   const descriptions: Record<string, (e: Element) => object> = {
-    AccessPoint: describeNaming,
     BDA: describeBDA,
     DA: describeBDA,
-    DataTypeTemplates: describeNaming,
-    DAType: describeNaming,
     DO: e => {
       const template = Array.from(
         e.closest('DataTypeTemplates')?.children ?? [],
       ).find(child => child.getAttribute('id') === e.getAttribute('type'));
       return {
-        ...describeAttributes(e),
         ...describeNaming(e),
         [`@${template?.tagName}`]: template ? [hash(template)] : [],
       };
     },
-    DOType: e => ({
-      ...describeNaming(e),
-    }),
-    EnumType: e => describeNaming(e),
     EnumVal: e => ({
       ...describeNaming(e),
       val: e.textContent ?? '',
-    }),
-    IED: e => describeNaming(e),
-    LDevice: describeNaming,
-    /* LN0: (e) => ({
-      ...describeAttributes(e),
-      ["@LNodeType"]: Array.from(
-        e.ownerDocument.querySelectorAll(
-          `DataTypeTemplates > LNodeType[id="${e.getAttribute("lnType")}"]`,
-        ),
-      ).map(hash),
-    }), */
-    /* LN: (e) => ({
-      ...describeAttributes(e),
-      ["@LNodeType"]: Array.from(
-        e.ownerDocument.querySelectorAll(
-          `DataTypeTemplates > LNodeType[id="${e.getAttribute("lnType")}"]`,
-        ),
-      ).map(hash),
-    }), */
-    LNodeType: e => ({
-      ...describeNaming(e),
     }),
     ProtNs: e => ({
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       type: e.getAttribute('type') || '8-MMS',
       val: e.textContent ?? '',
     }),
-    Server: describeNaming,
-    Services: describeNaming,
     Val: e =>
       ({
         val: e.textContent ?? '',
@@ -907,7 +938,13 @@ export function hasher(
   return hash;
 }
 
-export function newHasher(options = {}): {
+export function newHasher(
+  options: HasherOptions = {
+    selectors: { include: false, vals: [], except: [] },
+    attributes: { include: false, vals: [], except: [] },
+    namespaces: { include: false, vals: [], except: [] },
+  },
+): {
   hash: Hasher;
   db: HashDB;
   eDb: ElementDB;
