@@ -250,17 +250,17 @@ export default class OscdDiff extends LitElement {
             if (!doc1 || !doc2) return;
             const options = {
               attributes: {
-                include: this.includeAttributes,
+                inclusive: this.includeAttributes,
                 vals: this.attributeValues,
                 except: this.attributeExceptions,
               },
               selectors: {
-                include: this.includeSelectors,
+                inclusive: this.includeSelectors,
                 vals: this.selectorValues,
                 except: this.selectorExceptions,
               },
               namespaces: {
-                include: this.includeNamespaces,
+                inclusive: this.includeNamespaces,
                 vals: this.namespaceValues,
                 except: this.namespaceExceptions,
               },

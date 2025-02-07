@@ -672,7 +672,7 @@ const defaults: Record<string, Record<string, string>> = {
 };
 
 export type Configurable = {
-  include: boolean;
+  inclusive: boolean;
   vals: string[];
   except: string[];
 };
@@ -686,39 +686,40 @@ export function hasher(
   db: HashDB,
   eDb: ElementDB,
   { selectors, attributes, namespaces }: HasherOptions = {
-    selectors: { include: false, vals: [], except: [] },
-    attributes: { include: false, vals: [], except: [] },
-    namespaces: { include: false, vals: [], except: [] },
+    selectors: { inclusive: false, vals: [], except: [] },
+    attributes: { inclusive: false, vals: [], except: [] },
+    namespaces: { inclusive: false, vals: [], except: [] },
   },
 ): (e: Element) => string {
   function describeAttributes(e: Element) {
-    const description: Record<string, string | number | boolean> = {};
+    const description: Record<string, string> = {};
 
     const includedAttributes = Array.from(e.attributes).filter(a => {
       const ns = a.namespaceURI ?? '';
       const name = ns ? `${ns}:${a.localName}` : a.localName;
+      const tagAndName = `${e.tagName}.${name}`;
+
       if (
-        namespaces.include &&
+        namespaces.inclusive &&
         (!namespaces.vals.includes(ns) || namespaces.except.includes(ns))
       )
         return false;
       if (
-        !namespaces.include &&
+        !namespaces.inclusive &&
         namespaces.vals.includes(ns) &&
         !namespaces.except.includes(ns)
       )
         return false;
-      if (
-        attributes.include &&
-        (!attributes.vals.includes(name) || attributes.except.includes(name))
-      )
-        return false;
-      if (
-        !attributes.include &&
-        attributes.vals.includes(name) &&
-        !attributes.except.includes(name)
-      )
-        return false;
+
+      const attrInVals =
+        attributes.vals.includes(name) || attributes.vals.includes(tagAndName);
+      const attrInExcept =
+        attributes.except.includes(name) ||
+        attributes.except.includes(tagAndName);
+
+      if (attributes.inclusive && (!attrInVals || attrInExcept)) return false;
+      if (!attributes.inclusive && attrInVals && !attrInExcept) return false;
+
       return true;
     });
 
@@ -742,25 +743,25 @@ export function hasher(
 
     const includedChildren = Array.from(e.children).filter(c => {
       if (
-        selectors.include &&
+        selectors.inclusive &&
         (!selectors.vals.some(sel => c.matches(sel)) ||
           selectors.except.some(sel => c.matches(sel)))
       )
         return false;
       if (
-        !selectors.include &&
+        !selectors.inclusive &&
         selectors.vals.some(sel => c.matches(sel)) &&
         !selectors.except.some(sel => c.matches(sel))
       )
         return false;
       if (
-        (namespaces.include &&
+        (namespaces.inclusive &&
           !namespaces.vals.includes(c.namespaceURI ?? '')) ||
         namespaces.except.includes(c.namespaceURI ?? '')
       )
         return false;
       if (
-        !namespaces.include &&
+        !namespaces.inclusive &&
         namespaces.vals.includes(c.namespaceURI ?? '') &&
         !namespaces.except.includes(c.namespaceURI ?? '')
       )
@@ -819,13 +820,13 @@ export function hasher(
         .sort((a, b) => a.namespaceURI!.localeCompare(b.namespaceURI!))
         .forEach(attr => {
           if (
-            namespaces.include &&
+            namespaces.inclusive &&
             (!namespaces.vals.includes(attr.namespaceURI!) ||
               namespaces.except.includes(attr.namespaceURI!))
           )
             return;
           if (
-            !namespaces.include &&
+            !namespaces.inclusive &&
             namespaces.vals.includes(attr.namespaceURI!) &&
             !namespaces.except.includes(attr.namespaceURI!)
           )
@@ -940,9 +941,9 @@ export function hasher(
 
 export function newHasher(
   options: HasherOptions = {
-    selectors: { include: false, vals: [], except: [] },
-    attributes: { include: false, vals: [], except: [] },
-    namespaces: { include: false, vals: [], except: [] },
+    selectors: { inclusive: false, vals: [], except: [] },
+    attributes: { inclusive: false, vals: [], except: [] },
+    namespaces: { inclusive: false, vals: [], except: [] },
   },
 ): {
   hash: Hasher;
