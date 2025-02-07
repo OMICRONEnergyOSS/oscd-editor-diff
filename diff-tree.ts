@@ -4,6 +4,7 @@ import { identity } from '@openenergytools/scl-lib';
 
 import '@material/web/all.js';
 
+import { Description } from './hash.js';
 import type { newHasher } from './hash.js';
 
 function filterObject(
@@ -12,10 +13,6 @@ function filterObject(
 ) {
   return Object.fromEntries(Object.entries(obj).filter(predicate));
 }
-
-type Description = Record<string, string | string[]> & {
-  eNS?: Record<string, Record<string, string>>;
-};
 
 function getDiff(ours: Description, theirs: Description) {
   const diff: Record<string, { ours?: any; theirs?: any }> = {};

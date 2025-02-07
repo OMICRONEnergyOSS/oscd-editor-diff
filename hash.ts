@@ -6,6 +6,9 @@ const xxh = await xxhash();
 export type HashDB = Record<string, Record<string, object>>;
 export type IdentityDB = Record<string, string | number>;
 export type Hasher = (e: Element) => string;
+export type Description = Record<string, string | string[]> & {
+  eNS?: Record<string, Record<string, string>>;
+};
 
 const xmlTruths = new Set(['true', '1']);
 function isXmlTrue(val: string | null): boolean {
@@ -692,7 +695,7 @@ export function hasher(
   },
 ): (e: Element) => string {
   function describeAttributes(e: Element) {
-    const description: Record<string, string> = {};
+    const description: Description = {};
 
     const includedAttributes = Array.from(e.attributes).filter(a => {
       const ns = a.namespaceURI ?? '';
@@ -724,6 +727,7 @@ export function hasher(
     });
 
     includedAttributes
+      .filter(a => !a.namespaceURI)
       .map(a => a.localName)
       .filter(a => !(e.tagName in identifiers && a in identifiers[e.tagName]))
       .sort()
@@ -734,6 +738,26 @@ export function hasher(
         if (!val) return;
         description[name] = val.trim();
       });
+
+    const includedNamespaces = new Set(
+      includedAttributes.map(a => a.namespaceURI),
+    );
+    includedNamespaces.delete(null);
+
+    if (includedNamespaces.size) description.eNS = {};
+
+    includedNamespaces.forEach(ns => {
+      const nsAttrs = includedAttributes.filter(a => a.namespaceURI === ns);
+      const nsDescription: Record<string, string> = {};
+      nsAttrs
+        .map(a => a.localName)
+        .sort()
+        .forEach(name => {
+          const val = e.getAttributeNS(ns, name);
+          if (val) nsDescription[name] = val.trim();
+        });
+      description.eNS![ns!] = nsDescription;
+    });
 
     return description;
   }
@@ -812,30 +836,6 @@ export function hasher(
       ...describeChildren(e, ...childTags),
       ...describeReferences(e),
     };
-    const eNSAttrs = Array.from(e.attributes).filter(a => a.namespaceURI);
-    if (eNSAttrs.length) {
-      const eNS = {} as Record<string, Record<string, string>>;
-      eNSAttrs
-        .sort((a, b) => a.localName.localeCompare(b.localName))
-        .sort((a, b) => a.namespaceURI!.localeCompare(b.namespaceURI!))
-        .forEach(attr => {
-          if (
-            namespaces.inclusive &&
-            (!namespaces.vals.includes(attr.namespaceURI!) ||
-              namespaces.except.includes(attr.namespaceURI!))
-          )
-            return;
-          if (
-            !namespaces.inclusive &&
-            namespaces.vals.includes(attr.namespaceURI!) &&
-            !namespaces.except.includes(attr.namespaceURI!)
-          )
-            return;
-          if (!(attr.namespaceURI! in eNS)) eNS[attr.namespaceURI!] = {};
-          eNS[attr.namespaceURI!][attr.localName] = attr.value;
-        });
-      description.eNS = eNS;
-    }
     return description;
   }
 
