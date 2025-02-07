@@ -265,18 +265,9 @@ export default class OscdDiff extends LitElement {
                 except: this.namespaceExceptions,
               },
             };
-            if (!this.hashers.has(doc1))
-              this.hashers.set(doc1, newHasher(options));
-            if (!this.hashers.has(doc2))
-              this.hashers.set(doc2, newHasher(options));
+            this.hashers.set(doc1, newHasher(options));
+            this.hashers.set(doc2, newHasher(options));
             this.requestUpdate();
-            const h1 = this.hashers.get(doc1)!;
-            const h2 = this.hashers.get(doc2)!;
-            Object.keys(elements).forEach(id => {
-              const { ours, theirs } = elements[id];
-              if (ours) h1.hash(ours);
-              if (theirs) h2.hash(theirs);
-            });
           }}
           }
         >
