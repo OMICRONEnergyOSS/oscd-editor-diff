@@ -274,14 +274,17 @@ export default class OscdDiff extends LitElement {
           diff
         </md-filled-button>
       </div>
-      ${Object.keys(elements).map(
-        id =>
-          html`<diff-tree
-            .ours=${elements[id].ours}
-            .theirs=${elements[id].theirs}
-            .hashers=${this.hashers}
-          ></diff-tree>`,
-      )}`;
+      ${Object.keys(elements).map(id => {
+        const { ours, theirs } = elements[id];
+        return html`<diff-tree
+          .ours=${ours}
+          .theirs=${theirs}
+          .ourHasher=${ours?.ownerDocument &&
+          this.hashers.get(ours.ownerDocument)}
+          .theirHasher=${theirs?.ownerDocument &&
+          this.hashers.get(theirs.ownerDocument)}
+        ></diff-tree>`;
+      })}`;
   }
 
   static styles = css`
