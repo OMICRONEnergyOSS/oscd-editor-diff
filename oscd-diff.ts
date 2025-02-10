@@ -1,10 +1,25 @@
 import { LitElement, html, css } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { MdSwitch } from '@material/web/switch/switch.js';
+
 import { identity } from '@openenergytools/scl-lib';
-import { newHasher } from './hash.js';
+
+import '@material/web/all.js';
+import type { MdSwitch } from '@material/web/switch/switch.js';
+
+import { HasherOptions, newHasher } from './hash.js';
 
 import './diff-tree.js';
+import './filter-dialog.js';
+import type {
+  FilterDialog,
+  OscdDiffFilterDeleteEvent,
+  OscdDiffFilterSaveEvent,
+} from './filter-dialog.js';
+
+export type Filter = HasherOptions & {
+  ourSelector: string;
+  theirSelector: string;
+};
 
 export default class OscdDiff extends LitElement {
   @query('#doc1') doc1?: HTMLSelectElement;
@@ -34,6 +49,8 @@ export default class OscdDiff extends LitElement {
   @query('#nsvals') nsvals?: HTMLInputElement;
 
   @query('#nsexcept') nsexcept?: HTMLInputElement;
+
+  @query('filter-dialog') filterDialog?: FilterDialog;
 
   @property() docName = '';
 
@@ -168,6 +185,8 @@ export default class OscdDiff extends LitElement {
               >`,
           )}
         </md-filled-select>
+        <!-- filter selector -->
+
         <md-outlined-text-field
           label="${this.docName1 || 'Document 1'} selector"
           style="--md-outlined-text-field-container-shape: 48px;"
@@ -273,6 +292,24 @@ export default class OscdDiff extends LitElement {
         >
           diff
         </md-filled-button>
+
+        <md-filled-button
+          @click=${() => {
+            if (this.filterDialog) {
+              this.filterDialog.open = true;
+            }
+          }}
+        >
+          Edit
+        </md-filled-button>
+        <filter-dialog
+          @oscd-diff-filter-save=${(event: OscdDiffFilterSaveEvent) => {
+            console.log(event.detail);
+          }}
+          @oscd-diff-filter-delete=${(event: OscdDiffFilterDeleteEvent) => {
+            console.log(event.detail);
+          }}
+        ></filter-dialog>
       </div>
       ${Object.keys(elements).map(id => {
         const { ours, theirs } = elements[id];

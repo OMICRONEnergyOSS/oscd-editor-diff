@@ -2,8 +2,6 @@ import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { identity } from '@openenergytools/scl-lib';
 
-import '@material/web/all.js';
-
 import { Description } from './hash.js';
 import type { newHasher } from './hash.js';
 
@@ -22,9 +20,10 @@ function getDiff(ours: Description, theirs: Description) {
   keys.forEach(key => {
     if (ours[key] === theirs[key]) return;
     const val = ours[key] ?? theirs[key];
-    if (typeof val !== 'object')
+
+    if (typeof val !== 'object') {
       diff[key] = { ours: ours[key], theirs: theirs[key] };
-    else if (Array.isArray(val)) {
+    } else if (Array.isArray(val)) {
       const arrayDiff = { ours: [] as string[], theirs: [] as string[] };
       const vals = new Set([...(ours[key] ?? []), ...(theirs[key] ?? [])]);
       vals.forEach(v => {
@@ -33,8 +32,9 @@ function getDiff(ours: Description, theirs: Description) {
         if (inOurs && inTheirs) return;
         arrayDiff[inOurs ? 'ours' : 'theirs'].push(v);
       });
-      if (arrayDiff.ours.length || arrayDiff.theirs.length)
+      if (arrayDiff.ours.length || arrayDiff.theirs.length) {
         diff[key] = arrayDiff;
+      }
     } else if (key === 'eNS') {
       const eNSDiff: Record<
         string,
@@ -59,11 +59,12 @@ function getDiff(ours: Description, theirs: Description) {
         });
       });
       if (Object.keys(eNSDiff).length) diff[key] = eNSDiff;
-    } else
+    } else {
       diff[key] = {
         ours: 'undiffable data type',
         theirs: 'undiffable data type',
       };
+    }
   });
 
   return diff;

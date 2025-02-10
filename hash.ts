@@ -705,14 +705,16 @@ export function hasher(
       if (
         namespaces.inclusive &&
         (!namespaces.vals.includes(ns) || namespaces.except.includes(ns))
-      )
+      ) {
         return false;
+      }
       if (
         !namespaces.inclusive &&
         namespaces.vals.includes(ns) &&
         !namespaces.except.includes(ns)
-      )
+      ) {
         return false;
+      }
 
       const attrInVals =
         attributes.vals.includes(name) || attributes.vals.includes(tagAndName);
@@ -732,8 +734,9 @@ export function hasher(
       .filter(a => !(e.tagName in identifiers && a in identifiers[e.tagName]))
       .sort()
       .forEach(name => {
-        if (e.tagName in defaults && name in defaults[e.tagName])
+        if (e.tagName in defaults && name in defaults[e.tagName]) {
           description[name] = defaults[e.tagName][name];
+        }
         const val = e.getAttribute(name);
         if (!val) return;
         description[name] = val.trim();
@@ -770,26 +773,30 @@ export function hasher(
         selectors.inclusive &&
         (!selectors.vals.some(sel => c.matches(sel)) ||
           selectors.except.some(sel => c.matches(sel)))
-      )
+      ) {
         return false;
+      }
       if (
         !selectors.inclusive &&
         selectors.vals.some(sel => c.matches(sel)) &&
         !selectors.except.some(sel => c.matches(sel))
-      )
+      ) {
         return false;
+      }
       if (
         (namespaces.inclusive &&
           !namespaces.vals.includes(c.namespaceURI ?? '')) ||
         namespaces.except.includes(c.namespaceURI ?? '')
-      )
+      ) {
         return false;
+      }
       if (
         !namespaces.inclusive &&
         namespaces.vals.includes(c.namespaceURI ?? '') &&
         !namespaces.except.includes(c.namespaceURI ?? '')
-      )
+      ) {
         return false;
+      }
       return true;
     });
 
@@ -858,23 +865,26 @@ export function hasher(
 
     if (sAddr) description.sAddr = sAddr;
 
-    if (valKind && ['Spec', 'Conf', 'RO', 'Set'].includes(valKind))
+    if (valKind && ['Spec', 'Conf', 'RO', 'Set'].includes(valKind)) {
       description.valKind = valKind as 'Spec' | 'RO' | 'Conf' | 'Set';
+    }
 
     if (isXmlTrue(valImport)) description.valImport = true;
 
-    if (count && /^\d+$/.test(count) && !Number.isNaN(parseInt(count, 10)))
+    if (count && /^\d+$/.test(count) && !Number.isNaN(parseInt(count, 10))) {
       // count can be an unsigned integer
       description.count = parseInt(count, 10);
-    else if (count && !Number.isNaN(siblingCount(e, count)))
+    } else if (count && !Number.isNaN(siblingCount(e, count))) {
       // count can be a reference to another sibling that has integer definition
       description.count = siblingCount(e, count);
+    }
 
     const referencedType = Array.from(
       e.closest('DataTypeTemplates')?.children ?? [],
     ).find(child => child.getAttribute('id') === type);
-    if (referencedType)
+    if (referencedType) {
       description[`@${referencedType.tagName}`] = [hash(referencedType)];
+    }
 
     return description;
   }
@@ -913,8 +923,9 @@ export function hasher(
     if (e.tagName in descriptions) return descriptions[e.tagName](e);
     if (e.tagName === 'Private') return { xml: e.outerHTML };
     if (e.tagName === 'Text') return { xml: e.outerHTML };
-    if (e.namespaceURI === 'http://www.iec.ch/61850/2003/SCL')
+    if (e.namespaceURI === 'http://www.iec.ch/61850/2003/SCL') {
       return describeNaming(e);
+    }
     return { xml: e.outerHTML };
   }
 
