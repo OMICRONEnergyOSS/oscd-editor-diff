@@ -1,10 +1,10 @@
 import { LitElement, html, css } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 
 import { identity } from '@openenergytools/scl-lib';
 
 import '@material/web/all.js';
-import type { MdSwitch } from '@material/web/switch/switch.js';
+import type { MdFilledSelect } from '@material/web/all.js';
 
 import { HasherOptions, newHasher } from './hash.js';
 
@@ -15,6 +15,7 @@ import type {
   OscdDiffFilterDeleteEvent,
   OscdDiffFilterSaveEvent,
 } from './filter-dialog.js';
+import { defaultFilters } from './default-filters.js';
 
 export type Filter = HasherOptions & {
   ourSelector: string;
@@ -26,29 +27,9 @@ export default class OscdDiff extends LitElement {
 
   @query('#doc2') doc2?: HTMLSelectElement;
 
-  @query('#tag') tag?: HTMLSelectElement;
-
   @query('#doc1sel') doc1sel?: HTMLInputElement;
 
   @query('#doc2sel') doc2sel?: HTMLInputElement;
-
-  @query('#inclsel') inclsel?: MdSwitch;
-
-  @query('#inclattr') inclattr?: MdSwitch;
-
-  @query('#inclns') inclns?: MdSwitch;
-
-  @query('#selvals') selvals?: HTMLInputElement;
-
-  @query('#selexcept') selexcept?: HTMLInputElement;
-
-  @query('#attrvals') attrvals?: HTMLInputElement;
-
-  @query('#attrexcept') attrexcept?: HTMLInputElement;
-
-  @query('#nsvals') nsvals?: HTMLInputElement;
-
-  @query('#nsexcept') nsexcept?: HTMLInputElement;
 
   @query('filter-dialog') filterDialog?: FilterDialog;
 
@@ -57,6 +38,30 @@ export default class OscdDiff extends LitElement {
   @property() doc?: XMLDocument;
 
   @property() docs: Record<string, XMLDocument> = {};
+
+  @state()
+  selectedFilterName: string = '';
+
+  get selectedFilter() {
+    return this.filters[this.selectedFilterName] || defaultFilters.Complete;
+  }
+
+  @state() filters: Record<string, Filter> = defaultFilters;
+
+  setFilters(updatedFilters: Record<string, Filter>) {
+    localStorage.setItem('oscd-diff-filters', JSON.stringify(updatedFilters));
+    this.filters = updatedFilters;
+  }
+
+  deleteFilter(filterName: string) {
+    // TODO(stee) make this nicer
+    const newFilters = { ...this.filters };
+    delete newFilters[filterName];
+    this.setFilters(newFilters);
+    if (Object.keys(newFilters).length === 0) {
+      this.setFilters(defaultFilters);
+    }
+  }
 
   get docName1(): string {
     return this.doc1?.value || '';
@@ -74,77 +79,22 @@ export default class OscdDiff extends LitElement {
     return this.doc2sel?.value || ':root';
   }
 
-  get tagName(): string {
-    return this.tag?.value || '';
-  }
-
-  get includeSelectors(): boolean {
-    return this.inclsel?.selected || false;
-  }
-
-  get includeAttributes(): boolean {
-    return this.inclattr?.selected || false;
-  }
-
-  get includeNamespaces(): boolean {
-    return this.inclns?.selected || false;
-  }
-
-  get selectorValues(): string[] {
-    return (
-      this.selvals?.value
-        .split('\n')
-        .map(s => s.trim())
-        .filter(s => s.length) || []
-    );
-  }
-
-  get selectorExceptions(): string[] {
-    return (
-      this.selexcept?.value
-        .split('\n')
-        .map(s => s.trim())
-        .filter(s => s.length) || []
-    );
-  }
-
-  get attributeValues(): string[] {
-    return (
-      this.attrvals?.value
-        .split('\n')
-        .map(s => s.trim())
-        .filter(s => s.length) || []
-    );
-  }
-
-  get attributeExceptions(): string[] {
-    return (
-      this.attrexcept?.value
-        .split('\n')
-        .map(s => s.trim())
-        .filter(s => s.length) || []
-    );
-  }
-
-  get namespaceValues(): string[] {
-    return (
-      this.nsvals?.value
-        .split('\n')
-        .map(s => s.trim())
-        .filter(s => s.length) || []
-    );
-  }
-
-  get namespaceExceptions(): string[] {
-    return (
-      this.nsexcept?.value
-        .split('\n')
-        .map(s => s.trim())
-        .filter(s => s.length) || []
-    );
-  }
-
   hashers = new WeakMap<XMLDocument, ReturnType<typeof newHasher>>();
+
+  firstUpdated() {
+    const filtersStr = localStorage.getItem('oscd-diff-filters');
+    if (filtersStr) {
+      try {
+        const filters = JSON.parse(filtersStr) as Record<string, Filter>;
+        if (Object.keys(filters).length > 0) {
+          this.filters = filters;
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      }
+    }
+  }
 
   render() {
     const elements: Record<string, { ours?: Element; theirs?: Element }> = {};
@@ -185,129 +135,101 @@ export default class OscdDiff extends LitElement {
               >`,
           )}
         </md-filled-select>
-        <!-- filter selector -->
+
+        <div class="oscd-diff__filter-selector-row">
+          <md-filled-select
+            required
+            label="Filters"
+            .value=${this.selectedFilterName}
+            @change=${(event: Event) => {
+              this.selectedFilterName = (event.target as MdFilledSelect).value;
+            }}
+          >
+            ${Object.keys(this.filters).map(
+              (filterName: string) =>
+                html`<md-select-option
+                  value=${filterName}
+                  ?selected=${this.selectedFilterName === filterName}
+                  >${filterName}</md-select-option
+                >`,
+            )}
+          </md-filled-select>
+          <md-outlined-icon-button
+            @click=${async () => {
+              if (this.filterDialog) {
+                const newFilterName = `${this.selectedFilterName} - copy`;
+                this.setFilters({
+                  ...this.filters,
+                  [newFilterName]: this.selectedFilter,
+                });
+                await this.updateComplete;
+                this.selectedFilterName = newFilterName;
+              }
+            }}
+          >
+            <md-icon>content_copy</md-icon>
+          </md-outlined-icon-button>
+          <md-outlined-icon-button
+            @click=${() => {
+              if (this.filterDialog) {
+                this.filterDialog.open = true;
+              }
+            }}
+          >
+            <md-icon>edit</md-icon>
+          </md-outlined-icon-button>
+        </div>
 
         <md-outlined-text-field
           label="${this.docName1 || 'Document 1'} selector"
           style="--md-outlined-text-field-container-shape: 48px;"
           type="search"
           id="doc1sel"
+          .value=${this.selectedFilter.ourSelector}
         ></md-outlined-text-field>
         <md-outlined-text-field
           label="${this.docName2 || 'Document 2'} selector"
           style="--md-sys-color-primary: var(--oscd-secondary); --md-outlined-text-field-container-shape: 48px;"
           type="search"
           id="doc2sel"
+          .value=${this.selectedFilter.theirSelector}
         ></md-outlined-text-field>
-        <label for="inclsel" style="text-align: right;"
-          >Include Selectors</label
-        >
-        <md-switch
-          aria-label="Include Selectors"
-          id="inclsel"
-          icons
-          @change=${() => this.requestUpdate()}
-        ></md-switch>
-        <md-filled-text-field
-          label="${this.includeSelectors ? 'include' : 'exclude'}"
-          type="textarea"
-          rows="3"
-          id="selvals"
-        ></md-filled-text-field>
-        <md-filled-text-field
-          type="textarea"
-          rows="3"
-          label="except"
-          id="selexcept"
-        ></md-filled-text-field>
-        <label for="inclattr" style="text-align: right;"
-          >Include Attributes</label
-        >
-        <md-switch
-          aria-label="Include Attributes"
-          id="inclattr"
-          icons
-          @change=${() => this.requestUpdate()}
-        ></md-switch>
-        <md-filled-text-field
-          label="${this.includeAttributes ? 'include' : 'exclude'}"
-          type="textarea"
-          rows="3"
-          id="attrvals"
-        ></md-filled-text-field>
-        <md-filled-text-field
-          type="textarea"
-          rows="3"
-          label="except"
-          id="attrexcept"
-        ></md-filled-text-field>
-        <label for="inclns" style="text-align: right;"
-          >Include Namespaces</label
-        >
-        <md-switch
-          aria-label="Include Namespaces"
-          id="inclns"
-          icons
-          @change=${() => this.requestUpdate()}
-        ></md-switch>
-        <md-filled-text-field
-          label="${this.includeNamespaces ? 'include' : 'exclude'}"
-          type="textarea"
-          rows="3"
-          id="nsvals"
-        ></md-filled-text-field>
-        <md-filled-text-field
-          type="textarea"
-          rows="3"
-          label="except"
-          id="nsexcept"
-        ></md-filled-text-field>
+
         <md-filled-button
           @click=${() => {
             const doc1 = this.docs[this.docName1];
             const doc2 = this.docs[this.docName2];
             if (!doc1 || !doc2) return;
             const options = {
-              attributes: {
-                inclusive: this.includeAttributes,
-                vals: this.attributeValues,
-                except: this.attributeExceptions,
-              },
-              selectors: {
-                inclusive: this.includeSelectors,
-                vals: this.selectorValues,
-                except: this.selectorExceptions,
-              },
-              namespaces: {
-                inclusive: this.includeNamespaces,
-                vals: this.namespaceValues,
-                except: this.namespaceExceptions,
-              },
+              attributes: this.selectedFilter.attributes,
+              selectors: this.selectedFilter.selectors,
+              namespaces: this.selectedFilter.namespaces,
             };
             this.hashers.set(doc1, newHasher(options));
             this.hashers.set(doc2, newHasher(options));
             this.requestUpdate();
           }}
-          }
         >
           diff
         </md-filled-button>
 
-        <md-filled-button
-          @click=${() => {
-            if (this.filterDialog) {
-              this.filterDialog.open = true;
+        <filter-dialog
+          filterName="${this.selectedFilterName}"
+          .filter=${this.selectedFilter}
+          @oscd-diff-filter-save=${async (event: OscdDiffFilterSaveEvent) => {
+            this.setFilters({
+              ...this.filters,
+              [event.detail.newName]: event.detail.filter,
+            });
+            if (event.detail.newName !== event.detail.oldName) {
+              this.deleteFilter(event.detail.oldName);
+              await this.updateComplete;
+              this.selectedFilterName = event.detail.newName;
             }
           }}
-        >
-          Edit
-        </md-filled-button>
-        <filter-dialog
-          @oscd-diff-filter-save=${(event: OscdDiffFilterSaveEvent) => {
-            console.log(event.detail);
-          }}
           @oscd-diff-filter-delete=${(event: OscdDiffFilterDeleteEvent) => {
-            console.log(event.detail);
+            this.deleteFilter(event.detail.name);
+            [this.selectedFilterName] = Object.keys(this.filters);
           }}
         ></filter-dialog>
       </div>
@@ -344,6 +266,17 @@ export default class OscdDiff extends LitElement {
       --md-sys-color-surface-container: var(--oscd-base3);
       --md-sys-color-surface-container-high: var(--oscd-base3);
       --md-sys-color-surface-container-highest: var(--oscd-base3);
+    }
+
+    .oscd-diff__filter-selector-row {
+      grid-column: 1/3;
+      display: flex;
+      gap: 1em;
+      align-items: center;
+    }
+
+    .oscd-diff__filter-selector-row md-filled-select {
+      flex-grow: 1;
     }
   `;
 }

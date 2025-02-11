@@ -10,7 +10,8 @@ import type {
 import type { Filter } from './oscd-diff.js';
 
 export type OscdDiffFilterSaveEventDetail = {
-  name: string;
+  oldName: string;
+  newName: string;
   filter: Filter;
 };
 
@@ -109,7 +110,8 @@ export class FilterDialog extends LitElement {
                 {
                   detail: {
                     filter: this.filter,
-                    name: this.filterNameInput.value,
+                    oldName: this.filterName,
+                    newName: this.filterNameInput.value,
                   },
                   bubbles: true,
                   composed: true,
@@ -123,7 +125,7 @@ export class FilterDialog extends LitElement {
                 'oscd-diff-filter-delete',
                 {
                   detail: {
-                    name: this.filterNameInput.value,
+                    name: this.filterName,
                   },
                   bubbles: true,
                   composed: true,
@@ -140,12 +142,14 @@ export class FilterDialog extends LitElement {
             style="grid-column: 1/3"
             type="text"
             id="filterName"
+            value="${this.filterName}"
           ></md-outlined-text-field>
 
           <md-outlined-text-field
             label="From selector"
             style="--md-outlined-text-field-container-shape: 48px;"
             type="search"
+            .value=${this.ourSelector}
             @change=${(event: Event) => {
               this.ourSelector = (event.target as MdOutlinedTextField).value;
             }}
@@ -154,6 +158,7 @@ export class FilterDialog extends LitElement {
             label="To selector"
             style="--md-sys-color-primary: var(--oscd-secondary); --md-outlined-text-field-container-shape: 48px;"
             type="search"
+            .value=${this.theirSelector}
             @change=${(event: Event) => {
               this.theirSelector = (event.target as MdOutlinedTextField).value;
             }}
@@ -164,6 +169,7 @@ export class FilterDialog extends LitElement {
           <md-switch
             aria-label="Include Selectors"
             icons
+            ?selected=${this.selectorsInclusive}
             @input=${(event: InputEvent) => {
               this.selectorsInclusive = (event.target as MdSwitch).selected;
             }}
@@ -172,6 +178,7 @@ export class FilterDialog extends LitElement {
             label="${this.selectorsInclusive ? 'include' : 'exclude'}"
             type="textarea"
             rows="3"
+            .value=${this.selectorsVals.join('\n')}
             @change=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.selectorsVals = value.split('\n').map(line => line.trim());
@@ -181,6 +188,7 @@ export class FilterDialog extends LitElement {
             type="textarea"
             rows="3"
             label="except"
+            .value=${this.selectorsExcept.join('\n')}
             @change=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.selectorsExcept = value.split('\n').map(line => line.trim());
@@ -192,6 +200,7 @@ export class FilterDialog extends LitElement {
           <md-switch
             aria-label="Include Attributes"
             icons
+            ?selected=${this.attributesInclusive}
             @input=${(event: InputEvent) => {
               this.attributesInclusive = (event.target as MdSwitch).selected;
             }}
@@ -200,6 +209,7 @@ export class FilterDialog extends LitElement {
             label="${this.attributesInclusive ? 'include' : 'exclude'}"
             type="textarea"
             rows="3"
+            .value=${this.attributesVals.join('\n')}
             @change=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.attributesVals = value.split('\n').map(line => line.trim());
@@ -209,6 +219,7 @@ export class FilterDialog extends LitElement {
             type="textarea"
             rows="3"
             label="except"
+            .value=${this.attributesExcept.join('\n')}
             @change=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.attributesExcept = value
@@ -223,6 +234,7 @@ export class FilterDialog extends LitElement {
             aria-label="Include Namespaces"
             id="inclns"
             icons
+            ?selected=${this.namespacesInclusive}
             @input=${(event: InputEvent) => {
               this.namespacesInclusive = (event.target as MdSwitch).selected;
             }}
@@ -231,6 +243,7 @@ export class FilterDialog extends LitElement {
             label="${this.namespacesInclusive ? 'include' : 'exclude'}"
             type="textarea"
             rows="3"
+            .value=${this.namespacesVals.join('\n')}
             @change=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.namespacesVals = value.split('\n').map(line => line.trim());
@@ -247,6 +260,11 @@ export class FilterDialog extends LitElement {
   }
 
   static styles = css`
+    md-dialog {
+      max-height: 100vh;
+      max-width: 100vw;
+    }
+
     form {
       color: var(--oscd-base02);
       font-family: var(--oscd-text-font);
