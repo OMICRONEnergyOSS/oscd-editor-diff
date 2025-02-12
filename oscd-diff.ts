@@ -72,11 +72,15 @@ export default class OscdDiff extends LitElement {
   }
 
   get selector1(): string {
-    return this.doc1sel?.value || ':root';
+    return (
+      this.doc1sel?.value ||
+      this.docs[this.docName1]?.documentElement.tagName ||
+      ':root'
+    );
   }
 
   get selector2(): string {
-    return this.doc2sel?.value || ':root';
+    return this.doc2sel?.value || this.selector1;
   }
 
   hashers = new WeakMap<XMLDocument, ReturnType<typeof newHasher>>();
@@ -114,7 +118,7 @@ export default class OscdDiff extends LitElement {
     return html`<div
         style="color: var(--oscd-base02); font-family: var(--oscd-text-font); display: grid; gap: 8px; grid-template-columns: min-content min-content; margin-bottom: 1em; align-items: center;"
       >
-        <md-filled-select required id="doc1" label="Document 1">
+        <md-filled-select required id="doc1" label="From">
           ${Object.keys(this.docs).map(
             name =>
               html`<md-select-option value="${name}"
@@ -125,7 +129,7 @@ export default class OscdDiff extends LitElement {
         <md-filled-select
           required
           id="doc2"
-          label="Document 2"
+          label="To"
           style="--md-sys-color-primary: var(--oscd-secondary)"
         >
           ${Object.keys(this.docs).map(
@@ -181,18 +185,22 @@ export default class OscdDiff extends LitElement {
         </div>
 
         <md-outlined-text-field
-          label="${this.docName1 || 'Document 1'} selector"
+          label="${this.docName1 || 'From'} selector"
           style="--md-outlined-text-field-container-shape: 48px;"
           type="search"
           id="doc1sel"
           .value=${this.selectedFilter.ourSelector}
+          .placeholder=${this.docs[this.docName1]?.documentElement.tagName ||
+          ':root'}
+          @change=${() => this.requestUpdate()}
         ></md-outlined-text-field>
         <md-outlined-text-field
-          label="${this.docName2 || 'Document 2'} selector"
+          label="${this.docName2 || 'To'} selector"
           style="--md-sys-color-primary: var(--oscd-secondary); --md-outlined-text-field-container-shape: 48px;"
           type="search"
           id="doc2sel"
           .value=${this.selectedFilter.theirSelector}
+          .placeholder=${this.selector1}
         ></md-outlined-text-field>
 
         <md-filled-button
