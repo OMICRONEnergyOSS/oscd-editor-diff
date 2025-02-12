@@ -26,19 +26,49 @@ export type OscdDiffFilterDeleteEvent =
 
 @customElement('filter-dialog')
 export class FilterDialog extends LitElement {
-  @query('md-dialog') dialog?: MdDialog;
-
   @property({ type: Boolean }) get open() {
     return !!this.dialog?.open;
   }
 
   set open(open: boolean) {
-    if (this.dialog) this.dialog.open = open;
+    if (this.dialog) {
+      this.dialog.open = open;
+    }
   }
 
   @property() filterName = '';
 
-  @property() get filter() {
+  @property() existingFilterNames: string[] = [];
+
+  @state() ourSelector = '';
+
+  @state() theirSelector = '';
+
+  @state() selectorsInclusive = false;
+
+  @state() selectorsVals = [] as string[];
+
+  @state() selectorsExcept = [] as string[];
+
+  @state() attributesInclusive = false;
+
+  @state() attributesVals = [] as string[];
+
+  @state() attributesExcept = [] as string[];
+
+  @state() namespacesInclusive = false;
+
+  @state() namespacesVals = [] as string[];
+
+  @state() namespacesExcept = [] as string[];
+
+  @query('md-dialog') dialog?: MdDialog;
+
+  @query('#filterName') filterNameInput?: MdOutlinedTextField;
+
+  #oldFilter?: Filter;
+
+  get filter() {
     return {
       ourSelector: this.ourSelector,
       theirSelector: this.theirSelector,
@@ -72,31 +102,23 @@ export class FilterDialog extends LitElement {
     this.namespacesInclusive = filter.namespaces.inclusive;
     this.namespacesVals = filter.namespaces.vals;
     this.namespacesExcept = filter.namespaces.except;
+    this.#oldFilter = filter;
   }
 
-  @state() ourSelector = '';
-
-  @state() theirSelector = '';
-
-  @state() selectorsInclusive = false;
-
-  @state() selectorsVals = [] as string[];
-
-  @state() selectorsExcept = [] as string[];
-
-  @state() attributesInclusive = false;
-
-  @state() attributesVals = [] as string[];
-
-  @state() attributesExcept = [] as string[];
-
-  @state() namespacesInclusive = false;
-
-  @state() namespacesVals = [] as string[];
-
-  @state() namespacesExcept = [] as string[];
-
-  @query('#filterName') filterNameInput?: MdOutlinedTextField;
+  resetDialog() {
+    if (!this.filterNameInput) {
+      return;
+    }
+    this.filterNameInput.value = this.filterName;
+    this.filterNameInput.setCustomValidity('');
+    this.filterNameInput.reportValidity();
+    if (this.#oldFilter) {
+      this.filter = { ...this.#oldFilter };
+    }
+    if (this.dialog) {
+      this.dialog.returnValue = '';
+    }
+  }
 
   render() {
     return html`
@@ -133,16 +155,36 @@ export class FilterDialog extends LitElement {
               ),
             );
           }
+          this.resetDialog();
         }}
       >
         <div slot="headline">Edit Filter ${this.filterName}</div>
-        <form slot="content" id="form-id" method="dialog">
+        <form slot="content" id="filterForm" method="dialog">
           <md-outlined-text-field
             label="Filter name"
             style="grid-column: 1/3"
             type="text"
             id="filterName"
-            value="${this.filterName}"
+            required
+            .value="${this.filterName}"
+            @input=${() => {
+              const value = this.filterNameInput?.value.trim() || '';
+              if (!this.filterNameInput) {
+                return;
+              }
+              this.filterNameInput.setCustomValidity('');
+              if (this.existingFilterNames.includes(value)) {
+                this.filterNameInput.setCustomValidity(
+                  'Filter name already exists',
+                );
+              }
+              if (value === '__proto__') {
+                this.filterNameInput.setCustomValidity(
+                  'Filter name cannot be __proto__',
+                );
+              }
+              this.filterNameInput.reportValidity();
+            }}
           ></md-outlined-text-field>
 
           <md-outlined-text-field
@@ -150,7 +192,7 @@ export class FilterDialog extends LitElement {
             style="--md-outlined-text-field-container-shape: 48px;"
             type="search"
             .value=${this.ourSelector}
-            @change=${(event: Event) => {
+            @input=${(event: Event) => {
               this.ourSelector = (event.target as MdOutlinedTextField).value;
             }}
           ></md-outlined-text-field>
@@ -159,7 +201,7 @@ export class FilterDialog extends LitElement {
             style="--md-sys-color-primary: var(--oscd-secondary); --md-outlined-text-field-container-shape: 48px;"
             type="search"
             .value=${this.theirSelector}
-            @change=${(event: Event) => {
+            @input=${(event: Event) => {
               this.theirSelector = (event.target as MdOutlinedTextField).value;
             }}
           ></md-outlined-text-field>
@@ -179,7 +221,7 @@ export class FilterDialog extends LitElement {
             type="textarea"
             rows="3"
             .value=${this.selectorsVals.join('\n')}
-            @change=${(event: Event) => {
+            @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.selectorsVals = value.split('\n').map(line => line.trim());
             }}
@@ -189,7 +231,7 @@ export class FilterDialog extends LitElement {
             rows="3"
             label="except"
             .value=${this.selectorsExcept.join('\n')}
-            @change=${(event: Event) => {
+            @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.selectorsExcept = value.split('\n').map(line => line.trim());
             }}
@@ -210,7 +252,7 @@ export class FilterDialog extends LitElement {
             type="textarea"
             rows="3"
             .value=${this.attributesVals.join('\n')}
-            @change=${(event: Event) => {
+            @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.attributesVals = value.split('\n').map(line => line.trim());
             }}
@@ -220,7 +262,7 @@ export class FilterDialog extends LitElement {
             rows="3"
             label="except"
             .value=${this.attributesExcept.join('\n')}
-            @change=${(event: Event) => {
+            @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.attributesExcept = value
                 .split('\n')
@@ -244,16 +286,20 @@ export class FilterDialog extends LitElement {
             type="textarea"
             rows="3"
             .value=${this.namespacesVals.join('\n')}
-            @change=${(event: Event) => {
+            @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.namespacesVals = value.split('\n').map(line => line.trim());
             }}
           ></md-filled-text-field>
         </form>
         <div slot="actions">
-          <md-text-button form="form-id" value="delete">Delete</md-text-button>
-          <md-text-button form="form-id" value="cancel">Cancel</md-text-button>
-          <md-text-button form="form-id" value="save">Save</md-text-button>
+          <md-text-button @click=${() => this.dialog?.close('delete')}
+            >Delete</md-text-button
+          >
+          <md-text-button @click=${() => this.dialog?.close('cancel')}
+            >Cancel</md-text-button
+          >
+          <md-text-button form="filterForm" value="save">Save</md-text-button>
         </div>
       </md-dialog>
     `;

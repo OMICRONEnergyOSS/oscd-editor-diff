@@ -18,17 +18,25 @@ function isXmlTrue(val: string | null): boolean {
 /** Get count from referenced sibling element */
 function siblingCount(element: Element, name: string): number {
   const parent = element.parentElement;
-  if (!parent) return NaN;
+  if (!parent) {
+    return NaN;
+  }
 
   const sibling = Array.from(parent.children).find(
     child => child.getAttribute('name') === name,
   );
-  if (!sibling) return NaN;
+  if (!sibling) {
+    return NaN;
+  }
 
   const count = sibling.getAttribute('count');
-  if (!count) return NaN;
+  if (!count) {
+    return NaN;
+  }
 
-  if (!/^\d+$/.test(count)) return NaN;
+  if (!/^\d+$/.test(count)) {
+    return NaN;
+  }
 
   return parseInt(count, 10);
 }
@@ -722,8 +730,12 @@ export function hasher(
         attributes.except.includes(name) ||
         attributes.except.includes(tagAndName);
 
-      if (attributes.inclusive && (!attrInVals || attrInExcept)) return false;
-      if (!attributes.inclusive && attrInVals && !attrInExcept) return false;
+      if (attributes.inclusive && (!attrInVals || attrInExcept)) {
+        return false;
+      }
+      if (!attributes.inclusive && attrInVals && !attrInExcept) {
+        return false;
+      }
 
       return true;
     });
@@ -738,7 +750,9 @@ export function hasher(
           description[name] = defaults[e.tagName][name];
         }
         const val = e.getAttribute(name);
-        if (!val) return;
+        if (!val) {
+          return;
+        }
         description[name] = val.trim();
       });
 
@@ -747,7 +761,9 @@ export function hasher(
     );
     includedNamespaces.delete(null);
 
-    if (includedNamespaces.size) description.eNS = {};
+    if (includedNamespaces.size) {
+      description.eNS = {};
+    }
 
     includedNamespaces.forEach(ns => {
       const nsAttrs = includedAttributes.filter(a => a.namespaceURI === ns);
@@ -757,7 +773,9 @@ export function hasher(
         .sort()
         .forEach(name => {
           const val = e.getAttributeNS(ns, name);
-          if (val) nsDescription[name] = val.trim();
+          if (val) {
+            nsDescription[name] = val.trim();
+          }
         });
       description.eNS![ns!] = nsDescription;
     });
@@ -805,14 +823,18 @@ export function hasher(
         .filter(c => c.tagName === tag)
         .map(hash)
         .sort();
-      if (hashes.length) description[`@${tag}`] = hashes;
+      if (hashes.length) {
+        description[`@${tag}`] = hashes;
+      }
     });
     return description;
   }
 
   function describeReferences(e: Element) {
     const description: Record<string, string[]> = {};
-    if (!(e.tagName in references)) return description;
+    if (!(e.tagName in references)) {
+      return description;
+    }
 
     references[e.tagName].forEach(({ fields, to, scope }) => {
       const candidates = Array.from(
@@ -828,7 +850,9 @@ export function hasher(
         })
         .map(hash)
         .sort();
-      if (hashes.length) description[`@${to.split('>').pop()}`] = hashes;
+      if (hashes.length) {
+        description[`@${to.split('>').pop()}`] = hashes;
+      }
     });
 
     return description;
@@ -863,13 +887,17 @@ export function hasher(
       'count',
     ].map(attr => e.getAttribute(attr));
 
-    if (sAddr) description.sAddr = sAddr;
+    if (sAddr) {
+      description.sAddr = sAddr;
+    }
 
     if (valKind && ['Spec', 'Conf', 'RO', 'Set'].includes(valKind)) {
       description.valKind = valKind as 'Spec' | 'RO' | 'Conf' | 'Set';
     }
 
-    if (isXmlTrue(valImport)) description.valImport = true;
+    if (isXmlTrue(valImport)) {
+      description.valImport = true;
+    }
 
     if (count && /^\d+$/.test(count) && !Number.isNaN(parseInt(count, 10))) {
       // count can be an unsigned integer
@@ -920,9 +948,15 @@ export function hasher(
   };
 
   function describe(e: Element) {
-    if (e.tagName in descriptions) return descriptions[e.tagName](e);
-    if (e.tagName === 'Private') return { xml: e.outerHTML };
-    if (e.tagName === 'Text') return { xml: e.outerHTML };
+    if (e.tagName in descriptions) {
+      return descriptions[e.tagName](e);
+    }
+    if (e.tagName === 'Private') {
+      return { xml: e.outerHTML };
+    }
+    if (e.tagName === 'Text') {
+      return { xml: e.outerHTML };
+    }
     if (e.namespaceURI === 'http://www.iec.ch/61850/2003/SCL') {
       return describeNaming(e);
     }
@@ -930,20 +964,31 @@ export function hasher(
   }
 
   function hash(e: Element): string {
-    if (eDb.e2h.has(e)) return eDb.e2h.get(e)!;
+    if (eDb.e2h.has(e)) {
+      return eDb.e2h.get(e)!;
+    }
     const tag =
       e.namespaceURI === e.ownerDocument.documentElement.namespaceURI
         ? e.localName
         : `${e.localName}@${e.namespaceURI}`;
     const description = describe(e);
     const digest = xxh.h64ToString(JSON.stringify(description));
-    // eslint-disable-next-line no-param-reassign
-    if (!(tag in db)) db[tag] = {};
-    // eslint-disable-next-line no-param-reassign
-    if (!(digest in db[tag])) db[tag][digest] = description;
-    if (!eDb.h2e.has(digest)) eDb.h2e.set(digest, new Set<Element>().add(e));
-    else if (!eDb.h2e.get(digest)!.has(e)) eDb.h2e.get(digest)!.add(e);
-    if (!eDb.e2h.has(e)) eDb.e2h.set(e, digest);
+    if (!(tag in db)) {
+      // eslint-disable-next-line no-param-reassign
+      db[tag] = {};
+    }
+    if (!(digest in db[tag])) {
+      // eslint-disable-next-line no-param-reassign
+      db[tag][digest] = description;
+    }
+    if (!eDb.h2e.has(digest)) {
+      eDb.h2e.set(digest, new Set<Element>().add(e));
+    } else if (!eDb.h2e.get(digest)!.has(e)) {
+      eDb.h2e.get(digest)!.add(e);
+    }
+    if (!eDb.e2h.has(e)) {
+      eDb.e2h.set(e, digest);
+    }
     return digest;
   }
 

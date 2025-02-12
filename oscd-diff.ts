@@ -23,16 +23,6 @@ export type Filter = HasherOptions & {
 };
 
 export default class OscdDiff extends LitElement {
-  @query('#doc1') doc1?: HTMLSelectElement;
-
-  @query('#doc2') doc2?: HTMLSelectElement;
-
-  @query('#doc1sel') doc1sel?: HTMLInputElement;
-
-  @query('#doc2sel') doc2sel?: HTMLInputElement;
-
-  @query('filter-dialog') filterDialog?: FilterDialog;
-
   @property() docName = '';
 
   @property() doc?: XMLDocument;
@@ -42,19 +32,15 @@ export default class OscdDiff extends LitElement {
   @state()
   selectedFilterName: string = '';
 
-  get selectedFilter() {
-    return this.filters[this.selectedFilterName] || defaultFilters.Complete;
-  }
+  @query('#doc1') doc1?: HTMLSelectElement;
 
-  setSelectedFilterName(name: string) {
-    if (!(name in this.filters)) {
-      // eslint-disable-next-line no-console
-      console.error(`Filter ${name} not found`);
-      return;
-    }
-    localStorage.setItem('oscd-diff-selected-filter', name);
-    this.selectedFilterName = name;
-  }
+  @query('#doc2') doc2?: HTMLSelectElement;
+
+  @query('#doc1sel') doc1sel?: HTMLInputElement;
+
+  @query('#doc2sel') doc2sel?: HTMLInputElement;
+
+  @query('filter-dialog') filterDialog?: FilterDialog;
 
   @state() filters: Record<string, Filter> = defaultFilters;
 
@@ -72,6 +58,20 @@ export default class OscdDiff extends LitElement {
     }
     await this.updateComplete;
     this.setSelectedFilterName(Object.keys(this.filters)[0]);
+  }
+
+  get selectedFilter() {
+    return this.filters[this.selectedFilterName] || defaultFilters.Complete;
+  }
+
+  setSelectedFilterName(name: string) {
+    if (!(name in this.filters)) {
+      // eslint-disable-next-line no-console
+      console.error(`Filter ${name} not found`);
+      return;
+    }
+    localStorage.setItem('oscd-diff-selected-filter', name);
+    this.selectedFilterName = name;
   }
 
   get docName1(): string {
@@ -124,13 +124,17 @@ export default class OscdDiff extends LitElement {
 
     this.docs[this.docName1]?.querySelectorAll(this.selector1).forEach(el => {
       const id = identity(el);
-      if (!elements[id]) elements[id] = {};
+      if (!elements[id]) {
+        elements[id] = {};
+      }
       elements[id].ours = el;
     });
 
     this.docs[this.docName2]?.querySelectorAll(this.selector2).forEach(el => {
       const id = identity(el);
-      if (!elements[id]) elements[id] = {};
+      if (!elements[id]) {
+        elements[id] = {};
+      }
       elements[id].theirs = el;
     });
 
@@ -228,7 +232,9 @@ export default class OscdDiff extends LitElement {
           @click=${() => {
             const doc1 = this.docs[this.docName1];
             const doc2 = this.docs[this.docName2];
-            if (!doc1 || !doc2) return;
+            if (!doc1 || !doc2) {
+              return;
+            }
             const options = {
               attributes: this.selectedFilter.attributes,
               selectors: this.selectedFilter.selectors,
@@ -244,6 +250,9 @@ export default class OscdDiff extends LitElement {
 
         <filter-dialog
           filterName="${this.selectedFilterName}"
+          .existingFilterNames=${Object.keys(this.filters).filter(
+            name => name !== this.selectedFilterName,
+          )}
           .filter=${this.selectedFilter}
           @oscd-diff-filter-save=${async (event: OscdDiffFilterSaveEvent) => {
             this.setFilters({

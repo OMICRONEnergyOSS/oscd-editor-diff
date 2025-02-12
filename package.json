@@ -80,7 +80,7 @@
           ]
         }
       ],
-      "curly": "error"
+      "curly": ["error", "all"]
     }
   },
   "prettier": {

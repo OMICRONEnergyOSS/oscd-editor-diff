@@ -18,7 +18,9 @@ function getDiff(ours: Description, theirs: Description) {
   const keys = new Set([...Object.keys(ours), ...Object.keys(theirs)]);
 
   keys.forEach(key => {
-    if (ours[key] === theirs[key]) return;
+    if (ours[key] === theirs[key]) {
+      return;
+    }
     const val = ours[key] ?? theirs[key];
 
     if (typeof val !== 'object') {
@@ -29,7 +31,9 @@ function getDiff(ours: Description, theirs: Description) {
       vals.forEach(v => {
         const inOurs = ours[key]?.includes(v);
         const inTheirs = theirs[key]?.includes(v);
-        if (inOurs && inTheirs) return;
+        if (inOurs && inTheirs) {
+          return;
+        }
         arrayDiff[inOurs ? 'ours' : 'theirs'].push(v);
       });
       if (arrayDiff.ours.length || arrayDiff.theirs.length) {
@@ -50,7 +54,9 @@ function getDiff(ours: Description, theirs: Description) {
           ...Object.keys(theirs.eNS?.[ns] ?? {}),
         ]);
         ks.forEach(k => {
-          if (ours.eNS?.[ns]?.[k] === theirs.eNS?.[ns]?.[k]) return;
+          if (ours.eNS?.[ns]?.[k] === theirs.eNS?.[ns]?.[k]) {
+            return;
+          }
           eNSDiff[ns] ??= {};
           eNSDiff[ns][k] = {
             ours: ours.eNS?.[ns]?.[k],
@@ -58,7 +64,9 @@ function getDiff(ours: Description, theirs: Description) {
           };
         });
       });
-      if (Object.keys(eNSDiff).length) diff[key] = eNSDiff;
+      if (Object.keys(eNSDiff).length) {
+        diff[key] = eNSDiff;
+      }
     } else {
       diff[key] = {
         ours: 'undiffable data type',
@@ -87,10 +95,10 @@ export class DiffTree extends LitElement {
     return this.depth % 2 === 0;
   }
 
-  @query('md-icon-button') expandButton!: HTMLElement;
-
   @property({ type: Boolean, reflect: true })
   expanded = false;
+
+  @query('md-icon-button') expandButton!: HTMLElement;
 
   get ourHash(): string | undefined {
     return this.ourHasher?.hash(this.ours!);
@@ -117,10 +125,14 @@ export class DiffTree extends LitElement {
   }
 
   renderChildDiffs() {
-    if (!this.expanded) return nothing;
+    if (!this.expanded) {
+      return nothing;
+    }
     return html`<div>
       ${Object.entries(this.diff).map(([key, { ours, theirs }]) => {
-        if (!key.startsWith('@')) return nothing;
+        if (!key.startsWith('@')) {
+          return nothing;
+        }
         const tag = key.slice(1);
         const elementDiff: Record<
           string,
@@ -130,7 +142,9 @@ export class DiffTree extends LitElement {
           const element = Array.from(
             this.ourHasher?.eDb.h2e.get(digest)?.values() ?? [],
           ).find(e => e.tagName === tag);
-          if (!element) return;
+          if (!element) {
+            return;
+          }
           const id = identity(element as Element);
           elementDiff[id] ??= {};
           elementDiff[id].ours = element;
@@ -139,7 +153,9 @@ export class DiffTree extends LitElement {
           const element = Array.from(
             this.theirHasher?.eDb.h2e.get(digest)?.values() ?? [],
           ).find(e => e.tagName === tag);
-          if (!element) return;
+          if (!element) {
+            return;
+          }
           const id = identity(element as Element);
           elementDiff[id] ??= {};
           elementDiff[id].theirs = element;
@@ -166,7 +182,9 @@ export class DiffTree extends LitElement {
       ([key]) => !key.startsWith('@') && key !== 'eNS',
     );
     const eNSDiff = this.diff.eNS;
-    if (!Object.keys(attrDiff).length && !eNSDiff) return nothing;
+    if (!Object.keys(attrDiff).length && !eNSDiff) {
+      return nothing;
+    }
     return html`<table>
       ${Object.entries(attrDiff).map(
         ([name, { ours, theirs }]) =>
@@ -200,16 +218,24 @@ export class DiffTree extends LitElement {
   }
 
   render() {
-    if (this.ourHash === this.theirHash) return nothing;
+    if (this.ourHash === this.theirHash) {
+      return nothing;
+    }
 
     const element = this.ours ?? this.theirs;
-    if (!element) return nothing;
+    if (!element) {
+      return nothing;
+    }
     const id = this.depth
       ? (<string>(identity(element) || element.tagName)).split('>').pop()
       : identity(element) || element.tagName;
     let color = 'inherit';
-    if (!this.ours) color = 'var(--oscd-secondary)';
-    if (!this.theirs) color = 'var(--oscd-primary)';
+    if (!this.ours) {
+      color = 'var(--oscd-secondary)';
+    }
+    if (!this.theirs) {
+      color = 'var(--oscd-primary)';
+    }
     const style = html`<style>
       button {
         color: ${color};
@@ -222,8 +248,12 @@ export class DiffTree extends LitElement {
       }
     </style>`;
     let desc = element.getAttribute('desc') || '';
-    if (desc) desc = `: ${desc}`;
-    if (id !== element.tagName) desc = `${element.tagName}${desc}`;
+    if (desc) {
+      desc = `: ${desc}`;
+    }
+    if (id !== element.tagName) {
+      desc = `${element.tagName}${desc}`;
+    }
 
     return html`<button
         @click=${() => {
