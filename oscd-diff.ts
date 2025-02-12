@@ -46,6 +46,16 @@ export default class OscdDiff extends LitElement {
     return this.filters[this.selectedFilterName] || defaultFilters.Complete;
   }
 
+  setSelectedFilterName(name: string) {
+    if (!(name in this.filters)) {
+      // eslint-disable-next-line no-console
+      console.error(`Filter ${name} not found`);
+      return;
+    }
+    localStorage.setItem('oscd-diff-selected-filter', name);
+    this.selectedFilterName = name;
+  }
+
   @state() filters: Record<string, Filter> = defaultFilters;
 
   setFilters(updatedFilters: Record<string, Filter>) {
@@ -53,14 +63,15 @@ export default class OscdDiff extends LitElement {
     this.filters = updatedFilters;
   }
 
-  deleteFilter(filterName: string) {
-    // TODO(stee) make this nicer
+  async deleteFilter(filterName: string) {
     const newFilters = { ...this.filters };
     delete newFilters[filterName];
     this.setFilters(newFilters);
     if (Object.keys(newFilters).length === 0) {
       this.setFilters(defaultFilters);
     }
+    await this.updateComplete;
+    this.setSelectedFilterName(Object.keys(this.filters)[0]);
   }
 
   get docName1(): string {
@@ -97,6 +108,14 @@ export default class OscdDiff extends LitElement {
         // eslint-disable-next-line no-console
         console.error(e);
       }
+    }
+    const selectedFilterName = localStorage.getItem(
+      'oscd-diff-selected-filter',
+    );
+    if (selectedFilterName && selectedFilterName in this.filters) {
+      this.selectedFilterName = selectedFilterName;
+    } else {
+      [this.selectedFilterName] = Object.keys(this.filters);
     }
   }
 
@@ -146,7 +165,9 @@ export default class OscdDiff extends LitElement {
             label="Filters"
             .value=${this.selectedFilterName}
             @change=${(event: Event) => {
-              this.selectedFilterName = (event.target as MdFilledSelect).value;
+              this.setSelectedFilterName(
+                (event.target as MdFilledSelect).value,
+              );
             }}
           >
             ${Object.keys(this.filters).map(
@@ -167,7 +188,7 @@ export default class OscdDiff extends LitElement {
                   [newFilterName]: this.selectedFilter,
                 });
                 await this.updateComplete;
-                this.selectedFilterName = newFilterName;
+                this.setSelectedFilterName(newFilterName);
               }
             }}
           >
@@ -232,12 +253,13 @@ export default class OscdDiff extends LitElement {
             if (event.detail.newName !== event.detail.oldName) {
               this.deleteFilter(event.detail.oldName);
               await this.updateComplete;
-              this.selectedFilterName = event.detail.newName;
+              this.setSelectedFilterName(event.detail.newName);
             }
           }}
-          @oscd-diff-filter-delete=${(event: OscdDiffFilterDeleteEvent) => {
+          @oscd-diff-filter-delete=${async (
+            event: OscdDiffFilterDeleteEvent,
+          ) => {
             this.deleteFilter(event.detail.name);
-            [this.selectedFilterName] = Object.keys(this.filters);
           }}
         ></filter-dialog>
       </div>
