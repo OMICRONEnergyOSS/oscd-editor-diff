@@ -140,9 +140,9 @@ export class FilterDialog extends LitElement {
       >
         <div slot="headline">Edit Filter ${this.filterName}</div>
         <form slot="content" id="filterForm" method="dialog">
-          <md-outlined-text-field
+          <md-filled-text-field
             label="Filter name"
-            style="grid-column: 1/3"
+            style="grid-column: 1 / -1"
             type="text"
             id="filterName"
             required
@@ -165,39 +165,46 @@ export class FilterDialog extends LitElement {
               }
               this.filterNameInput.reportValidity();
             }}
-          ></md-outlined-text-field>
-
-          <md-outlined-text-field
-            label="From selector"
-            style="--md-outlined-text-field-container-shape: 48px;"
+          >
+            <md-icon slot="leading-icon">filter_list</md-icon>
+          </md-filled-text-field>
+          <md-filled-text-field
+            label="From elements"
             type="search"
             .value=${this.ourSelector}
             @input=${(event: Event) => {
               this.ourSelector = (event.target as MdOutlinedTextField).value;
             }}
-          ></md-outlined-text-field>
-          <md-outlined-text-field
-            label="To selector"
-            style="--md-sys-color-primary: var(--oscd-secondary); --md-outlined-text-field-container-shape: 48px;"
+          >
+            <md-icon slot="leading-icon">plagiarism</md-icon>
+          </md-filled-text-field>
+          <md-icon>compare_arrows</md-icon>
+          <md-filled-text-field
+            label="To elements"
+            style="--md-sys-color-primary: var(--oscd-secondary);"
             type="search"
             .value=${this.theirSelector}
             @input=${(event: Event) => {
               this.theirSelector = (event.target as MdOutlinedTextField).value;
             }}
-          ></md-outlined-text-field>
-          <label for="inclsel" style="text-align: right;"
-            >Include Selectors</label
           >
-          <md-switch
-            aria-label="Include Selectors"
-            icons
-            ?selected=${this.selectorsInclusive}
-            @input=${(event: InputEvent) => {
-              this.selectorsInclusive = (event.target as MdSwitch).selected;
-            }}
-          ></md-switch>
-          <md-filled-text-field
+            <md-icon slot="leading-icon">plagiarism</md-icon>
+          </md-filled-text-field>
+          <div style="grid-column: 1 / -1; height:16px;"></div>
+          <label style="grid-column: 1 / -1;"
+            >Include Elements
+            <md-switch
+              aria-label="Include Selectors"
+              icons
+              ?selected=${this.selectorsInclusive}
+              @input=${(event: InputEvent) => {
+                this.selectorsInclusive = (event.target as MdSwitch).selected;
+              }}
+            ></md-switch>
+          </label>
+          <md-outlined-text-field
             label="${this.selectorsInclusive ? 'include' : 'exclude'}"
+            style="grid-column: 1 / 3"
             type="textarea"
             rows="3"
             .value=${this.selectorsVals.join('\n')}
@@ -205,8 +212,8 @@ export class FilterDialog extends LitElement {
               const { value } = event.target as MdOutlinedTextField;
               this.selectorsVals = value.split('\n').map(line => line.trim());
             }}
-          ></md-filled-text-field>
-          <md-filled-text-field
+          ></md-outlined-text-field>
+          <md-outlined-text-field
             type="textarea"
             rows="3"
             label="except"
@@ -215,20 +222,21 @@ export class FilterDialog extends LitElement {
               const { value } = event.target as MdOutlinedTextField;
               this.selectorsExcept = value.split('\n').map(line => line.trim());
             }}
-          ></md-filled-text-field>
-          <label for="inclattr" style="text-align: right;"
-            >Include Attributes</label
-          >
-          <md-switch
-            aria-label="Include Attributes"
-            icons
-            ?selected=${this.attributesInclusive}
-            @input=${(event: InputEvent) => {
-              this.attributesInclusive = (event.target as MdSwitch).selected;
-            }}
-          ></md-switch>
-          <md-filled-text-field
+          ></md-outlined-text-field>
+          <label style="grid-column: 1 / -1;"
+            >Include Attributes
+            <md-switch
+              aria-label="Include Attributes"
+              icons
+              ?selected=${this.attributesInclusive}
+              @input=${(event: InputEvent) => {
+                this.attributesInclusive = (event.target as MdSwitch).selected;
+              }}
+            ></md-switch>
+          </label>
+          <md-outlined-text-field
             label="${this.attributesInclusive ? 'include' : 'exclude'}"
+            style="grid-column: 1 / 3"
             type="textarea"
             rows="3"
             .value=${this.attributesVals.join('\n')}
@@ -236,8 +244,8 @@ export class FilterDialog extends LitElement {
               const { value } = event.target as MdOutlinedTextField;
               this.attributesVals = value.split('\n').map(line => line.trim());
             }}
-          ></md-filled-text-field>
-          <md-filled-text-field
+          ></md-outlined-text-field>
+          <md-outlined-text-field
             type="textarea"
             rows="3"
             label="except"
@@ -248,21 +256,21 @@ export class FilterDialog extends LitElement {
                 .split('\n')
                 .map(line => line.trim());
             }}
-          ></md-filled-text-field>
-          <label for="inclns" style="text-align: right;"
-            >Include Namespaces</label
-          >
-          <md-switch
-            aria-label="Include Namespaces"
-            id="inclns"
-            icons
-            ?selected=${this.namespacesInclusive}
-            @input=${(event: InputEvent) => {
-              this.namespacesInclusive = (event.target as MdSwitch).selected;
-            }}
-          ></md-switch>
-          <md-filled-text-field
+          ></md-outlined-text-field>
+          <label style="grid-column: 1 / -1;"
+            >Include Namespaces
+            <md-switch
+              aria-label="Include Namespaces"
+              icons
+              ?selected=${this.namespacesInclusive}
+              @input=${(event: InputEvent) => {
+                this.namespacesInclusive = (event.target as MdSwitch).selected;
+              }}
+            ></md-switch>
+          </label>
+          <md-outlined-text-field
             label="${this.namespacesInclusive ? 'include' : 'exclude'}"
+            style="grid-column: 1 / -1"
             type="textarea"
             rows="3"
             .value=${this.namespacesVals.join('\n')}
@@ -270,13 +278,15 @@ export class FilterDialog extends LitElement {
               const { value } = event.target as MdOutlinedTextField;
               this.namespacesVals = value.split('\n').map(line => line.trim());
             }}
-          ></md-filled-text-field>
+          ></md-outlined-text-field>
         </form>
         <div slot="actions">
           <md-text-button @click=${() => this.dialog?.close('cancel')}
             >Cancel</md-text-button
           >
-          <md-text-button form="filterForm" value="save">Save</md-text-button>
+          <md-filled-button form="filterForm" value="save"
+            >Save</md-filled-button
+          >
         </div>
       </md-dialog>
     `;
@@ -288,12 +298,16 @@ export class FilterDialog extends LitElement {
       max-width: 100vw;
     }
 
+    md-switch {
+      vertical-align: middle;
+    }
+
     form {
       color: var(--oscd-base02);
       font-family: var(--oscd-text-font);
       display: grid;
       gap: 8px;
-      grid-template-columns: max-content max-content;
+      grid-template-columns: max-content 1fr max-content;
       margin-bottom: 1em;
       align-items: center;
     }

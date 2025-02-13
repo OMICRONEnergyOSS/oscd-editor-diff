@@ -275,35 +275,11 @@ export default class OscdDiff extends LitElement {
       elements[id].theirs = el;
     });
 
-    return html`<div
-        style="color: var(--oscd-base02); font-family: var(--oscd-text-font); display: grid; gap: 8px; grid-template-columns: min-content min-content; margin-bottom: 1em; align-items: center;"
-      >
-        <md-filled-select required id="doc1" label="From">
-          ${Object.keys(this.docs).map(
-            name =>
-              html`<md-select-option value="${name}"
-                >${name}</md-select-option
-              >`,
-          )}
-        </md-filled-select>
-        <md-filled-select
-          required
-          id="doc2"
-          label="To"
-          style="--md-sys-color-primary: var(--oscd-secondary)"
-        >
-          ${Object.keys(this.docs).map(
-            name =>
-              html`<md-select-option value="${name}"
-                >${name}</md-select-option
-              >`,
-          )}
-        </md-filled-select>
-
+    return html`<div style="">
         <div id="filter-selector-row">
           <md-filled-select
             required
-            label="Filters"
+            label="Filter"
             .value=${this.selectedFilterName}
             @change=${(event: Event) => {
               this.setSelectedFilterName(
@@ -311,18 +287,21 @@ export default class OscdDiff extends LitElement {
               );
             }}
           >
+            <md-icon slot="leading-icon">filter_list</md-icon>
             ${Object.keys(this.filters).map(
               (filterName: string) =>
                 html`<md-select-option
                   value=${filterName}
                   ?selected=${this.selectedFilterName === filterName}
-                  >${filterName}</md-select-option
+                >
+                  ${filterName}</md-select-option
                 >`,
             )}
           </md-filled-select>
           <span style="position: relative">
             <input
               type="file"
+              accept="application/json"
               id="filters-import-field"
               @change=${this.handleImportFieldChanged}
             />
@@ -346,6 +325,7 @@ export default class OscdDiff extends LitElement {
               </md-menu-item>
               <md-menu-item
                 type="button"
+                href="#"
                 @click=${() => this.duplicateFilter()}
               >
                 <md-icon slot="start">content_copy</md-icon>
@@ -353,6 +333,7 @@ export default class OscdDiff extends LitElement {
               </md-menu-item>
               <md-menu-item
                 type="button"
+                href="#"
                 @click=${() => this.deleteFilter(this.selectedFilterName)}
                 style="--md-menu-item-leading-icon-color:var(--oscd-error); --md-menu-item-label-text-color:var(--oscd-error)"
               >
@@ -360,11 +341,19 @@ export default class OscdDiff extends LitElement {
                 <div slot="headline">Delete</div>
               </md-menu-item>
               <md-divider></md-divider>
-              <md-menu-item type="button" @click=${() => this.importFilters()}>
+              <md-menu-item
+                type="button"
+                href="#"
+                @click=${() => this.importFilters()}
+              >
                 <md-icon slot="start">publish</md-icon>
                 <div slot="headline">Import Filters</div>
               </md-menu-item>
-              <md-menu-item type="button" @click=${() => this.exportFilters()}>
+              <md-menu-item
+                type="button"
+                href="#"
+                @click=${() => this.exportFilters()}
+              >
                 <md-icon slot="start">download</md-icon>
                 <div slot="headline">Export Filters</div>
               </md-menu-item>
@@ -372,26 +361,54 @@ export default class OscdDiff extends LitElement {
           </span>
         </div>
 
-        <md-outlined-text-field
-          label="${this.docName1 || 'From'} selector"
-          style="--md-outlined-text-field-container-shape: 48px;"
+        <md-filled-select required id="doc1" label="From document">
+          <md-icon slot="leading-icon">draft</md-icon>
+          ${Object.keys(this.docs).map(
+            name =>
+              html`<md-select-option value="${name}"
+                >${name}</md-select-option
+              >`,
+          )}
+        </md-filled-select>
+        <md-filled-select
+          required
+          id="doc2"
+          label="To document"
+          style="--md-sys-color-primary: var(--oscd-secondary)"
+        >
+          <md-icon slot="leading-icon">draft</md-icon>
+          ${Object.keys(this.docs).map(
+            name =>
+              html`<md-select-option value="${name}"
+                >${name}</md-select-option
+              >`,
+          )}
+        </md-filled-select>
+
+        <md-filled-text-field
+          label="From elements"
           type="search"
           id="doc1sel"
           .value=${this.selectedFilter.ourSelector}
           .placeholder=${this.docs[this.docName1]?.documentElement.tagName ||
           ':root'}
           @change=${() => this.requestUpdate()}
-        ></md-outlined-text-field>
-        <md-outlined-text-field
-          label="${this.docName2 || 'To'} selector"
-          style="--md-sys-color-primary: var(--oscd-secondary); --md-outlined-text-field-container-shape: 48px;"
+        >
+          <md-icon slot="leading-icon">plagiarism</md-icon>
+        </md-filled-text-field>
+        <md-filled-text-field
+          label="To elements"
+          style="--md-sys-color-primary: var(--oscd-secondary);"
           type="search"
           id="doc2sel"
           .value=${this.selectedFilter.theirSelector}
           .placeholder=${this.selector1}
-        ></md-outlined-text-field>
+        >
+          <md-icon slot="leading-icon">plagiarism</md-icon>
+        </md-filled-text-field>
 
         <md-filled-button
+          style="grid-column: 1/3;"
           @click=${() => {
             const doc1 = this.docs[this.docName1];
             const doc2 = this.docs[this.docName2];
@@ -408,7 +425,8 @@ export default class OscdDiff extends LitElement {
             this.requestUpdate();
           }}
         >
-          diff
+          Compare
+          <md-icon slot="icon">difference</md-icon>
         </md-filled-button>
 
         <filter-dialog
@@ -447,6 +465,7 @@ export default class OscdDiff extends LitElement {
     * {
       cursor: default;
     }
+
     :host {
       font-family: var(--oscd-text-font);
       display: block;
@@ -465,6 +484,17 @@ export default class OscdDiff extends LitElement {
       --md-sys-color-surface-container-highest: var(--oscd-base3);
     }
 
+    :host > div {
+      color: var(--oscd-base02);
+      font-family: var(--oscd-text-font);
+      display: grid;
+      gap: 12px;
+      grid-template-columns: max-content max-content;
+      margin: 16px;
+      margin-bottom: 1em;
+      align-items: center;
+    }
+
     #filters-import-field {
       display: block;
       visibility: hidden;
@@ -479,7 +509,7 @@ export default class OscdDiff extends LitElement {
     #filter-selector-row {
       grid-column: 1/3;
       display: flex;
-      gap: 1em;
+      gap: 8px;
       align-items: center;
     }
 
