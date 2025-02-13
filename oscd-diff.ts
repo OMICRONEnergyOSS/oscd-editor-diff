@@ -233,9 +233,20 @@ export default class OscdDiff extends LitElement {
     }
   }
 
+  uniqueFilterName(): string {
+    let i = 1;
+    const filterName = this.selectedFilterName.replace(/\s*\d+$/, '');
+    let newName = `${filterName} 1`;
+    while (newName in this.filters) {
+      i += 1;
+      newName = `${filterName} ${i}`;
+    }
+    return newName;
+  }
+
   async duplicateFilter() {
     if (this.filterDialog) {
-      const newFilterName = `${this.selectedFilterName} - copy`;
+      const newFilterName = this.uniqueFilterName();
       this.setFilters({
         ...this.filters,
         [newFilterName]: this.selectedFilter,
