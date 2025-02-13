@@ -4,23 +4,84 @@ import { property, query, state } from 'lit/decorators.js';
 import { identity } from '@openenergytools/scl-lib';
 
 import '@material/web/all.js';
-import type { MdFilledSelect } from '@material/web/all.js';
+import type { MdFilledSelect, MdMenu } from '@material/web/all.js';
 
 import { HasherOptions, newHasher } from './hash.js';
 
 import './diff-tree.js';
 import './filter-dialog.js';
-import type {
-  FilterDialog,
-  OscdDiffFilterDeleteEvent,
-  OscdDiffFilterSaveEvent,
-} from './filter-dialog.js';
+import type { FilterDialog, OscdDiffFilterSaveEvent } from './filter-dialog.js';
 import { defaultFilters } from './default-filters.js';
 
 export type Filter = HasherOptions & {
   ourSelector: string;
   theirSelector: string;
 };
+
+function hasPropertyOfType(
+  obj: Record<string, unknown>,
+  prop: string,
+  type: string,
+): boolean {
+  return (
+    prop in obj &&
+    // eslint-disable-next-line valid-typeof
+    (typeof obj[prop] === type ||
+      (type === 'array' && Array.isArray(obj[prop])))
+  );
+}
+
+export function isFilter(obj: object): obj is Filter {
+  const filterTypes = {
+    ourSelector: 'string',
+    theirSelector: 'string',
+    selectors: 'object',
+    attributes: 'object',
+    namespaces: 'object',
+  };
+
+  const configurableTypes = {
+    inclusive: 'boolean',
+    vals: 'array',
+    except: 'array',
+  };
+
+  if (
+    !Object.entries(filterTypes).every(([prop, type]) => {
+      if (!hasPropertyOfType(obj as Record<string, unknown>, prop, type)) {
+        return false;
+      }
+      if (type === 'string') {
+        return true;
+      }
+      const configurable = (obj as Filter)[prop as keyof HasherOptions];
+      if (
+        type === 'object' &&
+        !Object.entries(configurableTypes).every(([p, t]) => {
+          if (!hasPropertyOfType(configurable, p, t)) {
+            return false;
+          }
+
+          if (
+            t === 'array' &&
+            !configurable[p as 'vals' | 'except'].every(
+              s => typeof s === 'string',
+            )
+          ) {
+            return false;
+          }
+          return true;
+        })
+      ) {
+        return false;
+      }
+      return true;
+    })
+  ) {
+    return false;
+  }
+  return true;
+}
 
 export default class OscdDiff extends LitElement {
   @property() docName = '';
@@ -34,6 +95,8 @@ export default class OscdDiff extends LitElement {
 
   @query('#doc1') doc1?: HTMLSelectElement;
 
+  @query('#filters-import-field') filtersInputField?: HTMLInputElement;
+
   @query('#doc2') doc2?: HTMLSelectElement;
 
   @query('#doc1sel') doc1sel?: HTMLInputElement;
@@ -41,6 +104,8 @@ export default class OscdDiff extends LitElement {
   @query('#doc2sel') doc2sel?: HTMLInputElement;
 
   @query('filter-dialog') filterDialog?: FilterDialog;
+
+  @query('md-menu') filterMenu?: MdMenu;
 
   @state() filters: Record<string, Filter> = defaultFilters;
 
@@ -119,6 +184,67 @@ export default class OscdDiff extends LitElement {
     }
   }
 
+  async handleImportFieldChanged(event: Event) {
+    const { files } = event.target as HTMLInputElement;
+    if (!files || files.length <= 0) {
+      return;
+    }
+    try {
+      const importedFilters = JSON.parse(await files[0].text());
+      if (typeof importedFilters !== 'object') {
+        return;
+      }
+      const newFilters = { ...this.filters };
+      Object.entries(importedFilters as Record<string, unknown>).forEach(
+        ([filterName, filter]) => {
+          if (filter && typeof filter === 'object' && isFilter(filter)) {
+            newFilters[filterName] = filter;
+          }
+        },
+      );
+      this.setFilters(newFilters);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  importFilters() {
+    this.filtersInputField?.click();
+    if (this.filtersInputField) {
+      this.filtersInputField.value = '';
+    }
+  }
+
+  exportFilters() {
+    const blob = new Blob([JSON.stringify(this.filters, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `filters.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  showFilterDialog() {
+    if (this.filterDialog) {
+      this.filterDialog.open = true;
+    }
+  }
+
+  async duplicateFilter() {
+    if (this.filterDialog) {
+      const newFilterName = `${this.selectedFilterName} - copy`;
+      this.setFilters({
+        ...this.filters,
+        [newFilterName]: this.selectedFilter,
+      });
+      await this.updateComplete;
+      this.setSelectedFilterName(newFilterName);
+    }
+  }
+
   render() {
     const elements: Record<string, { ours?: Element; theirs?: Element }> = {};
 
@@ -163,7 +289,7 @@ export default class OscdDiff extends LitElement {
           )}
         </md-filled-select>
 
-        <div class="oscd-diff__filter-selector-row">
+        <div id="filter-selector-row">
           <md-filled-select
             required
             label="Filters"
@@ -183,30 +309,56 @@ export default class OscdDiff extends LitElement {
                 >`,
             )}
           </md-filled-select>
-          <md-outlined-icon-button
-            @click=${async () => {
-              if (this.filterDialog) {
-                const newFilterName = `${this.selectedFilterName} - copy`;
-                this.setFilters({
-                  ...this.filters,
-                  [newFilterName]: this.selectedFilter,
-                });
-                await this.updateComplete;
-                this.setSelectedFilterName(newFilterName);
-              }
-            }}
-          >
-            <md-icon>content_copy</md-icon>
-          </md-outlined-icon-button>
-          <md-outlined-icon-button
-            @click=${() => {
-              if (this.filterDialog) {
-                this.filterDialog.open = true;
-              }
-            }}
-          >
-            <md-icon>edit</md-icon>
-          </md-outlined-icon-button>
+          <span style="position: relative">
+            <input
+              type="file"
+              id="filters-import-field"
+              @change=${this.handleImportFieldChanged}
+            />
+            <md-icon-button
+              id="filter-menu-button"
+              @click=${() => {
+                if (this.filterMenu) {
+                  this.filterMenu.open = !this.filterMenu.open;
+                }
+              }}
+              ><md-icon>more_vert</md-icon></md-icon-button
+            >
+            <md-menu anchor="filter-menu-button">
+              <md-menu-item
+                type="button"
+                href="#"
+                @click=${() => this.showFilterDialog()}
+              >
+                <md-icon slot="start">edit</md-icon>
+                <div slot="headline">Edit</div>
+              </md-menu-item>
+              <md-menu-item
+                type="button"
+                @click=${() => this.duplicateFilter()}
+              >
+                <md-icon slot="start">content_copy</md-icon>
+                <div slot="headline">Duplicate</div>
+              </md-menu-item>
+              <md-menu-item
+                type="button"
+                @click=${() => this.deleteFilter(this.selectedFilterName)}
+                style="--md-menu-item-leading-icon-color:var(--oscd-error); --md-menu-item-label-text-color:var(--oscd-error)"
+              >
+                <md-icon slot="start">delete</md-icon>
+                <div slot="headline">Delete</div>
+              </md-menu-item>
+              <md-divider></md-divider>
+              <md-menu-item type="button" @click=${() => this.importFilters()}>
+                <md-icon slot="start">publish</md-icon>
+                <div slot="headline">Import Filters</div>
+              </md-menu-item>
+              <md-menu-item type="button" @click=${() => this.exportFilters()}>
+                <md-icon slot="start">download</md-icon>
+                <div slot="headline">Export Filters</div>
+              </md-menu-item>
+            </md-menu>
+          </span>
         </div>
 
         <md-outlined-text-field
@@ -265,11 +417,6 @@ export default class OscdDiff extends LitElement {
               this.setSelectedFilterName(event.detail.newName);
             }
           }}
-          @oscd-diff-filter-delete=${async (
-            event: OscdDiffFilterDeleteEvent,
-          ) => {
-            this.deleteFilter(event.detail.name);
-          }}
         ></filter-dialog>
       </div>
       ${Object.keys(elements).map(id => {
@@ -307,14 +454,25 @@ export default class OscdDiff extends LitElement {
       --md-sys-color-surface-container-highest: var(--oscd-base3);
     }
 
-    .oscd-diff__filter-selector-row {
+    #filters-import-field {
+      display: block;
+      visibility: hidden;
+      width: 0;
+      height: 0;
+    }
+
+    md-menu {
+      min-width: max-content;
+    }
+
+    #filter-selector-row {
       grid-column: 1/3;
       display: flex;
       gap: 1em;
       align-items: center;
     }
 
-    .oscd-diff__filter-selector-row md-filled-select {
+    #filter-selector-row md-filled-select {
       flex-grow: 1;
     }
   `;

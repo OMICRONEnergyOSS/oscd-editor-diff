@@ -15,14 +15,8 @@ export type OscdDiffFilterSaveEventDetail = {
   filter: Filter;
 };
 
-export type OscdDiffFilterDeleteEventDetail = {
-  name: string;
-};
-
 export type OscdDiffFilterSaveEvent =
   CustomEvent<OscdDiffFilterSaveEventDetail>;
-export type OscdDiffFilterDeleteEvent =
-  CustomEvent<OscdDiffFilterDeleteEventDetail>;
 
 @customElement('filter-dialog')
 export class FilterDialog extends LitElement {
@@ -134,20 +128,6 @@ export class FilterDialog extends LitElement {
                     filter: this.filter,
                     oldName: this.filterName,
                     newName: this.filterNameInput.value,
-                  },
-                  bubbles: true,
-                  composed: true,
-                },
-              ),
-            );
-          }
-          if (returnValue === 'delete' && this.filterNameInput) {
-            this.dispatchEvent(
-              new CustomEvent<OscdDiffFilterDeleteEventDetail>(
-                'oscd-diff-filter-delete',
-                {
-                  detail: {
-                    name: this.filterName,
                   },
                   bubbles: true,
                   composed: true,
@@ -293,9 +273,6 @@ export class FilterDialog extends LitElement {
           ></md-filled-text-field>
         </form>
         <div slot="actions">
-          <md-text-button @click=${() => this.dialog?.close('delete')}
-            >Delete</md-text-button
-          >
           <md-text-button @click=${() => this.dialog?.close('cancel')}
             >Cancel</md-text-button
           >
@@ -326,6 +303,5 @@ export class FilterDialog extends LitElement {
 declare global {
   interface CustomEventMap {
     'oscd-diff-filter-save': OscdDiffFilterSaveEvent;
-    'oscd-diff-filter-delete': OscdDiffFilterDeleteEvent;
   }
 }
