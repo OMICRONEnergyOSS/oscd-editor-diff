@@ -23467,49 +23467,56 @@ See www.iec.ch/CCv1 for copyright details
       >
         <div slot="headline">Edit Filter ${this.filterName}</div>
         <form slot="content" id="filterForm" method="dialog">
-          <md-outlined-text-field
+          <md-filled-text-field
             label="Filter name"
-            style="grid-column: 1/3"
+            style="grid-column: 1 / -1"
             type="text"
             id="filterName"
             required
             .value="${this.filterName}"
             @input=${()=>{const r=this.filterNameInput?.value.trim()||"";this.filterNameInput&&(this.filterNameInput.setCustomValidity(""),this.existingFilterNames.includes(r)&&this.filterNameInput.setCustomValidity("Filter name already exists"),r==="__proto__"&&this.filterNameInput.setCustomValidity("Filter name cannot be __proto__"),this.filterNameInput.reportValidity())}}
-          ></md-outlined-text-field>
-
-          <md-outlined-text-field
-            label="From selector"
-            style="--md-outlined-text-field-container-shape: 48px;"
+          >
+            <md-icon slot="leading-icon">filter_list</md-icon>
+          </md-filled-text-field>
+          <md-filled-text-field
+            label="From elements"
             type="search"
             .value=${this.ourSelector}
             @input=${r=>{this.ourSelector=r.target.value}}
-          ></md-outlined-text-field>
-          <md-outlined-text-field
-            label="To selector"
-            style="--md-sys-color-primary: var(--oscd-secondary); --md-outlined-text-field-container-shape: 48px;"
+          >
+            <md-icon slot="leading-icon">plagiarism</md-icon>
+          </md-filled-text-field>
+          <md-icon>compare_arrows</md-icon>
+          <md-filled-text-field
+            label="To elements"
+            style="--md-sys-color-primary: var(--oscd-secondary);"
             type="search"
             .value=${this.theirSelector}
             @input=${r=>{this.theirSelector=r.target.value}}
-          ></md-outlined-text-field>
-          <label for="inclsel" style="text-align: right;"
-            >Include Selectors</label
           >
-          <md-switch
-            aria-label="Include Selectors"
-            icons
-            ?selected=${this.selectorsInclusive}
-            @input=${r=>{this.selectorsInclusive=r.target.selected}}
-          ></md-switch>
-          <md-filled-text-field
+            <md-icon slot="leading-icon">plagiarism</md-icon>
+          </md-filled-text-field>
+          <div style="grid-column: 1 / -1; height:16px;"></div>
+          <label style="grid-column: 1 / -1;"
+            >Include Elements
+            <md-switch
+              aria-label="Include Selectors"
+              icons
+              ?selected=${this.selectorsInclusive}
+              @input=${r=>{this.selectorsInclusive=r.target.selected}}
+            ></md-switch>
+          </label>
+          <md-outlined-text-field
             label="${this.selectorsInclusive?"include":"exclude"}"
+            style="grid-column: 1 / 3"
             type="textarea"
             rows="3"
             .value=${this.selectorsVals.join(`
 `)}
             @input=${r=>{const{value:e}=r.target;this.selectorsVals=e.split(`
 `).map(t=>t.trim())}}
-          ></md-filled-text-field>
-          <md-filled-text-field
+          ></md-outlined-text-field>
+          <md-outlined-text-field
             type="textarea"
             rows="3"
             label="except"
@@ -23517,26 +23524,27 @@ See www.iec.ch/CCv1 for copyright details
 `)}
             @input=${r=>{const{value:e}=r.target;this.selectorsExcept=e.split(`
 `).map(t=>t.trim())}}
-          ></md-filled-text-field>
-          <label for="inclattr" style="text-align: right;"
-            >Include Attributes</label
-          >
-          <md-switch
-            aria-label="Include Attributes"
-            icons
-            ?selected=${this.attributesInclusive}
-            @input=${r=>{this.attributesInclusive=r.target.selected}}
-          ></md-switch>
-          <md-filled-text-field
+          ></md-outlined-text-field>
+          <label style="grid-column: 1 / -1;"
+            >Include Attributes
+            <md-switch
+              aria-label="Include Attributes"
+              icons
+              ?selected=${this.attributesInclusive}
+              @input=${r=>{this.attributesInclusive=r.target.selected}}
+            ></md-switch>
+          </label>
+          <md-outlined-text-field
             label="${this.attributesInclusive?"include":"exclude"}"
+            style="grid-column: 1 / 3"
             type="textarea"
             rows="3"
             .value=${this.attributesVals.join(`
 `)}
             @input=${r=>{const{value:e}=r.target;this.attributesVals=e.split(`
 `).map(t=>t.trim())}}
-          ></md-filled-text-field>
-          <md-filled-text-field
+          ></md-outlined-text-field>
+          <md-outlined-text-field
             type="textarea"
             rows="3"
             label="except"
@@ -23544,32 +23552,34 @@ See www.iec.ch/CCv1 for copyright details
 `)}
             @input=${r=>{const{value:e}=r.target;this.attributesExcept=e.split(`
 `).map(t=>t.trim())}}
-          ></md-filled-text-field>
-          <label for="inclns" style="text-align: right;"
-            >Include Namespaces</label
-          >
-          <md-switch
-            aria-label="Include Namespaces"
-            id="inclns"
-            icons
-            ?selected=${this.namespacesInclusive}
-            @input=${r=>{this.namespacesInclusive=r.target.selected}}
-          ></md-switch>
-          <md-filled-text-field
+          ></md-outlined-text-field>
+          <label style="grid-column: 1 / -1;"
+            >Include Namespaces
+            <md-switch
+              aria-label="Include Namespaces"
+              icons
+              ?selected=${this.namespacesInclusive}
+              @input=${r=>{this.namespacesInclusive=r.target.selected}}
+            ></md-switch>
+          </label>
+          <md-outlined-text-field
             label="${this.namespacesInclusive?"include":"exclude"}"
+            style="grid-column: 1 / -1"
             type="textarea"
             rows="3"
             .value=${this.namespacesVals.join(`
 `)}
             @input=${r=>{const{value:e}=r.target;this.namespacesVals=e.split(`
 `).map(t=>t.trim())}}
-          ></md-filled-text-field>
+          ></md-outlined-text-field>
         </form>
         <div slot="actions">
           <md-text-button @click=${()=>this.dialog?.close("cancel")}
             >Cancel</md-text-button
           >
-          <md-text-button form="filterForm" value="save">Save</md-text-button>
+          <md-filled-button form="filterForm" value="save"
+            >Save</md-filled-button
+          >
         </div>
       </md-dialog>
     `}};dt=new WeakMap,U.styles=A`
@@ -23578,50 +23588,39 @@ See www.iec.ch/CCv1 for copyright details
       max-width: 100vw;
     }
 
+    md-switch {
+      vertical-align: middle;
+    }
+
     form {
       color: var(--oscd-base02);
       font-family: var(--oscd-text-font);
       display: grid;
       gap: 8px;
-      grid-template-columns: max-content max-content;
+      grid-template-columns: max-content 1fr max-content;
       margin-bottom: 1em;
       align-items: center;
     }
-  `,X([d({type:Boolean})],U.prototype,"open",1),X([d()],U.prototype,"filterName",2),X([d()],U.prototype,"existingFilterNames",2),X([L()],U.prototype,"ourSelector",2),X([L()],U.prototype,"theirSelector",2),X([L()],U.prototype,"selectorsInclusive",2),X([L()],U.prototype,"selectorsVals",2),X([L()],U.prototype,"selectorsExcept",2),X([L()],U.prototype,"attributesInclusive",2),X([L()],U.prototype,"attributesVals",2),X([L()],U.prototype,"attributesExcept",2),X([L()],U.prototype,"namespacesInclusive",2),X([L()],U.prototype,"namespacesVals",2),X([L()],U.prototype,"namespacesExcept",2),X([g("md-dialog")],U.prototype,"dialog",2),X([g("#filterName")],U.prototype,"filterNameInput",2),U=X([S("filter-dialog")],U);const ct={inclusive:!1,vals:[],except:[]},Fs={ourSelector:"",theirSelector:"",selectors:ct,attributes:ct,namespaces:ct},ir={Complete:Fs,"Complete without Text/Desc":{...Fs,selectors:{...ct,vals:["Text"]},attributes:{...ct,vals:["desc"]}}};var tc=Object.defineProperty,oe=(r,e,t,a)=>{for(var s=void 0,o=r.length-1,i;o>=0;o--)(i=r[o])&&(s=i(e,t,s)||s);return s&&tc(e,t,s),s};function ws(r,e,t){return e in r&&(typeof r[e]===t||t==="array"&&Array.isArray(r[e]))}function js(r){const e={ourSelector:"string",theirSelector:"string",selectors:"object",attributes:"object",namespaces:"object"},t={inclusive:"boolean",vals:"array",except:"array"};return!!Object.entries(e).every(([a,s])=>{if(!ws(r,a,s))return!1;if(s==="string")return!0;const o=r[a];return!(s==="object"&&!Object.entries(t).every(([i,c])=>!(!ws(o,i,c)||c==="array"&&!o[i].every(l=>typeof l=="string"))))})}class te extends N{constructor(){super(...arguments),this.docName="",this.docs={},this.selectedFilterName="",this.filters=ir,this.hashers=new WeakMap}setFilters(e){localStorage.setItem("oscd-diff-filters",JSON.stringify(e)),this.filters=e}async deleteFilter(e){const t={...this.filters};delete t[e],this.setFilters(t),Object.keys(t).length===0&&this.setFilters(ir),await this.updateComplete,this.setSelectedFilterName(Object.keys(this.filters)[0])}get selectedFilter(){return this.filters[this.selectedFilterName]||ir.Complete}setSelectedFilterName(e){if(!(e in this.filters)){console.error(`Filter ${e} not found`);return}localStorage.setItem("oscd-diff-selected-filter",e),this.selectedFilterName=e}get docName1(){return this.doc1?.value||""}get docName2(){return this.doc2?.value||""}get selector1(){return this.doc1sel?.value||this.docs[this.docName1]?.documentElement.tagName||":root"}get selector2(){return this.doc2sel?.value||this.selector1}firstUpdated(){const e=localStorage.getItem("oscd-diff-filters");if(e)try{const a=JSON.parse(e);Object.keys(a).length>0&&(this.filters=a)}catch(a){console.error(a)}const t=localStorage.getItem("oscd-diff-selected-filter");t&&t in this.filters?this.selectedFilterName=t:[this.selectedFilterName]=Object.keys(this.filters)}async handleImportFieldChanged(e){const{files:t}=e.target;if(!(!t||t.length<=0))try{const a=JSON.parse(await t[0].text());if(typeof a!="object")return;const s={...this.filters};Object.entries(a).forEach(([o,i])=>{i&&typeof i=="object"&&js(i)&&(s[o]=i)}),this.setFilters(s)}catch(a){console.error(a)}}importFilters(){this.filtersInputField?.click(),this.filtersInputField&&(this.filtersInputField.value="")}exportFilters(){const e=new Blob([JSON.stringify(this.filters,null,2)],{type:"application/json"}),t=URL.createObjectURL(e),a=document.createElement("a");a.href=t,a.download="filters.json",a.click(),URL.revokeObjectURL(t)}showFilterDialog(){this.filterDialog&&(this.filterDialog.open=!0)}uniqueFilterName(){let e=1;const t=this.selectedFilterName.replace(/\s*\d+$/,"");let a=`${t} 1`;for(;a in this.filters;)e+=1,a=`${t} ${e}`;return a}async duplicateFilter(){if(this.filterDialog){const e=this.uniqueFilterName();this.setFilters({...this.filters,[e]:this.selectedFilter}),await this.updateComplete,this.setSelectedFilterName(e)}}render(){const e={};return this.docs[this.docName1]?.querySelectorAll(this.selector1).forEach(t=>{const a=F(t);e[a]||(e[a]={}),e[a].ours=t}),this.docs[this.docName2]?.querySelectorAll(this.selector2).forEach(t=>{const a=F(t);e[a]||(e[a]={}),e[a].theirs=t}),C`<div
-        style="color: var(--oscd-base02); font-family: var(--oscd-text-font); display: grid; gap: 8px; grid-template-columns: min-content min-content; margin-bottom: 1em; align-items: center;"
-      >
-        <md-filled-select required id="doc1" label="From">
-          ${Object.keys(this.docs).map(t=>C`<md-select-option value="${t}"
-                >${t}</md-select-option
-              >`)}
-        </md-filled-select>
-        <md-filled-select
-          required
-          id="doc2"
-          label="To"
-          style="--md-sys-color-primary: var(--oscd-secondary)"
-        >
-          ${Object.keys(this.docs).map(t=>C`<md-select-option value="${t}"
-                >${t}</md-select-option
-              >`)}
-        </md-filled-select>
-
+  `,X([d({type:Boolean})],U.prototype,"open",1),X([d()],U.prototype,"filterName",2),X([d()],U.prototype,"existingFilterNames",2),X([L()],U.prototype,"ourSelector",2),X([L()],U.prototype,"theirSelector",2),X([L()],U.prototype,"selectorsInclusive",2),X([L()],U.prototype,"selectorsVals",2),X([L()],U.prototype,"selectorsExcept",2),X([L()],U.prototype,"attributesInclusive",2),X([L()],U.prototype,"attributesVals",2),X([L()],U.prototype,"attributesExcept",2),X([L()],U.prototype,"namespacesInclusive",2),X([L()],U.prototype,"namespacesVals",2),X([L()],U.prototype,"namespacesExcept",2),X([g("md-dialog")],U.prototype,"dialog",2),X([g("#filterName")],U.prototype,"filterNameInput",2),U=X([S("filter-dialog")],U);const ct={inclusive:!1,vals:[],except:[]},Fs={ourSelector:"",theirSelector:"",selectors:ct,attributes:ct,namespaces:ct},ir={Complete:Fs,"Complete without Text/Desc":{...Fs,selectors:{...ct,vals:["Text"]},attributes:{...ct,vals:["desc"]}}};var tc=Object.defineProperty,oe=(r,e,t,a)=>{for(var s=void 0,o=r.length-1,i;o>=0;o--)(i=r[o])&&(s=i(e,t,s)||s);return s&&tc(e,t,s),s};function ws(r,e,t){return e in r&&(typeof r[e]===t||t==="array"&&Array.isArray(r[e]))}function js(r){const e={ourSelector:"string",theirSelector:"string",selectors:"object",attributes:"object",namespaces:"object"},t={inclusive:"boolean",vals:"array",except:"array"};return!!Object.entries(e).every(([a,s])=>{if(!ws(r,a,s))return!1;if(s==="string")return!0;const o=r[a];return!(s==="object"&&!Object.entries(t).every(([i,c])=>!(!ws(o,i,c)||c==="array"&&!o[i].every(l=>typeof l=="string"))))})}class te extends N{constructor(){super(...arguments),this.docName="",this.docs={},this.selectedFilterName="",this.filters=ir,this.hashers=new WeakMap}setFilters(e){localStorage.setItem("oscd-diff-filters",JSON.stringify(e)),this.filters=e}async deleteFilter(e){const t={...this.filters};delete t[e],this.setFilters(t),Object.keys(t).length===0&&this.setFilters(ir),await this.updateComplete,this.setSelectedFilterName(Object.keys(this.filters)[0])}get selectedFilter(){return this.filters[this.selectedFilterName]||ir.Complete}setSelectedFilterName(e){if(!(e in this.filters)){console.error(`Filter ${e} not found`);return}localStorage.setItem("oscd-diff-selected-filter",e),this.selectedFilterName=e}get docName1(){return this.doc1?.value||""}get docName2(){return this.doc2?.value||""}get selector1(){return this.doc1sel?.value||this.docs[this.docName1]?.documentElement.tagName||":root"}get selector2(){return this.doc2sel?.value||this.selector1}firstUpdated(){const e=localStorage.getItem("oscd-diff-filters");if(e)try{const a=JSON.parse(e);Object.keys(a).length>0&&(this.filters=a)}catch(a){console.error(a)}const t=localStorage.getItem("oscd-diff-selected-filter");t&&t in this.filters?this.selectedFilterName=t:[this.selectedFilterName]=Object.keys(this.filters)}async handleImportFieldChanged(e){const{files:t}=e.target;if(!(!t||t.length<=0))try{const a=JSON.parse(await t[0].text());if(typeof a!="object")return;const s={...this.filters};Object.entries(a).forEach(([o,i])=>{i&&typeof i=="object"&&js(i)&&(s[o]=i)}),this.setFilters(s)}catch(a){console.error(a)}}importFilters(){this.filtersInputField?.click(),this.filtersInputField&&(this.filtersInputField.value="")}exportFilters(){const e=new Blob([JSON.stringify(this.filters,null,2)],{type:"application/json"}),t=URL.createObjectURL(e),a=document.createElement("a");a.href=t,a.download="filters.json",a.click(),URL.revokeObjectURL(t)}showFilterDialog(){this.filterDialog&&(this.filterDialog.open=!0)}uniqueFilterName(){let e=1;const t=this.selectedFilterName.replace(/\s*\d+$/,"");let a=`${t} 1`;for(;a in this.filters;)e+=1,a=`${t} ${e}`;return a}async duplicateFilter(){if(this.filterDialog){const e=this.uniqueFilterName();this.setFilters({...this.filters,[e]:this.selectedFilter}),await this.updateComplete,this.setSelectedFilterName(e)}}render(){const e={};return this.docs[this.docName1]?.querySelectorAll(this.selector1).forEach(t=>{const a=F(t);e[a]||(e[a]={}),e[a].ours=t}),this.docs[this.docName2]?.querySelectorAll(this.selector2).forEach(t=>{const a=F(t);e[a]||(e[a]={}),e[a].theirs=t}),C`<div style="">
         <div id="filter-selector-row">
           <md-filled-select
             required
-            label="Filters"
+            label="Filter"
             .value=${this.selectedFilterName}
             @change=${t=>{this.setSelectedFilterName(t.target.value)}}
           >
+            <md-icon slot="leading-icon">filter_list</md-icon>
             ${Object.keys(this.filters).map(t=>C`<md-select-option
                   value=${t}
                   ?selected=${this.selectedFilterName===t}
-                  >${t}</md-select-option
+                >
+                  ${t}</md-select-option
                 >`)}
           </md-filled-select>
           <span style="position: relative">
             <input
               type="file"
+              accept="application/json"
               id="filters-import-field"
               @change=${this.handleImportFieldChanged}
             />
@@ -23641,6 +23640,7 @@ See www.iec.ch/CCv1 for copyright details
               </md-menu-item>
               <md-menu-item
                 type="button"
+                href="#"
                 @click=${()=>this.duplicateFilter()}
               >
                 <md-icon slot="start">content_copy</md-icon>
@@ -23648,6 +23648,7 @@ See www.iec.ch/CCv1 for copyright details
               </md-menu-item>
               <md-menu-item
                 type="button"
+                href="#"
                 @click=${()=>this.deleteFilter(this.selectedFilterName)}
                 style="--md-menu-item-leading-icon-color:var(--oscd-error); --md-menu-item-label-text-color:var(--oscd-error)"
               >
@@ -23655,11 +23656,19 @@ See www.iec.ch/CCv1 for copyright details
                 <div slot="headline">Delete</div>
               </md-menu-item>
               <md-divider></md-divider>
-              <md-menu-item type="button" @click=${()=>this.importFilters()}>
+              <md-menu-item
+                type="button"
+                href="#"
+                @click=${()=>this.importFilters()}
+              >
                 <md-icon slot="start">publish</md-icon>
                 <div slot="headline">Import Filters</div>
               </md-menu-item>
-              <md-menu-item type="button" @click=${()=>this.exportFilters()}>
+              <md-menu-item
+                type="button"
+                href="#"
+                @click=${()=>this.exportFilters()}
+              >
                 <md-icon slot="start">download</md-icon>
                 <div slot="headline">Export Filters</div>
               </md-menu-item>
@@ -23667,28 +23676,51 @@ See www.iec.ch/CCv1 for copyright details
           </span>
         </div>
 
-        <md-outlined-text-field
-          label="${this.docName1||"From"} selector"
-          style="--md-outlined-text-field-container-shape: 48px;"
+        <md-filled-select required id="doc1" label="From document">
+          <md-icon slot="leading-icon">draft</md-icon>
+          ${Object.keys(this.docs).map(t=>C`<md-select-option value="${t}"
+                >${t}</md-select-option
+              >`)}
+        </md-filled-select>
+        <md-filled-select
+          required
+          id="doc2"
+          label="To document"
+          style="--md-sys-color-primary: var(--oscd-secondary)"
+        >
+          <md-icon slot="leading-icon">draft</md-icon>
+          ${Object.keys(this.docs).map(t=>C`<md-select-option value="${t}"
+                >${t}</md-select-option
+              >`)}
+        </md-filled-select>
+
+        <md-filled-text-field
+          label="From elements"
           type="search"
           id="doc1sel"
           .value=${this.selectedFilter.ourSelector}
           .placeholder=${this.docs[this.docName1]?.documentElement.tagName||":root"}
           @change=${()=>this.requestUpdate()}
-        ></md-outlined-text-field>
-        <md-outlined-text-field
-          label="${this.docName2||"To"} selector"
-          style="--md-sys-color-primary: var(--oscd-secondary); --md-outlined-text-field-container-shape: 48px;"
+        >
+          <md-icon slot="leading-icon">plagiarism</md-icon>
+        </md-filled-text-field>
+        <md-filled-text-field
+          label="To elements"
+          style="--md-sys-color-primary: var(--oscd-secondary);"
           type="search"
           id="doc2sel"
           .value=${this.selectedFilter.theirSelector}
           .placeholder=${this.selector1}
-        ></md-outlined-text-field>
+        >
+          <md-icon slot="leading-icon">plagiarism</md-icon>
+        </md-filled-text-field>
 
         <md-filled-button
+          style="grid-column: 1/3;"
           @click=${()=>{const t=this.docs[this.docName1],a=this.docs[this.docName2];if(!t||!a)return;const s={attributes:this.selectedFilter.attributes,selectors:this.selectedFilter.selectors,namespaces:this.selectedFilter.namespaces};this.hashers.set(t,Ms(s)),this.hashers.set(a,Ms(s)),this.requestUpdate()}}
         >
-          diff
+          Compare
+          <md-icon slot="icon">difference</md-icon>
         </md-filled-button>
 
         <filter-dialog
@@ -23707,6 +23739,7 @@ See www.iec.ch/CCv1 for copyright details
     * {
       cursor: default;
     }
+
     :host {
       font-family: var(--oscd-text-font);
       display: block;
@@ -23725,6 +23758,17 @@ See www.iec.ch/CCv1 for copyright details
       --md-sys-color-surface-container-highest: var(--oscd-base3);
     }
 
+    :host > div {
+      color: var(--oscd-base02);
+      font-family: var(--oscd-text-font);
+      display: grid;
+      gap: 12px;
+      grid-template-columns: max-content max-content;
+      margin: 16px;
+      margin-bottom: 1em;
+      align-items: center;
+    }
+
     #filters-import-field {
       display: block;
       visibility: hidden;
@@ -23739,7 +23783,7 @@ See www.iec.ch/CCv1 for copyright details
     #filter-selector-row {
       grid-column: 1/3;
       display: flex;
-      gap: 1em;
+      gap: 8px;
       align-items: center;
     }
 
