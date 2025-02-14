@@ -101,23 +101,29 @@ export class DiffTree extends LitElement {
   @query('md-icon-button') expandButton!: HTMLElement;
 
   get ourHash(): string | undefined {
-    return this.ourHasher?.hash(this.ours!);
+    return this.ours && this.ourHasher?.hash(this.ours);
   }
 
   get theirHash(): string | undefined {
-    return this.theirHasher?.hash(this.theirs!);
+    return this.theirs && this.theirHasher?.hash(this.theirs);
   }
 
   get ourDescription(): Description | undefined {
-    return this.ourHasher?.db[this.ours!.tagName][this.ourHash ?? ''] as
-      | Description
-      | undefined;
+    return (
+      this.ours &&
+      (this.ourHasher?.db[this.ours.tagName][this.ourHash ?? ''] as
+        | Description
+        | undefined)
+    );
   }
 
   get theirDescription(): Description | undefined {
-    return this.theirHasher?.db[this.theirs!.tagName][this.theirHash ?? ''] as
-      | Description
-      | undefined;
+    return (
+      this.theirs &&
+      (this.theirHasher?.db[this.theirs.tagName][this.theirHash ?? ''] as
+        | Description
+        | undefined)
+    );
   }
 
   get diff(): Record<string, { ours?: any; theirs?: any }> {
