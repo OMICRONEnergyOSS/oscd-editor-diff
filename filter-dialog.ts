@@ -18,6 +18,13 @@ export type OscdDiffFilterSaveEventDetail = {
 export type OscdDiffFilterSaveEvent =
   CustomEvent<OscdDiffFilterSaveEventDetail>;
 
+function nonemptyLines(text: string) {
+  return text
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line);
+}
+
 @customElement('filter-dialog')
 export class FilterDialog extends LitElement {
   @property({ type: Boolean }) get open() {
@@ -210,7 +217,7 @@ export class FilterDialog extends LitElement {
             .value=${this.selectorsVals.join('\n')}
             @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
-              this.selectorsVals = value.split('\n').map(line => line.trim());
+              this.selectorsVals = nonemptyLines(value);
             }}
           ></md-outlined-text-field>
           <md-outlined-text-field
@@ -220,7 +227,7 @@ export class FilterDialog extends LitElement {
             .value=${this.selectorsExcept.join('\n')}
             @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
-              this.selectorsExcept = value.split('\n').map(line => line.trim());
+              this.selectorsExcept = nonemptyLines(value);
             }}
           ></md-outlined-text-field>
           <label style="grid-column: 1 / -1;"
@@ -242,7 +249,7 @@ export class FilterDialog extends LitElement {
             .value=${this.attributesVals.join('\n')}
             @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
-              this.attributesVals = value.split('\n').map(line => line.trim());
+              this.attributesVals = nonemptyLines(value);
             }}
           ></md-outlined-text-field>
           <md-outlined-text-field
@@ -252,9 +259,7 @@ export class FilterDialog extends LitElement {
             .value=${this.attributesExcept.join('\n')}
             @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
-              this.attributesExcept = value
-                .split('\n')
-                .map(line => line.trim());
+              this.attributesExcept = nonemptyLines(value);
             }}
           ></md-outlined-text-field>
           <label style="grid-column: 1 / -1;"
@@ -276,7 +281,7 @@ export class FilterDialog extends LitElement {
             .value=${this.namespacesVals.join('\n')}
             @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
-              this.namespacesVals = value.split('\n').map(line => line.trim());
+              this.namespacesVals = nonemptyLines(value);
             }}
           ></md-outlined-text-field>
         </form>
