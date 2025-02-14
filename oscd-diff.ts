@@ -482,6 +482,7 @@ export default class OscdDiff extends LitElement {
       --md-sys-color-surface-container: var(--oscd-base3);
       --md-sys-color-surface-container-high: var(--oscd-base3);
       --md-sys-color-surface-container-highest: var(--oscd-base3);
+      --md-sys-color-outline-variant: var(--oscd-base0);
     }
 
     :host > div {

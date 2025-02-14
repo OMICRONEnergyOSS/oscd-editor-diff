@@ -305,6 +305,7 @@ export class FilterDialog extends LitElement {
 
     md-switch {
       vertical-align: middle;
+      margin-left: 8px;
     }
 
     form {
@@ -312,7 +313,7 @@ export class FilterDialog extends LitElement {
       font-family: var(--oscd-text-font);
       display: grid;
       gap: 8px;
-      grid-template-columns: max-content 1fr max-content;
+      grid-template-columns: 1fr min-content 1fr;
       margin-bottom: 1em;
       align-items: center;
     }
