@@ -101,11 +101,15 @@ export class DiffTree extends LitElement {
   @query('md-icon-button') expandButton!: HTMLElement;
 
   get ourHash(): string | undefined {
-    return this.ours && this.ourHasher?.hash(this.ours);
+    return this.ours && this.ourHasher && this.ourHasher.eDb.e2h.get(this.ours);
   }
 
   get theirHash(): string | undefined {
-    return this.theirs && this.theirHasher?.hash(this.theirs);
+    return (
+      this.theirs &&
+      this.theirHasher &&
+      this.theirHasher.eDb.e2h.get(this.theirs)
+    );
   }
 
   get ourDescription(): Description | undefined {

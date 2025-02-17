@@ -5,7 +5,7 @@ const xxh = await xxhash();
 
 export type HashDB = Record<string, Record<string, object>>;
 export type IdentityDB = Record<string, string | number>;
-export type Hasher = (e: Element) => string;
+export type Hasher = (e: Element) => Promise<string>;
 export type Description = Record<string, string | string[]> & {
   eNS?: Record<string, Record<string, string>>;
 };
@@ -701,7 +701,7 @@ export function hasher(
     attributes: { inclusive: false, vals: [], except: [] },
     namespaces: { inclusive: false, vals: [], except: [] },
   },
-): (e: Element) => string {
+): Hasher {
   function describeAttributes(e: Element) {
     const description: Description = {};
 
@@ -783,7 +783,21 @@ export function hasher(
     return description;
   }
 
-  function describeChildren(e: Element, ...tags: string[]) {
+  // const releaseAfter = 1000;
+  // let timeouts = 999;
+  // const resolved = Promise.resolve();
+  function releaseMainThread(): Promise<void> {
+    // timeouts += 1;
+    // if (timeouts < releaseAfter) {
+    //   return resolved;
+    // }
+    // timeouts = 0;
+    return new Promise(resolve => {
+      setTimeout(resolve, 0);
+    });
+  }
+
+  async function describeChildren(e: Element, ...tags: string[]) {
     const description: Record<string, string[]> = {};
 
     const includedChildren = Array.from(e.children).filter(c => {
@@ -818,61 +832,68 @@ export function hasher(
       return true;
     });
 
-    tags.forEach(tag => {
+    for await (const tag of tags) {
       const hashes = includedChildren
         .filter(c => c.tagName === tag)
         .map(hash)
         .sort();
       if (hashes.length) {
-        description[`@${tag}`] = hashes;
+        await releaseMainThread();
+        description[`@${tag}`] = await Promise.all(hashes);
       }
-    });
+    }
     return description;
   }
 
-  function describeReferences(e: Element) {
+  async function describeReferences(e: Element) {
     const description: Record<string, string[]> = {};
     if (!(e.tagName in references)) {
       return description;
     }
 
-    references[e.tagName].forEach(({ fields, to, scope }) => {
-      const candidates = Array.from(
-        e.closest(scope)?.querySelectorAll(to) ?? [],
-      );
-      const hashes = candidates
-        .filter(toE => {
-          const toAttrs = fields.map(f => f.to);
-          const fromAttrs = fields.map(f => f.from);
-          const toVals = toAttrs.map(a => toE.getAttribute(a));
-          const fromVals = fromAttrs.map(a => e.getAttribute(a));
-          return fromVals.every((val, i) => toVals[i] === val) && toE;
-        })
-        .map(hash)
-        .sort();
-      if (hashes.length) {
-        description[`@${to.split('>').pop()}`] = hashes;
-      }
-    });
+    await Promise.all(
+      references[e.tagName].map(async ({ fields, to, scope }) => {
+        const candidates = Array.from(
+          e.closest(scope)?.querySelectorAll(to) ?? [],
+        );
+        const hashes = candidates
+          .filter(toE => {
+            const toAttrs = fields.map(f => f.to);
+            const fromAttrs = fields.map(f => f.from);
+            const toVals = toAttrs.map(a => toE.getAttribute(a));
+            const fromVals = fromAttrs.map(a => e.getAttribute(a));
+            return fromVals.every((val, i) => toVals[i] === val) && toE;
+          })
+          .map(hash)
+          .sort();
+        if (hashes.length) {
+          await releaseMainThread();
+          description[`@${to.split('>').pop()}`] = await Promise.all(hashes);
+        }
+      }),
+    );
 
     return description;
   }
 
-  function describeNaming(e: Element) {
+  async function describeNaming(e: Element) {
     const childTags = Array.from(e.children)
       .map(c => c.tagName)
       .filter((c, i, arr) => arr.indexOf(c) === i);
+    const attributesDescription = await describeAttributes(e);
+    const childrenDescription = await describeChildren(e, ...childTags);
+    const referencesDescription = await describeReferences(e);
     const description: Record<string, unknown> = {
-      ...describeAttributes(e),
-      ...describeChildren(e, ...childTags),
-      ...describeReferences(e),
+      ...attributesDescription,
+      ...childrenDescription,
+      ...referencesDescription,
     };
     return description;
   }
 
-  function describeBDA(e: Element) {
+  async function describeBDA(e: Element) {
     const description: Record<string, unknown> = {
-      ...describeNaming(e),
+      ...(await describeNaming(e)),
       bType: e.getAttribute('bType'),
       valKind: 'Set',
       valImport: false,
@@ -911,7 +932,7 @@ export function hasher(
       e.closest('DataTypeTemplates')?.children ?? [],
     ).find(child => child.getAttribute('id') === type);
     if (referencedType) {
-      description[`@${referencedType.tagName}`] = [hash(referencedType)];
+      description[`@${referencedType.tagName}`] = [await hash(referencedType)];
     }
 
     return description;
@@ -920,17 +941,17 @@ export function hasher(
   const descriptions: Record<string, (e: Element) => object> = {
     BDA: describeBDA,
     DA: describeBDA,
-    DO: e => {
+    DO: async e => {
       const template = Array.from(
         e.closest('DataTypeTemplates')?.children ?? [],
       ).find(child => child.getAttribute('id') === e.getAttribute('type'));
       return {
-        ...describeNaming(e),
+        ...(await describeNaming(e)),
         [`@${template?.tagName}`]: template ? [hash(template)] : [],
       };
     },
-    EnumVal: e => ({
-      ...describeNaming(e),
+    EnumVal: async e => ({
+      ...(await describeNaming(e)),
       val: e.textContent ?? '',
     }),
     ProtNs: e => ({
@@ -947,7 +968,7 @@ export function hasher(
       }) as object,
   };
 
-  function describe(e: Element) {
+  async function describe(e: Element) {
     if (e.tagName in descriptions) {
       return descriptions[e.tagName](e);
     }
@@ -963,7 +984,7 @@ export function hasher(
     return { xml: e.outerHTML };
   }
 
-  function hash(e: Element): string {
+  async function hash(e: Element): Promise<string> {
     if (eDb.e2h.has(e)) {
       return eDb.e2h.get(e)!;
     }
@@ -971,7 +992,7 @@ export function hasher(
       e.namespaceURI === e.ownerDocument.documentElement.namespaceURI
         ? e.localName
         : `${e.localName}@${e.namespaceURI}`;
-    const description = describe(e);
+    const description = await describe(e);
     const digest = xxh.h64ToString(JSON.stringify(description));
     if (!(tag in db)) {
       // eslint-disable-next-line no-param-reassign

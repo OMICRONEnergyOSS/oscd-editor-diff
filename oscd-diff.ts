@@ -1,5 +1,6 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import { until } from 'lit/directives/until.js';
 
 import { identity } from '@openenergytools/scl-lib';
 
@@ -275,6 +276,16 @@ export default class OscdDiff extends LitElement {
       elements[id].theirs = el;
     });
 
+    const promise = Promise.all(
+      Object.values(elements).map(({ ours, theirs }) => {
+        const ourHasher = ours && this.hashers.get(ours.ownerDocument);
+        const ourHash = ourHasher && ourHasher.hash(ours);
+        const theirHasher = theirs && this.hashers.get(theirs.ownerDocument);
+        const theirHash = theirHasher && theirHasher.hash(theirs);
+        return Promise.all([ourHash, theirHash]);
+      }),
+    );
+
     return html`<div style="">
         <div id="filter-selector-row">
           <md-filled-select
@@ -407,27 +418,43 @@ export default class OscdDiff extends LitElement {
           <md-icon slot="leading-icon">plagiarism</md-icon>
         </md-filled-text-field>
 
-        <md-filled-button
-          style="grid-column: 1/3;"
-          @click=${() => {
-            const doc1 = this.docs[this.docName1];
-            const doc2 = this.docs[this.docName2];
-            if (!doc1 || !doc2) {
-              return;
-            }
-            const options = {
-              attributes: this.selectedFilter.attributes,
-              selectors: this.selectedFilter.selectors,
-              namespaces: this.selectedFilter.namespaces,
-            };
-            this.hashers.set(doc1, newHasher(options));
-            this.hashers.set(doc2, newHasher(options));
-            this.requestUpdate();
-          }}
-        >
-          Compare
-          <md-icon slot="icon">difference</md-icon>
-        </md-filled-button>
+        ${until(
+          promise.then(
+            () =>
+              html`<md-filled-button
+                style="grid-column: 1/3;"
+                @click=${() => {
+                  const doc1 = this.docs[this.docName1];
+                  const doc2 = this.docs[this.docName2];
+                  if (!doc1 || !doc2) {
+                    return;
+                  }
+                  const options = {
+                    attributes: this.selectedFilter.attributes,
+                    selectors: this.selectedFilter.selectors,
+                    namespaces: this.selectedFilter.namespaces,
+                  };
+                  this.hashers.set(doc1, newHasher(options));
+                  this.hashers.set(doc2, newHasher(options));
+                  this.requestUpdate();
+                }}
+              >
+                Compare
+                <md-icon slot="icon">difference</md-icon>
+              </md-filled-button>`,
+          ),
+          html`<md-filled-button
+            disabled
+            style="grid-column: 1/3; --md-filled-button-icon-size: 32px;"
+          >
+            Compare
+            <md-circular-progress
+              style="--md-circular-progress-active-indicator-color: var(--oscd-base00);"
+              slot="icon"
+              indeterminate
+            ></md-circular-progress>
+          </md-filled-button>`,
+        )}
 
         <filter-dialog
           filterName="${this.selectedFilterName}"
@@ -448,17 +475,22 @@ export default class OscdDiff extends LitElement {
           }}
         ></filter-dialog>
       </div>
-      ${Object.keys(elements).map(id => {
-        const { ours, theirs } = elements[id];
-        return html`<diff-tree
-          .ours=${ours}
-          .theirs=${theirs}
-          .ourHasher=${ours?.ownerDocument &&
-          this.hashers.get(ours.ownerDocument)}
-          .theirHasher=${theirs?.ownerDocument &&
-          this.hashers.get(theirs.ownerDocument)}
-        ></diff-tree>`;
-      })}`;
+      ${until(
+        promise.then(() =>
+          Object.keys(elements).map(id => {
+            const { ours, theirs } = elements[id];
+            return html`<diff-tree
+              .ours=${ours}
+              .theirs=${theirs}
+              .ourHasher=${ours?.ownerDocument &&
+              this.hashers.get(ours.ownerDocument)}
+              .theirHasher=${theirs?.ownerDocument &&
+              this.hashers.get(theirs.ownerDocument)}
+            ></diff-tree>`;
+          }),
+        ),
+        nothing,
+      )}`;
   }
 
   static styles = css`
