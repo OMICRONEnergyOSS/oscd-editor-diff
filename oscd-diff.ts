@@ -91,15 +91,18 @@ export function isFilter(obj: object): obj is Filter {
   return true;
 }
 
+type StoredDiff = {
+  elements: Record<string, { ours?: Element; theirs?: Element }>;
+  ourHasher: ReturnType<typeof newHasher>;
+  theirHasher: ReturnType<typeof newHasher>;
+};
+
 export default class OscdDiff extends LitElement {
   @property() docName = '';
 
   @property() doc?: XMLDocument;
 
   @property() docs: Record<string, XMLDocument> = {};
-
-  @state()
-  selectedFilterName: string = '';
 
   @query('#doc1') doc1?: HTMLSelectElement;
 
@@ -116,6 +119,11 @@ export default class OscdDiff extends LitElement {
   @query('md-menu') filterMenu?: MdMenu;
 
   @state() filters: Record<string, Filter> = defaultFilters;
+
+  @state()
+  selectedFilterName: string = '';
+
+  @state() lastDiff?: StoredDiff;
 
   setFilters(updatedFilters: Record<string, Filter>) {
     localStorage.setItem('oscd-diff-filters', JSON.stringify(updatedFilters));
@@ -265,29 +273,11 @@ export default class OscdDiff extends LitElement {
   }
 
   render() {
-    const elements: Record<string, { ours?: Element; theirs?: Element }> = {};
-
-    this.docs[this.docName1]?.querySelectorAll(this.selector1).forEach(el => {
-      const id = identity(el);
-      if (!elements[id]) {
-        elements[id] = {};
-      }
-      elements[id].ours = el;
-    });
-
-    this.docs[this.docName2]?.querySelectorAll(this.selector2).forEach(el => {
-      const id = identity(el);
-      if (!elements[id]) {
-        elements[id] = {};
-      }
-      elements[id].theirs = el;
-    });
-
     const promise = Promise.all(
-      Object.values(elements).map(({ ours, theirs }) => {
-        const ourHasher = ours && this.hashers.get(ours.ownerDocument);
+      Object.values(this.lastDiff?.elements ?? {}).map(({ ours, theirs }) => {
+        const ourHasher = ours && this.lastDiff?.ourHasher;
         const ourHash = ourHasher && hashElement(ours, ourHasher);
-        const theirHasher = theirs && this.hashers.get(theirs.ownerDocument);
+        const theirHasher = theirs && this.lastDiff?.theirHasher;
         const theirHash = theirHasher && hashElement(theirs, theirHasher);
         return Promise.all([ourHash, theirHash]);
       }),
@@ -410,7 +400,9 @@ export default class OscdDiff extends LitElement {
           .value=${this.selectedFilter.ourSelector}
           .placeholder=${this.docs[this.docName1]?.documentElement.tagName ||
           ':root'}
-          @change=${() => this.requestUpdate()}
+          @change=${() => {
+            this.doc2sel!.placeholder = this.selector1;
+          }}
         >
           <md-icon slot="leading-icon">plagiarism</md-icon>
         </md-filled-text-field>
@@ -441,9 +433,33 @@ export default class OscdDiff extends LitElement {
                     selectors: this.selectedFilter.selectors,
                     namespaces: this.selectedFilter.namespaces,
                   };
-                  this.hashers.set(doc1, newHasher(options));
-                  this.hashers.set(doc2, newHasher(options));
-                  this.requestUpdate();
+                  const ourHasher = newHasher(options);
+                  const theirHasher = newHasher(options);
+                  const elements: Record<
+                    string,
+                    { ours?: Element; theirs?: Element }
+                  > = {};
+
+                  this.docs[this.docName1]
+                    ?.querySelectorAll(this.selector1)
+                    .forEach(el => {
+                      const id = identity(el);
+                      if (!elements[id]) {
+                        elements[id] = {};
+                      }
+                      elements[id].ours = el;
+                    });
+
+                  this.docs[this.docName2]
+                    ?.querySelectorAll(this.selector2)
+                    .forEach(el => {
+                      const id = identity(el);
+                      if (!elements[id]) {
+                        elements[id] = {};
+                      }
+                      elements[id].theirs = el;
+                    });
+                  this.lastDiff = { elements, ourHasher, theirHasher };
                 }}
               >
                 Compare
@@ -485,23 +501,19 @@ export default class OscdDiff extends LitElement {
       ${until(
         promise.then(() => {
           let same = true;
-          const trees = Object.keys(elements).map(id => {
-            const { ours, theirs } = elements[id];
-            const ourHasher = ours && this.hashers.get(ours.ownerDocument);
-            const theirHasher =
-              theirs && this.hashers.get(theirs.ownerDocument);
-            const ourHash = ourHasher && ourHasher.hash(ours);
-            const theirHash = theirHasher && theirHasher.hash(theirs);
+          const trees = Object.keys(this.lastDiff?.elements ?? {}).map(id => {
+            const { ours, theirs } = this.lastDiff!.elements[id];
+            const { ourHasher, theirHasher } = this.lastDiff!;
+            const ourHash = ours && ourHasher.hash(ours);
+            const theirHash = theirs && theirHasher.hash(theirs);
             if (ourHash !== theirHash) {
               same = false;
             }
             return html`<diff-tree
               .ours=${ours}
               .theirs=${theirs}
-              .ourHasher=${ours?.ownerDocument &&
-              this.hashers.get(ours.ownerDocument)}
-              .theirHasher=${theirs?.ownerDocument &&
-              this.hashers.get(theirs.ownerDocument)}
+              .ourHasher=${ourHasher}
+              .theirHasher=${theirHasher}
             ></diff-tree>`;
           });
           return same && trees.length

@@ -701,7 +701,7 @@ export function hasher(
     attributes: { inclusive: false, vals: [], except: [] },
     namespaces: { inclusive: false, vals: [], except: [] },
   },
-): (e: Element) => string {
+): Hasher {
   function describeAttributes(e: Element) {
     const description: Description = {};
 
