@@ -7,7 +7,7 @@ import { identity } from '@openenergytools/scl-lib';
 import '@material/web/all.js';
 import type { MdFilledSelect, MdMenu } from '@material/web/all.js';
 
-import { HasherOptions, newHasher } from './hash.js';
+import { Configurable, HasherOptions, newHasher } from './hash.js';
 
 import './diff-tree.js';
 import './filter-dialog.js';
@@ -97,6 +97,18 @@ type StoredDiff = {
   theirHasher: ReturnType<typeof newHasher>;
 };
 
+function describeConfigurable(
+  { inclusive, vals, except }: Configurable,
+  name: string,
+) {
+  const verb = inclusive ? 'Including' : 'Excluding';
+  const object = vals.length ? ` ${vals.join(', ')} ${name}` : ` no ${name}`;
+  const exceptions = except.length
+    ? ` except for ${except.join(', ')} ${name}`
+    : '';
+  return html`<p>${verb}${object}${exceptions}</p>`;
+}
+
 export default class OscdDiff extends LitElement {
   @property() docName = '';
 
@@ -118,12 +130,22 @@ export default class OscdDiff extends LitElement {
 
   @query('md-menu') filterMenu?: MdMenu;
 
+  @query('#diff-container') diffContainer?: HTMLDivElement;
+
   @state() filters: Record<string, Filter> = defaultFilters;
 
   @state()
   selectedFilterName: string = '';
 
   @state() lastDiff?: StoredDiff;
+
+  @state() get fullscreen() {
+    return (
+      this.diffContainer &&
+      this.shadowRoot &&
+      this.shadowRoot.fullscreenElement === this.diffContainer
+    );
+  }
 
   setFilters(updatedFilters: Record<string, Filter>) {
     localStorage.setItem('oscd-diff-filters', JSON.stringify(updatedFilters));
@@ -270,6 +292,29 @@ export default class OscdDiff extends LitElement {
       await this.updateComplete;
       this.setSelectedFilterName(newFilterName);
     }
+  }
+
+  renderFilterDescription() {
+    return html`
+      <div id="filter-description" style="margin: 16px;">
+        <h3>Filter: ${this.selectedFilterName}</h3>
+        <p>
+          Comparing
+          <span class="ours"
+            ><strong>${this.selector1}</strong> elements from
+            <em>${this.docName1}</em></span
+          >
+          to
+          <span class="theirs"
+            ><strong>${this.selector2}</strong> elements from
+            <em>${this.docName2}</em></span
+          >
+        </p>
+        ${describeConfigurable(this.selectedFilter.selectors, 'elements')}
+        ${describeConfigurable(this.selectedFilter.attributes, 'attributes')}
+        ${describeConfigurable(this.selectedFilter.namespaces, 'namespaces')}
+      </div>
+    `;
   }
 
   render() {
@@ -498,30 +543,57 @@ export default class OscdDiff extends LitElement {
           }}
         ></filter-dialog>
       </div>
-      ${until(
-        promise.then(() => {
-          let same = true;
-          const trees = Object.keys(this.lastDiff?.elements ?? {}).map(id => {
-            const { ours, theirs } = this.lastDiff!.elements[id];
-            const { ourHasher, theirHasher } = this.lastDiff!;
-            const ourHash = ours && ourHasher.hash(ours);
-            const theirHash = theirs && theirHasher.hash(theirs);
-            if (ourHash !== theirHash) {
-              same = false;
-            }
-            return html`<diff-tree
-              .ours=${ours}
-              .theirs=${theirs}
-              .ourHasher=${ourHasher}
-              .theirHasher=${theirHasher}
-            ></diff-tree>`;
-          });
-          return same && trees.length
-            ? html`<div style="margin: 16px;">No differences</div>`
-            : trees;
-        }),
-        nothing,
-      )}`;
+      <div
+        id="diff-container"
+        @fullscreenchange=${() => this.requestUpdate()}
+        class="${this.fullscreen ? 'fullscreen' : nothing}"
+      >
+        ${this.fullscreen ? this.renderFilterDescription() : nothing}
+        ${Object.keys(this.lastDiff?.elements ?? {}).length
+          ? html` <md-filled-icon-button
+              toggle
+              ?selected=${this.fullscreen}
+              @click=${async () => {
+                if (this.fullscreen) {
+                  await document.exitFullscreen();
+                } else {
+                  await this.diffContainer?.requestFullscreen();
+                }
+                this.requestUpdate();
+              }}
+            >
+              <md-icon>fullscreen</md-icon>
+              <md-icon slot="selected">fullscreen_exit</md-icon>
+            </md-filled-icon-button>`
+          : nothing}
+        ${until(
+          promise.then(() => {
+            let same = true;
+            const trees = Object.keys(this.lastDiff?.elements ?? {}).map(id => {
+              const { ours, theirs } = this.lastDiff!.elements[id];
+              const { ourHasher, theirHasher } = this.lastDiff!;
+              const ourHash = ours && ourHasher.hash(ours);
+              const theirHash = theirs && theirHasher.hash(theirs);
+              if (ourHash !== theirHash) {
+                same = false;
+              }
+              return html`<diff-tree
+                .ours=${ours}
+                .theirs=${theirs}
+                .ourHasher=${ourHasher}
+                .theirHasher=${theirHasher}
+                ?fullscreen=${this.fullscreen}
+                ?expanded=${Object.keys(this.lastDiff?.elements ?? {})
+                  .length === 1}
+              ></diff-tree>`;
+            });
+            return same && trees.length
+              ? html`<div style="margin: 16px;">No differences</div>`
+              : trees;
+          }),
+          nothing,
+        )}
+      </div>`;
   }
 
   static styles = css`
@@ -566,6 +638,28 @@ export default class OscdDiff extends LitElement {
       height: 0;
     }
 
+    #diff-container.fullscreen {
+      height: 100vh;
+      overflow-y: auto;
+    }
+    #diff-container.fullscreen md-filled-icon-button {
+      position: fixed;
+      top: 8px;
+      right: 24px;
+      z-index: 10001;
+    }
+
+    #diff-container {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      background-color: var(--oscd-base2);
+    }
+
+    #diff-container > md-filled-icon-button {
+      align-self: end;
+    }
+
     md-menu {
       min-width: max-content;
     }
@@ -579,6 +673,14 @@ export default class OscdDiff extends LitElement {
 
     #filter-selector-row md-filled-select {
       flex-grow: 1;
+    }
+
+    .ours {
+      color: var(--oscd-primary);
+    }
+
+    .theirs {
+      color: var(--oscd-secondary);
     }
   `;
 }

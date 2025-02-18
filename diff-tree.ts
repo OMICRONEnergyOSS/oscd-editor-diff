@@ -99,6 +99,9 @@ export class DiffTree extends LitElement {
   @property({ type: Boolean, reflect: true })
   expanded = false;
 
+  @property({ type: Boolean })
+  fullscreen = false;
+
   @query('md-icon-button') expandButton!: HTMLElement;
 
   get ourHash(): string | undefined {
@@ -175,7 +178,8 @@ export class DiffTree extends LitElement {
               .theirs=${t}
               .ourHasher=${this.ourHasher}
               .theirHasher=${this.theirHasher}
-              .expanded=${expanded}
+              ?expanded=${expanded}
+              ?fullscreen=${this.fullscreen}
               .depth=${this.depth + 1}
             ></diff-tree>`,
         );
@@ -243,15 +247,17 @@ export class DiffTree extends LitElement {
     if (!this.theirs) {
       color = 'var(--oscd-primary)';
     }
+    const fullscreenStyles = this.fullscreen
+      ? css`
+          top: ${this.depth * 24}px;
+          z-index: ${10000 - this.depth};
+          position: sticky;
+        `
+      : nothing;
     const style = html`<style>
       button {
         color: ${color};
-        top: ${this.depth * 24 + 60}px;
-      }
-      @media (max-width: 599px) {
-        button {
-          top: ${this.depth * 24 + 52}px;
-        }
+        ${fullscreenStyles}
       }
     </style>`;
     let desc = element.getAttribute('desc') || '';
@@ -426,9 +432,6 @@ export class DiffTree extends LitElement {
       text-align: inherit;
       font: inherit;
       appearance: none;
-    }
-    :host([expanded]) button {
-      position: sticky;
     }
     :host([odd]) button {
       background: var(--oscd-base3);
