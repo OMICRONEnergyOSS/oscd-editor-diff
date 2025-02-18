@@ -483,9 +483,18 @@ export default class OscdDiff extends LitElement {
         ></filter-dialog>
       </div>
       ${until(
-        promise.then(() =>
-          Object.keys(elements).map(id => {
+        promise.then(() => {
+          let same = true;
+          const trees = Object.keys(elements).map(id => {
             const { ours, theirs } = elements[id];
+            const ourHasher = ours && this.hashers.get(ours.ownerDocument);
+            const theirHasher =
+              theirs && this.hashers.get(theirs.ownerDocument);
+            const ourHash = ourHasher && ourHasher.hash(ours);
+            const theirHash = theirHasher && theirHasher.hash(theirs);
+            if (ourHash !== theirHash) {
+              same = false;
+            }
             return html`<diff-tree
               .ours=${ours}
               .theirs=${theirs}
@@ -494,8 +503,11 @@ export default class OscdDiff extends LitElement {
               .theirHasher=${theirs?.ownerDocument &&
               this.hashers.get(theirs.ownerDocument)}
             ></diff-tree>`;
-          }),
-        ),
+          });
+          return same && trees.length
+            ? html`<div style="margin: 16px;">No differences</div>`
+            : trees;
+        }),
         nothing,
       )}`;
   }
