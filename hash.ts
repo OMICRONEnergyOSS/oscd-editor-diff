@@ -858,6 +858,18 @@ export function hasher(
     return description;
   }
 
+  function describeTextContent(e: Element) {
+    const description: Record<string, string> = {};
+    if (e.children.length > 0) {
+      return description;
+    }
+    const textContent = e.textContent?.trim();
+    if (textContent) {
+      description['Text Content'] = textContent;
+    }
+    return description;
+  }
+
   function describeNaming(e: Element) {
     const childTags = Array.from(e.children)
       .map(c => c.tagName)
@@ -866,6 +878,7 @@ export function hasher(
       ...describeAttributes(e),
       ...describeChildren(e, ...childTags),
       ...describeReferences(e),
+      ...describeTextContent(e),
     };
     return description;
   }
