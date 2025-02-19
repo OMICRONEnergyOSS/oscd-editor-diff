@@ -95,6 +95,12 @@ type StoredDiff = {
   elements: Record<string, { ours?: Element; theirs?: Element }>;
   ourHasher: ReturnType<typeof newHasher>;
   theirHasher: ReturnType<typeof newHasher>;
+  filter: Filter;
+  filterName: string;
+  ourSelector: string;
+  theirSelector: string;
+  ourDocName: string;
+  theirDocName: string;
 };
 
 function describeConfigurable(
@@ -102,11 +108,13 @@ function describeConfigurable(
   name: string,
 ) {
   const verb = inclusive ? 'Including' : 'Excluding';
-  const object = vals.length ? ` ${vals.join(', ')} ${name}` : ` no ${name}`;
+  const object = vals.length
+    ? html` ${name}: <code>${vals.join(', ')}</code>`
+    : ` no ${name}`;
   const exceptions = except.length
-    ? ` except for ${except.join(', ')} ${name}`
+    ? html`, except: <code>${except.join(', ')}</code>`
     : '';
-  return html`<p>${verb}${object}${exceptions}</p>`;
+  return html`${verb}${object}${exceptions}`;
 }
 
 export default class OscdDiff extends LitElement {
@@ -242,6 +250,7 @@ export default class OscdDiff extends LitElement {
       );
       this.setFilters(newFilters);
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(err);
     }
   }
@@ -295,24 +304,37 @@ export default class OscdDiff extends LitElement {
   }
 
   renderFilterDescription() {
+    if (!this.lastDiff) {
+      return nothing;
+    }
+    const {
+      filter,
+      filterName,
+      ourSelector,
+      theirSelector,
+      ourDocName,
+      theirDocName,
+    } = this.lastDiff;
     return html`
       <div id="filter-description" style="margin: 16px;">
-        <h3>Filter: ${this.selectedFilterName}</h3>
+        <h3 style="font-weight: 400">Filter: ${filterName}</h3>
         <p>
           Comparing
           <span class="ours"
-            ><strong>${this.selector1}</strong> elements from
-            <em>${this.docName1}</em></span
+            ><code>${ourSelector}</code> elements from
+            <strong>${ourDocName}</strong></span
           >
           to
           <span class="theirs"
-            ><strong>${this.selector2}</strong> elements from
-            <em>${this.docName2}</em></span
+            ><code>${theirSelector}</code> elements from
+            <strong>${theirDocName}</strong></span
           >
         </p>
-        ${describeConfigurable(this.selectedFilter.selectors, 'elements')}
-        ${describeConfigurable(this.selectedFilter.attributes, 'attributes')}
-        ${describeConfigurable(this.selectedFilter.namespaces, 'namespaces')}
+        <ul>
+          <li>${describeConfigurable(filter.selectors, 'elements')}</li>
+          <li>${describeConfigurable(filter.attributes, 'attributes')}</li>
+          <li>${describeConfigurable(filter.namespaces, 'namespaces')}</li>
+        </ul>
       </div>
     `;
   }
@@ -504,7 +526,17 @@ export default class OscdDiff extends LitElement {
                       }
                       elements[id].theirs = el;
                     });
-                  this.lastDiff = { elements, ourHasher, theirHasher };
+                  this.lastDiff = {
+                    elements,
+                    ourHasher,
+                    theirHasher,
+                    filter: this.selectedFilter,
+                    filterName: this.selectedFilterName,
+                    ourSelector: this.selector1,
+                    theirSelector: this.selector2,
+                    ourDocName: this.docName1,
+                    theirDocName: this.docName2,
+                  };
                 }}
               >
                 Compare
@@ -681,6 +713,20 @@ export default class OscdDiff extends LitElement {
 
     .theirs {
       color: var(--oscd-secondary);
+    }
+
+    code,
+    pre,
+    tt {
+      font-family: var(--oscd-text-font-mono, 'Roboto Mono');
+    }
+
+    /* Add Roboto Mono Regular font face, loaded from the fonts directory */
+    @font-face {
+      font-family: 'Roboto Mono';
+      font-style: normal;
+      font-weight: 400;
+      src: url('./fonts/RobotoMono-Regular.ttf') format('truetype');
     }
   `;
 }

@@ -47,6 +47,7 @@
     "prettier": "^3.3.2",
     "rimraf": "^5.0.9",
     "rollup": "^4.18.1",
+    "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-esbuild": "^6.1.1",
     "rollup-plugin-workbox": "^8.1.0",
     "tslib": "^2.6.3",
@@ -80,7 +81,10 @@
           ]
         }
       ],
-      "curly": ["error", "all"]
+      "curly": [
+        "error",
+        "all"
+      ]
     }
   },
   "prettier": {
