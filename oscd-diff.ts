@@ -15,6 +15,7 @@ import type { FilterDialog, OscdDiffFilterSaveEvent } from './filter-dialog.js';
 import { defaultFilters } from './default-filters.js';
 
 export type Filter = HasherOptions & {
+  description: string;
   ourSelector: string;
   theirSelector: string;
 };
@@ -41,6 +42,7 @@ async function hashElement(el: Element, hasher: ReturnType<typeof newHasher>) {
 
 export function isFilter(obj: object): obj is Filter {
   const filterTypes = {
+    description: 'string',
     ourSelector: 'string',
     theirSelector: 'string',
     selectors: 'object',
@@ -318,6 +320,7 @@ export default class OscdDiff extends LitElement {
     return html`
       <div id="filter-description" style="margin: 16px;">
         <h3 style="font-weight: 400">Filter: ${filterName}</h3>
+        ${filter.description ? html`<em>${filter.description}</em>` : nothing}
         <p>
           Comparing
           <span class="ours"
@@ -354,6 +357,7 @@ export default class OscdDiff extends LitElement {
         <div id="filter-selector-row">
           <md-filled-select
             required
+            supporting-text=${this.selectedFilter.description}
             label="Filter"
             .value=${this.selectedFilterName}
             @change=${(event: Event) => {

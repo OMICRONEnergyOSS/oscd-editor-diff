@@ -3,6 +3,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 
 import type {
   MdDialog,
+  MdFilledTextField,
   MdOutlinedTextField,
   MdSwitch,
 } from '@material/web/all.js';
@@ -41,6 +42,8 @@ export class FilterDialog extends LitElement {
 
   @property() existingFilterNames: string[] = [];
 
+  @state() filterDescription: string = '';
+
   @state() ourSelector = '';
 
   @state() theirSelector = '';
@@ -71,6 +74,7 @@ export class FilterDialog extends LitElement {
 
   get filter() {
     return {
+      description: this.filterDescription,
       ourSelector: this.ourSelector,
       theirSelector: this.theirSelector,
       selectors: {
@@ -92,6 +96,7 @@ export class FilterDialog extends LitElement {
   }
 
   set filter(filter: Filter) {
+    this.filterDescription = filter.description;
     this.ourSelector = filter.ourSelector;
     this.theirSelector = filter.theirSelector;
     this.selectorsInclusive = filter.selectors.inclusive;
@@ -175,6 +180,20 @@ export class FilterDialog extends LitElement {
           >
             <md-icon slot="leading-icon">filter_list</md-icon>
           </md-filled-text-field>
+
+          <md-filled-text-field
+            label="Description"
+            style="grid-column: 1 / -1"
+            type="textarea"
+            .value="${this.filterDescription}"
+            @input=${(event: Event) => {
+              this.filterDescription =
+                (event.target as MdFilledTextField).value.trim() || '';
+            }}
+          >
+            <md-icon slot="leading-icon">description</md-icon>
+          </md-filled-text-field>
+
           <md-filled-text-field
             label="From elements"
             type="search"

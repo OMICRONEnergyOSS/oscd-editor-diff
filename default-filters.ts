@@ -8,6 +8,7 @@ const BASE_CONFIGURABLE: Configurable = {
 };
 
 const BASE_FILTER: Filter = {
+  description: '',
   ourSelector: '',
   theirSelector: '',
   selectors: BASE_CONFIGURABLE,
