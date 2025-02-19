@@ -1,5 +1,5 @@
 import { LitElement, html, css, nothing } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { identity } from '@openenergytools/scl-lib';
 
 import { Description } from './hash.js';
@@ -102,6 +102,9 @@ export class DiffTree extends LitElement {
   @property({ type: Boolean })
   fullscreen = false;
 
+  @state()
+  expandChildren?: boolean = false;
+
   @query('md-icon-button') expandButton!: HTMLElement;
 
   get ourHash(): string | undefined {
@@ -134,11 +137,15 @@ export class DiffTree extends LitElement {
     return getDiff(this.ourDescription ?? {}, this.theirDescription ?? {});
   }
 
+  hasChildElements() {
+    return Object.keys(this.diff).filter(key => key.startsWith('@')).length > 0;
+  }
+
   renderChildDiffs() {
     if (!this.expanded) {
       return nothing;
     }
-    return html`<div>
+    return html`<div id="child-diffs">
       ${Object.entries(this.diff).map(([key, { ours, theirs }]) => {
         if (!key.startsWith('@')) {
           return nothing;
@@ -170,7 +177,8 @@ export class DiffTree extends LitElement {
           elementDiff[id] ??= {};
           elementDiff[id].theirs = element;
         });
-        const expanded = Object.keys(elementDiff).length === 1;
+        const expanded =
+          this.expandChildren || Object.keys(elementDiff).length === 1;
         return Object.values(elementDiff).map(
           ({ ours: o, theirs: t }) =>
             html`<diff-tree
@@ -268,16 +276,33 @@ export class DiffTree extends LitElement {
       desc = `${element.tagName}${desc}`;
     }
 
-    return html`<button
-        @click=${() => {
-          this.expanded = !this.expanded;
-        }}
-      >
-        <md-icon>${this.expanded ? 'arrow_drop_down' : 'arrow_right'}</md-icon>
-        <md-icon class="display">${getDisplayIcon(element)}</md-icon>
-        ${id} <small>${desc}</small>
-      </button>
-      ${this.expanded ? this.renderDiff() : ''} ${style}`;
+    return html`<div class="header-row">
+        <button
+          @click=${() => {
+            this.expanded = !this.expanded;
+            /* if collapsing, set expandChildren to collapsed, but if expanding, don't change expandChildren */
+            if (!this.expanded) {
+              this.expandChildren = this.expanded;
+            }
+          }}
+        >
+          <md-icon
+            >${this.expanded ? 'arrow_drop_down' : 'arrow_right'}</md-icon
+          >
+          <md-icon class="display">${getDisplayIcon(element)}</md-icon>
+          ${id} <small>${desc}</small>
+        </button>
+        ${this.hasChildElements()
+          ? html`
+          <md-icon-button id="expand-all-btn" @click=${() => {
+            this.expanded = !this.expandChildren;
+            this.expandChildren = !this.expandChildren;
+          }}><md-icon>${this.expandChildren ? html`collapse_all` : html`expand_all`}</md-icon></md-icon-button
+          ></md-icon-button>
+        `
+          : nothing}
+      </div>
+      <div>${this.expanded ? this.renderDiff() : ''} ${style}</div> `;
   }
 
   static styles = css`
@@ -289,6 +314,18 @@ export class DiffTree extends LitElement {
     :host([odd]) small {
       color: var(--oscd-base1);
     }
+
+    :host .header-row {
+      display: flex;
+    }
+
+    #expand-all-btn {
+      --md-icon-button-icon-size: 16px;
+      height: 24px;
+      width: 24px;
+      margin: 4px 8px;
+    }
+
     md-icon {
       height: 20px;
     }
@@ -298,7 +335,7 @@ export class DiffTree extends LitElement {
       top: 3px;
       left: -3px;
     }
-    div {
+    #child-diffs {
       margin-left: 1em;
       margin-right: 1em;
     }
