@@ -96,8 +96,20 @@ export class DiffTree extends LitElement {
     return this.depth % 2 === 0;
   }
 
+  #expanded = false;
+
   @property({ type: Boolean, reflect: true })
-  expanded = false;
+  get expanded(): boolean {
+    return this.#expanded;
+  }
+
+  set expanded(value: boolean) {
+    this.#expanded = value;
+    this.everExpanded = this.everExpanded || value;
+  }
+
+  @state()
+  everExpanded = false;
 
   @property({ type: Boolean })
   fullscreen = false;
@@ -160,7 +172,7 @@ export class DiffTree extends LitElement {
   }
 
   renderChildDiffs() {
-    if (!this.expanded) {
+    if (!this.everExpanded) {
       return nothing;
     }
     return html`<div id="child-diffs">
@@ -272,10 +284,10 @@ export class DiffTree extends LitElement {
       : identity(element) || element.tagName;
     let color = 'inherit';
     if (!this.ours) {
-      color = 'var(--oscd-secondary)';
+      color = 'var(--oscd-secondary, darkgreen)';
     }
     if (!this.theirs) {
-      color = 'var(--oscd-primary)';
+      color = 'var(--oscd-primary, darkred)';
     }
     const fullscreenStyles = this.fullscreen
       ? css`
@@ -343,7 +355,9 @@ export class DiffTree extends LitElement {
         `
           : nothing}
       </div>
-      <div>${this.expanded ? this.renderDiff() : ''} ${style}</div> `;
+      <div class="content-row">
+        ${this.everExpanded ? this.renderDiff() : ''} ${style}
+      </div> `;
   }
 
   static styles = css`
@@ -365,6 +379,12 @@ export class DiffTree extends LitElement {
       height: 24px;
       width: 24px;
       margin: 4px 8px;
+    }
+
+    @media print {
+      #expand-all-btn {
+        display: none;
+      }
     }
 
     md-icon {
@@ -400,17 +420,13 @@ export class DiffTree extends LitElement {
     }
     table td:nth-child(3) {
       text-align: right;
-      color: var(--oscd-primary);
+      color: var(--oscd-primary, darkred);
       padding-left: 1em;
     }
     td:nth-child(4) {
       text-align: left;
-      color: var(--oscd-secondary);
+      color: var(--oscd-secondary, darkgreen);
       padding-left: 1em;
-    }
-    td:nth-child(4) {
-      text-align: left;
-      color: var(--oscd-secondary);
     }
     span {
       display: block;
@@ -513,6 +529,9 @@ export class DiffTree extends LitElement {
     }
     :host([odd]) button {
       background: var(--oscd-base3);
+    }
+    :host(:not([expanded])) .content-row {
+      display: none;
     }
   `;
 }

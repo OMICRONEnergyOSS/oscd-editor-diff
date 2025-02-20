@@ -305,6 +305,20 @@ export default class OscdDiff extends LitElement {
     }
   }
 
+  printMe() {
+    const { diffContainer } = this;
+    const openSCD = document.querySelector<LitElement>('open-scd');
+    if (!diffContainer || !openSCD) {
+      return;
+    }
+    const oldDisplay = openSCD.style.display;
+    openSCD.style.display = 'none';
+    document.body.prepend(diffContainer);
+    window.print();
+    this.shadowRoot!.append(diffContainer);
+    openSCD.style.display = oldDisplay;
+  }
+
   renderFilterDescription() {
     if (!this.lastDiff) {
       return nothing;
@@ -353,7 +367,7 @@ export default class OscdDiff extends LitElement {
       }),
     );
 
-    return html`<div>
+    return html`<div class="filter-section">
         <div id="filter-selector-row">
           <md-filled-select
             required
@@ -584,23 +598,48 @@ export default class OscdDiff extends LitElement {
         @fullscreenchange=${() => this.requestUpdate()}
         class="${this.fullscreen ? 'fullscreen' : nothing}"
       >
-        ${this.fullscreen ? this.renderFilterDescription() : nothing}
+        <style>
+          @media print {
+            html,
+            body,
+            #diff-container {
+              background-color: white;
+              color: black;
+              font-family: var(--oscd-theme-text-font, 'Roboto');
+            }
+            .ours {
+              color: darkred;
+            }
+            .theirs {
+              color: darkgreen;
+            }
+            md-filled-icon-button {
+              display: none;
+            }
+          }
+        </style>
+        ${this.renderFilterDescription()}
         ${Object.keys(this.lastDiff?.elements ?? {}).length
-          ? html` <md-filled-icon-button
-              toggle
-              ?selected=${this.fullscreen}
-              @click=${async () => {
-                if (this.fullscreen) {
-                  await document.exitFullscreen();
-                } else {
-                  await this.diffContainer?.requestFullscreen();
-                }
-                this.requestUpdate();
-              }}
-            >
-              <md-icon>fullscreen</md-icon>
-              <md-icon slot="selected">fullscreen_exit</md-icon>
-            </md-filled-icon-button>`
+          ? html`<div style="text-align: right; padding-right: 16px;">
+              <md-filled-icon-button @click=${() => this.printMe()}>
+                <md-icon>print</md-icon>
+              </md-filled-icon-button>
+              <md-filled-icon-button
+                toggle
+                ?selected=${this.fullscreen}
+                @click=${async () => {
+                  if (this.fullscreen) {
+                    await document.exitFullscreen();
+                  } else {
+                    await this.diffContainer?.requestFullscreen();
+                  }
+                  this.requestUpdate();
+                }}
+              >
+                <md-icon>fullscreen</md-icon>
+                <md-icon slot="selected">fullscreen_exit</md-icon>
+              </md-filled-icon-button>
+            </div>`
           : nothing}
         ${until(
           promise.then(() => {
@@ -695,6 +734,14 @@ export default class OscdDiff extends LitElement {
 
     #diff-container > md-filled-icon-button {
       align-self: end;
+    }
+
+    #filter-description {
+      display: none;
+    }
+
+    .fullscreen #filter-description {
+      display: block;
     }
 
     diff-tree {
