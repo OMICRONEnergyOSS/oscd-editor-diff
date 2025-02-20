@@ -353,7 +353,7 @@ export default class OscdDiff extends LitElement {
       }),
     );
 
-    return html`<div style="">
+    return html`<div>
         <div id="filter-selector-row">
           <md-filled-select
             required
@@ -377,7 +377,7 @@ export default class OscdDiff extends LitElement {
                 >`,
             )}
           </md-filled-select>
-          <span style="position: relative">
+          <span class="filter-menu-button">
             <input
               type="file"
               accept="application/json"
@@ -677,6 +677,7 @@ export default class OscdDiff extends LitElement {
     #diff-container.fullscreen {
       height: 100vh;
       overflow-y: auto;
+      overflow-x: hidden;
     }
     #diff-container.fullscreen md-filled-icon-button {
       position: fixed;
@@ -696,6 +697,14 @@ export default class OscdDiff extends LitElement {
       align-self: end;
     }
 
+    diff-tree {
+      max-width: calc(100vw - 64px);
+    }
+
+    .fullscreen diff-tree {
+      max-width: calc(100vw - 16px);
+    }
+
     md-menu {
       min-width: max-content;
     }
@@ -704,11 +713,16 @@ export default class OscdDiff extends LitElement {
       grid-column: 1/3;
       display: flex;
       gap: 8px;
-      align-items: center;
+      align-items: start;
     }
 
     #filter-selector-row md-filled-select {
       flex-grow: 1;
+    }
+
+    .filter-menu-button {
+      position: relative;
+      margin-top: 8px;
     }
 
     .ours {

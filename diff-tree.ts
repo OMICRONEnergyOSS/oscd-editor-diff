@@ -103,7 +103,13 @@ export class DiffTree extends LitElement {
   fullscreen = false;
 
   @state()
-  expandChildren?: boolean = false;
+  childrenExpanded: boolean[] = [];
+
+  get allChildrenExpanded(): boolean {
+    return (
+      this.childrenExpanded.length > 0 && this.childrenExpanded.every(e => e)
+    );
+  }
 
   @query('md-icon-button') expandButton!: HTMLElement;
 
@@ -137,8 +143,20 @@ export class DiffTree extends LitElement {
     return getDiff(this.ourDescription ?? {}, this.theirDescription ?? {});
   }
 
-  hasChildElements() {
-    return Object.keys(this.diff).filter(key => key.startsWith('@')).length > 0;
+  get childCount(): number {
+    return Object.keys(this.diff)
+      .filter(key => key.startsWith('@'))
+      .map(key =>
+        Math.max(this.diff[key].ours.length, this.diff[key].theirs.length),
+      )
+      .reduce((a, b) => a + b, 0);
+  }
+
+  firstUpdated() {
+    if (this.childCount === 1) {
+      this.childrenExpanded = [true];
+    }
+    this.childrenExpanded = new Array(this.childCount).fill(false);
   }
 
   renderChildDiffs() {
@@ -177,15 +195,19 @@ export class DiffTree extends LitElement {
           elementDiff[id] ??= {};
           elementDiff[id].theirs = element;
         });
-        const expanded =
-          this.expandChildren || Object.keys(elementDiff).length === 1;
+        const expanded = this.childCount <= 1;
         return Object.values(elementDiff).map(
-          ({ ours: o, theirs: t }) =>
+          ({ ours: o, theirs: t }, i: number) =>
             html`<diff-tree
               .ours=${o}
               .theirs=${t}
               .ourHasher=${this.ourHasher}
               .theirHasher=${this.theirHasher}
+              @diff-toggle=${(event: CustomEvent<{ expanded: boolean }>) => {
+                event.stopPropagation();
+                this.childrenExpanded[i] = event.detail.expanded;
+                this.requestUpdate();
+              }}
               ?expanded=${expanded}
               ?fullscreen=${this.fullscreen}
               .depth=${this.depth + 1}
@@ -280,10 +302,13 @@ export class DiffTree extends LitElement {
         <button
           @click=${() => {
             this.expanded = !this.expanded;
-            /* if collapsing, set expandChildren to collapsed, but if expanding, don't change expandChildren */
-            if (!this.expanded) {
-              this.expandChildren = this.expanded;
-            }
+            this.dispatchEvent(
+              new CustomEvent('diff-toggle', {
+                bubbles: true,
+                composed: true,
+                detail: { expanded: this.expanded },
+              }),
+            );
           }}
         >
           <md-icon
@@ -292,12 +317,28 @@ export class DiffTree extends LitElement {
           <md-icon class="display">${getDisplayIcon(element)}</md-icon>
           ${id} <small>${desc}</small>
         </button>
-        ${this.hasChildElements()
+        ${this.childCount > 1
           ? html`
-          <md-icon-button id="expand-all-btn" @click=${() => {
-            this.expanded = !this.expandChildren;
-            this.expandChildren = !this.expandChildren;
-          }}><md-icon>${this.expandChildren ? html`collapse_all` : html`expand_all`}</md-icon></md-icon-button
+          <md-icon-button ?selected=${this.allChildrenExpanded} toggle id="expand-all-btn" @click=${async () => {
+            this.expanded = true;
+            this.dispatchEvent(
+              new CustomEvent('diff-toggle', {
+                bubbles: true,
+                composed: true,
+                detail: { expanded: true },
+              }),
+            );
+            await this.updateComplete;
+            this.shadowRoot
+              ?.querySelectorAll<DiffTree>('diff-tree')
+              .forEach((dt: DiffTree) => {
+                // eslint-disable-next-line no-param-reassign
+                dt.expanded = !this.allChildrenExpanded;
+              });
+            this.childrenExpanded = this.childrenExpanded.fill(
+              !this.allChildrenExpanded,
+            );
+          }}><md-icon slot="selected">collapse_all</md-icon><md-icon>expand_all</md-icon></md-icon-button
           ></md-icon-button>
         `
           : nothing}
