@@ -620,7 +620,7 @@ export default class OscdDiff extends LitElement {
         </style>
         ${this.renderFilterDescription()}
         ${Object.keys(this.lastDiff?.elements ?? {}).length
-          ? html`<div style="text-align: right; padding-right: 16px;">
+          ? html`<div class="view-buttons">
               <md-filled-icon-button @click=${() => this.printMe()}>
                 <md-icon>print</md-icon>
               </md-filled-icon-button>
@@ -732,7 +732,7 @@ export default class OscdDiff extends LitElement {
       background-color: var(--oscd-base2);
     }
 
-    #diff-container > md-filled-icon-button {
+    .view-buttons {
       align-self: end;
     }
 

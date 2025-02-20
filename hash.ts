@@ -865,7 +865,7 @@ export function hasher(
     }
     const textContent = e.textContent?.trim();
     if (textContent) {
-      description['Text Content'] = textContent;
+      description['>'] = textContent;
     }
     return description;
   }
