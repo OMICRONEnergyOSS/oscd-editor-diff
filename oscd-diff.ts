@@ -454,7 +454,12 @@ export default class OscdDiff extends LitElement {
           </span>
         </div>
 
-        <md-filled-select required id="doc1" label="From document">
+        <md-filled-select
+          required
+          id="doc1"
+          label="From document"
+          @change=${() => this.requestUpdate()}
+        >
           <md-icon slot="leading-icon">draft</md-icon>
           ${Object.keys(this.docs).map(
             name =>
@@ -467,6 +472,7 @@ export default class OscdDiff extends LitElement {
           required
           id="doc2"
           label="To document"
+          @change=${() => this.requestUpdate()}
           style="--md-sys-color-primary: var(--oscd-secondary)"
         >
           <md-icon slot="leading-icon">draft</md-icon>
@@ -506,6 +512,7 @@ export default class OscdDiff extends LitElement {
           promise.then(
             () =>
               html`<md-filled-button
+                ?disabled=${!this.docName1 || !this.docName2}
                 style="grid-column: 1/3;"
                 @click=${() => {
                   const doc1 = this.docs[this.docName1];
