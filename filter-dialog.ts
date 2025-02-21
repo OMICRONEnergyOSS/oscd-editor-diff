@@ -129,7 +129,8 @@ export class FilterDialog extends LitElement {
   render() {
     return html`
       <md-dialog
-        @closed=${(event: Event) => {
+        @cancel=${(event: Event) => event.preventDefault()}
+        @closed=${(event: CustomEvent) => {
           const { returnValue } = event.target as MdDialog;
           if (returnValue === 'save' && this.filterNameInput) {
             this.dispatchEvent(
