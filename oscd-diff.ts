@@ -733,7 +733,11 @@ export default class OscdDiff extends LitElement {
     }
 
     .view-buttons {
-      align-self: end;
+      max-width: calc(100vw - 64px);
+      display: flex;
+      flex-grow: 1;
+      justify-content: end;
+      gap: 8px;
     }
 
     #filter-description {
