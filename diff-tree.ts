@@ -5,6 +5,7 @@ import { identity } from '@openenergytools/scl-lib';
 import { Description } from './hash.js';
 import type { newHasher } from './hash.js';
 import { getDisplayIcon } from './icons.js';
+import { getFcdaInstDesc } from './util.js';
 
 function filterObject(
   obj: object,
@@ -303,6 +304,12 @@ export class DiffTree extends LitElement {
       }
     </style>`;
     let desc = element.getAttribute('desc') || '';
+    if (element.tagName === 'FCDA') {
+      const { LDevice, LN, DOI, SDI, DAI } = getFcdaInstDesc(
+        element as Element,
+      );
+      desc = [LDevice, LN, DOI, ...(SDI ?? []), DAI].filter(Boolean).join(' ');
+    }
     if (desc) {
       desc = `: ${desc}`;
     }
