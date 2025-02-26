@@ -906,6 +906,7 @@ export function hasher(
           const fromVals = fromAttrs.map(a => e.getAttribute(a));
           return fromVals.every((val, i) => toVals[i] === val) && toE;
         })
+        .filter(shouldHashElement)
         .map(hash)
         .sort();
       if (hashes.length) {
