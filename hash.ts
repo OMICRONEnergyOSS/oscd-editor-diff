@@ -47,35 +47,30 @@ export function createHashElementPredicate({
   };
 }
 
-const xmlTruths = new Set(['true', '1']);
-function isXmlTrue(val: string | null): boolean {
-  return val !== null && xmlTruths.has(val.trim());
-}
-
 /** Get count from referenced sibling element */
-function siblingCount(element: Element, name: string): number {
+function siblingCount(element: Element, name: string): string | undefined {
   const parent = element.parentElement;
   if (!parent) {
-    return NaN;
+    return undefined;
   }
 
   const sibling = Array.from(parent.children).find(
     child => child.getAttribute('name') === name,
   );
   if (!sibling) {
-    return NaN;
+    return undefined;
   }
 
   const count = sibling.getAttribute('count');
   if (!count) {
-    return NaN;
+    return undefined;
   }
 
   if (!/^\d+$/.test(count)) {
-    return NaN;
+    return undefined;
   }
 
-  return parseInt(count, 10);
+  return count;
 }
 
 export interface ElementDB {
@@ -842,6 +837,7 @@ export function hasher(
           description[`@${tag}`] = hashes;
         }
       });
+
     return description;
   }
 
@@ -898,78 +894,38 @@ export function hasher(
   function describeBDA(e: Element) {
     const description: Record<string, unknown> = {
       ...describeElement(e),
-      bType: e.getAttribute('bType'),
-      valKind: 'Set',
-      valImport: false,
-      count: 0,
     };
 
-    const [sAddr, valKind, valImport, type, count] = [
-      'sAddr',
-      'valKind',
-      'valImport',
-      'type',
-      'count',
-    ].map(attr => e.getAttribute(attr));
+    const count = e.getAttribute('count');
 
-    if (sAddr) {
-      description.sAddr = sAddr;
-    }
-
-    if (valKind && ['Spec', 'Conf', 'RO', 'Set'].includes(valKind)) {
-      description.valKind = valKind as 'Spec' | 'RO' | 'Conf' | 'Set';
-    }
-
-    if (isXmlTrue(valImport)) {
-      description.valImport = true;
-    }
-
-    if (count && /^\d+$/.test(count) && !Number.isNaN(parseInt(count, 10))) {
+    if (
+      count &&
+      /^\s*\d+\s*$/.test(count) &&
+      !Number.isNaN(Number.parseInt(count, 10))
+    ) {
       // count can be an unsigned integer
-      description.count = parseInt(count, 10);
+      description.count = count;
     } else if (count && !Number.isNaN(siblingCount(e, count))) {
       // count can be a reference to another sibling that has integer definition
       description.count = siblingCount(e, count);
     }
 
-    const referencedType = Array.from(
-      e.closest('DataTypeTemplates')?.children ?? [],
-    ).find(child => child.getAttribute('id') === type);
-    if (referencedType) {
-      description[`@${referencedType.tagName}`] = [hash(referencedType)];
-    }
+    return description;
+  }
 
+  function describeDataSet(e: Element) {
+    const description = describeElement(e);
+    const fcdas = Array.from(e.querySelectorAll(':scope > FCDA'));
+    if (fcdas.length) {
+      description['@FCDA'] = fcdas.map(hash);
+    }
     return description;
   }
 
   const descriptions: Record<string, (e: Element) => object> = {
     BDA: describeBDA,
     DA: describeBDA,
-    DO: e => {
-      const template = Array.from(
-        e.closest('DataTypeTemplates')?.children ?? [],
-      ).find(child => child.getAttribute('id') === e.getAttribute('type'));
-      return {
-        ...describeElement(e),
-        [`@${template?.tagName}`]: template ? [hash(template)] : [],
-      };
-    },
-    EnumVal: e => ({
-      ...describeElement(e),
-      val: e.textContent ?? '',
-    }),
-    ProtNs: e => ({
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      type: e.getAttribute('type') || '8-MMS',
-      val: e.textContent ?? '',
-    }),
-    Val: e =>
-      ({
-        val: e.textContent ?? '',
-        ...(e.getAttribute('sGroup') && {
-          sGroup: parseInt(e.getAttribute('sGroup') ?? '', 10),
-        }),
-      }) as object,
+    DataSet: describeDataSet,
   };
 
   function describe(e: Element) {

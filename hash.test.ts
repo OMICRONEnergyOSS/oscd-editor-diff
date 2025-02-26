@@ -142,61 +142,33 @@ const testScl = new DOMParser().parseFromString(
   'application/xml',
 );
 
-// const sclElement = testScl.querySelector("SCL")!;
-const nonSCLElement = testScl.querySelector('SomeNonSCLElement')!;
+function scl(
+  tagName: string,
+  attributes: Record<string, string>,
+  children: Element[] = [],
+): Element {
+  const element = testScl.createElement(tagName);
+  for (const [key, value] of Object.entries(attributes)) {
+    element.setAttribute(key, value);
+  }
+  for (const child of children) {
+    element.appendChild(child.cloneNode(true));
+  }
+  return element;
+}
 
-const baseEnumType = testScl.querySelector('#someID')!;
-// const diffEnumType = testScl.querySelector("#someDiffID")!;
-// const equalEnumType = testScl.querySelector("#someOtherID")!;
+describe('hash', () => {
+  const { hash } = newHasher();
 
-// const baseDAType = testScl.querySelector("#someBaseDAType")!;
-// const baseDOType = testScl.querySelector("#someBaseDOType")!;
-// const baseLNodeType = testScl.querySelector("#baseLLN0")!;
+  it('is sensitive to the order of FCDAs in a DataSet', () => {
+    const fcdaAttrs = { lnInst: '1' };
+    const fcda1 = scl('FCDA', fcdaAttrs);
+    const fcda2 = scl('FCDA', { ...fcdaAttrs, lnInst: '2' });
+    const a = scl('DataSet', { name: 'DS1' }, [fcda1, fcda2]);
+    const b = scl('DataSet', { name: 'DS1' }, [fcda1, fcda2]);
+    expect(hash(a)).to.equal(hash(b));
 
-// const baseIED = testScl.querySelector(`IED[name="IED1"]`)!;
-// const equalIED = testScl.querySelector(`IED[name="IED2"]`)!;
-// const diffIED = testScl.querySelector(`IED[name="IED3"]`)!;
-
-describe('hasher', () => {
-  const { hash, db } = newHasher();
-  // TODO(ca-d): test eNS attributes
-
-  it('hashes unknown elements by outerHTML', () => {
-    const digest = hash(nonSCLElement);
-    const description =
-      db[`${nonSCLElement.localName}@${nonSCLElement.namespaceURI}`][digest];
-    expect(description).property('xml').to.equal(nonSCLElement.outerHTML);
-  });
-
-  it('hashes EnumTypes by EnumVals, Privates and Texts', () => {
-    const digest = hash(baseEnumType);
-    const description = db.EnumType[digest] as Record<string, string[]>;
-    expect(description).property('@EnumVal').to.have.lengthOf(1);
-    const val = db.EnumVal[description['@EnumVal'][0]];
-    expect(val).to.exist.and.to.have.property('ord', '1');
-    expect(val).to.have.property('val', 'A');
-    expect(description).property('@Private').to.have.lengthOf(1);
-    const priv = db.Private[description['@Private'][0]];
-    expect(priv).to.exist.and.to.have.property(
-      'xml',
-      baseEnumType.querySelector('Private')?.outerHTML,
-    );
-    expect(description).property('@Text').to.have.lengthOf(1);
-    const text = db.Text[description['@Text'][0]];
-    expect(text).to.exist.and.to.have.property(
-      'xml',
-      baseEnumType.querySelector('Text')?.outerHTML,
-    );
-  });
-
-  after(() => {
-    /*
-    console.log(
-      Array.from(testScl.querySelectorAll("IED")).map((ied) => hash(ied)),
-    );
-    Object.keys(db).forEach((key) => {
-      console.log('expect(db["' + key + '"]).to.deep.equal(', db[key], ")");
-    });
-     */
+    const c = scl('DataSet', { name: 'DS1' }, [fcda2, fcda1]);
+    expect(hash(a)).not.to.equal(hash(c));
   });
 });
