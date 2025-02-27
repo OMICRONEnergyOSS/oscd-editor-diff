@@ -280,9 +280,16 @@ export class DiffTree extends LitElement {
     if (!element) {
       return nothing;
     }
-    const id = this.depth
-      ? (<string>(identity(element) || element.tagName)).split('>').pop()
-      : identity(element) || element.tagName;
+    let id = ((identity(element) || element.tagName) as string)
+      .split('>')
+      .pop();
+    if (this.ours && this.theirs) {
+      const theirId = identity(this.theirs);
+      const ourId = identity(this.ours);
+      if (theirId && ourId && ourId !== theirId) {
+        id = `${ourId || this.ours!.tagName} -> ${theirId || this.theirs!.tagName}`;
+      }
+    }
     let color = 'inherit';
     if (!this.ours) {
       color = 'var(--oscd-secondary, darkgreen)';

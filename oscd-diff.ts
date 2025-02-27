@@ -532,7 +532,7 @@ export default class OscdDiff extends LitElement {
                   };
                   const ourHasher = newHasher(options);
                   const theirHasher = newHasher(options);
-                  const elements: Record<
+                  let elements: Record<
                     string,
                     { ours?: Element; theirs?: Element }
                   > = {};
@@ -562,6 +562,26 @@ export default class OscdDiff extends LitElement {
                       }
                       elements[id].theirs = el;
                     });
+
+                  if (
+                    Object.keys(elements).length === 2 &&
+                    Object.values(elements).every(
+                      ({ ours, theirs }) => !(ours && theirs),
+                    )
+                  ) {
+                    const ourId = Object.keys(elements).find(
+                      id => elements[id].ours,
+                    );
+                    const theirId = Object.keys(elements).find(
+                      id => elements[id].theirs,
+                    );
+                    elements = {
+                      [`${ourId} -> ${theirId}`]: {
+                        ours: elements[ourId!]?.ours,
+                        theirs: elements[theirId!]?.theirs,
+                      },
+                    };
+                  }
                   this.lastDiff = {
                     elements,
                     ourHasher,
@@ -669,16 +689,17 @@ export default class OscdDiff extends LitElement {
               const theirHash = theirs && theirHasher.hash(theirs);
               if (ourHash !== theirHash) {
                 same = false;
+                return html`<diff-tree
+                  .ours=${ours}
+                  .theirs=${theirs}
+                  .ourHasher=${ourHasher}
+                  .theirHasher=${theirHasher}
+                  ?fullscreen=${this.fullscreen}
+                  ?expanded=${Object.keys(this.lastDiff?.elements ?? {})
+                    .length === 1}
+                ></diff-tree>`;
               }
-              return html`<diff-tree
-                .ours=${ours}
-                .theirs=${theirs}
-                .ourHasher=${ourHasher}
-                .theirHasher=${theirHasher}
-                ?fullscreen=${this.fullscreen}
-                ?expanded=${Object.keys(this.lastDiff?.elements ?? {})
-                  .length === 1}
-              ></diff-tree>`;
+              return nothing;
             });
             return same && trees.length
               ? html`<div style="margin: 16px;">No differences</div>`
@@ -748,6 +769,7 @@ export default class OscdDiff extends LitElement {
       flex-direction: column;
       align-items: stretch;
       background-color: var(--oscd-base2);
+      gap: 0px;
     }
 
     .view-buttons {
