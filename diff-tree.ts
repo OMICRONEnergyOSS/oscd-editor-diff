@@ -187,9 +187,9 @@ export class DiffTree extends LitElement {
           { ours?: Element; theirs?: Element }
         > = {};
         ours.forEach((digest: string) => {
-          const element = Array.from(
-            this.ourHasher?.eDb.h2e.get(digest)?.values() ?? [],
-          ).find(e => e.tagName === tag);
+          const element = Array.from(this.ours?.children ?? []).find(
+            e => e.tagName === tag && this.ourHasher?.hash(e) === digest,
+          );
           if (!element) {
             return;
           }
@@ -198,9 +198,9 @@ export class DiffTree extends LitElement {
           elementDiff[id].ours = element;
         });
         theirs.forEach((digest: string) => {
-          const element = Array.from(
-            this.theirHasher?.eDb.h2e.get(digest)?.values() ?? [],
-          ).find(e => e.tagName === tag);
+          const element = Array.from(this.theirs?.children ?? []).find(
+            e => e.tagName === tag && this.theirHasher?.hash(e) === digest,
+          );
           if (!element) {
             return;
           }
