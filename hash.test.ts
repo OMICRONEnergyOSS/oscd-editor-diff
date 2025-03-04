@@ -147,7 +147,10 @@ function scl(
   attributes: Record<string, string> = {},
   children: Element[] = [],
 ): Element {
-  const element = testScl.createElement(tagName);
+  const element = testScl.createElementNS(
+    testScl.documentElement.namespaceURI ?? '',
+    tagName,
+  );
   for (const [key, value] of Object.entries(attributes)) {
     element.setAttribute(key, value);
   }
@@ -158,7 +161,11 @@ function scl(
 }
 
 describe('hash', () => {
-  const { hash } = newHasher();
+  let { hash } = newHasher();
+
+  beforeEach(() => {
+    ({ hash } = newHasher());
+  });
 
   it('is sensitive to the order of FCDAs in a DataSet', () => {
     const fcdaAttrs = { lnInst: '1' };
@@ -173,16 +180,23 @@ describe('hash', () => {
   });
 
   it('does not distinguish inline Server from ServerAt reference', () => {
+    ({ hash } = newHasher({
+      selectors: { inclusive: false, vals: [], except: [] },
+      attributes: { inclusive: false, vals: ['AccessPoint.name'], except: [] },
+      namespaces: { inclusive: false, vals: [], except: [] },
+    }));
     const server = scl('Server', {}, [scl('LDevice', { inst: 'ldInst1' })]);
-    const serverAt = scl('ServerAt', { server: 'AP1' });
+    const serverAt = scl('ServerAt', { apName: 'AP1' });
     const ap1 = scl('AccessPoint', { name: 'AP1' }, [server]);
     const ap2 = scl('AccessPoint', { name: 'AP2' }, [serverAt]);
     const ied = scl('IED', { name: 'IED1' }, [ap1, ap2]);
-    const serverInst = ied.querySelector('Server');
-    const serverAtInst = ied.querySelector('ServerAt');
-    if (!serverInst || !serverAtInst) {
+    const ap1Inst = ied.querySelector('AccessPoint[name="AP1"]');
+    const ap2Inst = ied.querySelector('AccessPoint[name="AP2"]');
+    if (!ap1Inst || !ap2Inst) {
       throw new Error('Server or ServerAt not found');
     }
-    expect(hash(serverInst)).to.equal(hash(serverAtInst));
+    const ap1InstHash = hash(ap1Inst);
+    const ap2InstHash = hash(ap2Inst);
+    expect(ap1InstHash).to.equal(ap2InstHash);
   });
 });
