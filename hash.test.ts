@@ -144,7 +144,7 @@ const testScl = new DOMParser().parseFromString(
 
 function scl(
   tagName: string,
-  attributes: Record<string, string>,
+  attributes: Record<string, string> = {},
   children: Element[] = [],
 ): Element {
   const element = testScl.createElement(tagName);
@@ -170,5 +170,19 @@ describe('hash', () => {
 
     const c = scl('DataSet', { name: 'DS1' }, [fcda2, fcda1]);
     expect(hash(a)).not.to.equal(hash(c));
+  });
+
+  it('does not distinguish inline Server from ServerAt reference', () => {
+    const server = scl('Server', {}, [scl('LDevice', { inst: 'ldInst1' })]);
+    const serverAt = scl('ServerAt', { server: 'AP1' });
+    const ap1 = scl('AccessPoint', { name: 'AP1' }, [server]);
+    const ap2 = scl('AccessPoint', { name: 'AP2' }, [serverAt]);
+    const ied = scl('IED', { name: 'IED1' }, [ap1, ap2]);
+    const serverInst = ied.querySelector('Server');
+    const serverAtInst = ied.querySelector('ServerAt');
+    if (!serverInst || !serverAtInst) {
+      throw new Error('Server or ServerAt not found');
+    }
+    expect(hash(serverInst)).to.equal(hash(serverAtInst));
   });
 });
