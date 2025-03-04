@@ -187,16 +187,21 @@ describe('hash', () => {
     }));
     const server = scl('Server', {}, [scl('LDevice', { inst: 'ldInst1' })]);
     const serverAt = scl('ServerAt', { apName: 'AP1' });
+    const recursiveServerAt = scl('ServerAt', { apName: 'AP2' });
     const ap1 = scl('AccessPoint', { name: 'AP1' }, [server]);
     const ap2 = scl('AccessPoint', { name: 'AP2' }, [serverAt]);
-    const ied = scl('IED', { name: 'IED1' }, [ap1, ap2]);
+    const ap3 = scl('AccessPoint', { name: 'AP3' }, [recursiveServerAt]);
+    const ied = scl('IED', { name: 'IED1' }, [ap1, ap2, ap3]);
     const ap1Inst = ied.querySelector('AccessPoint[name="AP1"]');
     const ap2Inst = ied.querySelector('AccessPoint[name="AP2"]');
-    if (!ap1Inst || !ap2Inst) {
+    const ap3Inst = ied.querySelector('AccessPoint[name="AP3"]');
+    if (!ap1Inst || !ap2Inst || !ap3Inst) {
       throw new Error('Server or ServerAt not found');
     }
     const ap1InstHash = hash(ap1Inst);
     const ap2InstHash = hash(ap2Inst);
+    const ap3InstHash = hash(ap3Inst);
     expect(ap1InstHash).to.equal(ap2InstHash);
+    expect(ap1InstHash).to.equal(ap3InstHash);
   });
 });
