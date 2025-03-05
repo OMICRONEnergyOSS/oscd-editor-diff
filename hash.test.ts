@@ -204,4 +204,11 @@ describe('hash', () => {
     expect(ap1InstHash).to.equal(ap2InstHash);
     expect(ap1InstHash).to.equal(ap3InstHash);
   });
+
+  it("is sensitive to children's hashes in AccessPoint", () => {
+    const ln = scl('LN', { lnClass: 'XCBR', inst: '1', lnType: 'baseXCBR' });
+    const ap1 = scl('AccessPoint', { name: 'AP1' }, [ln]);
+    const ap2 = scl('AccessPoint', { name: 'AP1' }, []);
+    expect(hash(ap1)).not.to.equal(hash(ap2));
+  });
 });

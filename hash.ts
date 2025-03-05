@@ -985,10 +985,12 @@ export function hasher(
   function describeAccessPoint(e: Element) {
     const description = {
       ...describeAttributes(e),
+      ...describeChildren(e),
     } as Description;
     const apReferences = findAccessPointReferences(e);
     if (apReferences.length) {
       description['@Server'] = apReferences.map(hash);
+      delete description['@ServerAt'];
     }
     return description;
   }
