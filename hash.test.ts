@@ -205,6 +205,65 @@ describe('hash', () => {
     expect(ap1InstHash).to.equal(ap3InstHash);
   });
 
+  it('respects both selectors and namespaces when dereferencing ServerAt', () => {
+    ({ hash } = newHasher({
+      selectors: { inclusive: false, vals: [], except: [] },
+      attributes: { inclusive: false, vals: ['AccessPoint.name'], except: [] },
+      namespaces: { inclusive: false, vals: [], except: [] },
+    }));
+    const { hash: hashWithoutServerAt } = newHasher({
+      selectors: { inclusive: false, vals: ['ServerAt'], except: [] },
+      attributes: { inclusive: false, vals: ['AccessPoint.name'], except: [] },
+      namespaces: { inclusive: false, vals: [], except: [] },
+    });
+    const { hash: hashWithoutServer } = newHasher({
+      selectors: { inclusive: false, vals: ['Server'], except: [] },
+      attributes: { inclusive: false, vals: ['AccessPoint.name'], except: [] },
+      namespaces: { inclusive: false, vals: [], except: [] },
+    });
+    const { hash: hashWithoutSCLNamespace } = newHasher({
+      selectors: { inclusive: false, vals: [], except: [] },
+      attributes: { inclusive: false, vals: ['AccessPoint.name'], except: [] },
+      namespaces: {
+        inclusive: false,
+        vals: ['http://www.iec.ch/61850/2003/SCL'],
+        except: [],
+      },
+    });
+
+    const server = scl('Server', {}, [scl('LDevice', { inst: 'ldInst1' })]);
+    const serverAt = scl('ServerAt', { apName: 'AP1' });
+    const ap1 = scl('AccessPoint', { name: 'AP1' }, [server]);
+    const ap2 = scl('AccessPoint', { name: 'AP2' }, [serverAt]);
+    const ied = scl('IED', { name: 'IED1' }, [ap1, ap2]);
+    const ap1Inst = ied.querySelector('AccessPoint[name="AP1"]');
+    const ap2Inst = ied.querySelector('AccessPoint[name="AP2"]');
+    if (!ap1Inst || !ap2Inst) {
+      throw new Error('Server or ServerAt not found');
+    }
+
+    // Expect three different values A != B != C for these eight digests:
+
+    const digest1 = hash(ap1Inst); // A
+    const digest2 = hash(ap2Inst); // A
+    expect(digest1).to.equal(digest2);
+    const digest1WithoutServerAt = hashWithoutServerAt(ap1Inst); // A
+    expect(digest1).to.equal(digest1WithoutServerAt);
+
+    const digest1WithoutServer = hashWithoutServer(ap1Inst); // B
+    expect(digest1).to.not.equal(digest1WithoutServer); // A != B
+    const digest2WithoutServerAt = hashWithoutServerAt(ap2Inst); // B
+    expect(digest1WithoutServer).to.equal(digest2WithoutServerAt);
+    const digest1WithoutSCLNamespace = hashWithoutSCLNamespace(ap1Inst); // B
+    expect(digest1WithoutServer).to.equal(digest1WithoutSCLNamespace);
+    const digest2WithoutSCLNamespace = hashWithoutSCLNamespace(ap2Inst); // B
+    expect(digest1WithoutServer).to.equal(digest2WithoutSCLNamespace);
+
+    const digest2WithoutServer = hashWithoutServer(ap2Inst); // C
+    expect(digest2WithoutServer).not.to.equal(digest1); // A != C
+    expect(digest2WithoutServer).not.to.equal(digest1WithoutServer); // B != C
+  });
+
   it("is sensitive to children's hashes in AccessPoint", () => {
     const ln = scl('LN', { lnClass: 'XCBR', inst: '1', lnType: 'baseXCBR' });
     const ap1 = scl('AccessPoint', { name: 'AP1' }, [ln]);

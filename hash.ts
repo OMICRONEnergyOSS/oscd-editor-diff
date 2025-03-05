@@ -10,24 +10,7 @@ export type Description = Record<string, string | string[]> & {
   eNS?: Record<string, Record<string, string>>;
 };
 
-function findAccessPointReferences(e: Element): Element[] {
-  let server = e.querySelector(':scope>ServerAt, :scope>Server');
-  let apName = server?.getAttribute('apName');
-  while (server && server.tagName !== 'Server') {
-    server =
-      server
-        .closest('IED')
-        ?.querySelector(
-          `:scope>AccessPoint[name="${apName}"]>Server, :scope>AccessPoint[name="${apName}"]>ServerAt`,
-        ) ?? null;
-    apName = server?.getAttribute('apName');
-  }
-  return server ? [server] : [];
-}
-
-const referenceLookups: Record<string, (e: Element) => Element[]> = {
-  AccessPoint: findAccessPointReferences,
-};
+const referenceLookups: Record<string, (e: Element) => Element[]> = {};
 
 export function findReferences(element: Element): Element[] {
   const referencedElements = [] as Element[];
@@ -982,14 +965,35 @@ export function hasher(
     return description;
   }
 
+  function findAPServer(e: Element): Element | undefined {
+    let server = e.querySelector(':scope>ServerAt, :scope>Server') ?? undefined;
+    let apName = server?.getAttribute('apName');
+    while (server && server.tagName !== 'Server') {
+      if (!shouldHashElement(server)) {
+        return undefined;
+      }
+      server =
+        server
+          .closest('IED')
+          ?.querySelector(
+            `:scope>AccessPoint[name="${apName}"]>Server, :scope>AccessPoint[name="${apName}"]>ServerAt`,
+          ) ?? undefined;
+      apName = server?.getAttribute('apName');
+    }
+    if (server && !shouldHashElement(server)) {
+      return undefined;
+    }
+    return server;
+  }
+
   function describeAccessPoint(e: Element) {
     const description = {
       ...describeAttributes(e),
       ...describeChildren(e),
     } as Description;
-    const apReferences = findAccessPointReferences(e);
-    if (apReferences.length) {
-      description['@Server'] = apReferences.map(hash);
+    const server = findAPServer(e);
+    if (server) {
+      description['@Server'] = [hash(server)];
       delete description['@ServerAt'];
     }
     return description;
