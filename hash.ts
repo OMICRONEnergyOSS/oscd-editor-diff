@@ -11,18 +11,18 @@ export type Description = Record<string, string | string[]> & {
 };
 
 function findAccessPointReferences(e: Element): Element[] {
-  let serverAt = e.querySelector(':scope>ServerAt, :scope>Server');
-  let apName = serverAt?.getAttribute('apName');
-  while (serverAt && serverAt.tagName !== 'Server') {
-    serverAt =
-      serverAt
+  let server = e.querySelector(':scope>ServerAt, :scope>Server');
+  let apName = server?.getAttribute('apName');
+  while (server && server.tagName !== 'Server') {
+    server =
+      server
         .closest('IED')
         ?.querySelector(
           `:scope>AccessPoint[name="${apName}"]>Server, :scope>AccessPoint[name="${apName}"]>ServerAt`,
         ) ?? null;
-    apName = serverAt?.getAttribute('apName');
+    apName = server?.getAttribute('apName');
   }
-  return serverAt ? [serverAt] : [];
+  return server ? [server] : [];
 }
 
 const referenceLookups: Record<string, (e: Element) => Element[]> = {
