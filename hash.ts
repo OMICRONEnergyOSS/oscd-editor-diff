@@ -10,7 +10,148 @@ export type Description = Record<string, string | string[]> & {
   eNS?: Record<string, Record<string, string>>;
 };
 
-const referenceLookups: Record<string, (e: Element) => Element[]> = {};
+/* currently only works if doName is set, GSSE support is missing */
+function findFCDAReferences(e: Element): Element[] {
+  const ldInst = e.getAttribute('ldInst');
+  const prefix = e.getAttribute('prefix');
+  const lnClass = e.getAttribute('lnClass');
+  const lnInst = e.getAttribute('lnInst');
+  const doName = e.getAttribute('doName');
+  const daName = e.getAttribute('daName');
+  const fc = e.getAttribute('fc');
+
+  if (!doName) {
+    return [];
+  }
+
+  const references = [] as Element[];
+
+  const server = e.closest('Server');
+  if (!server) {
+    return [];
+  }
+
+  const ln = server.querySelector(
+    `:scope>LDevice[inst="${ldInst}"]>LN0[prefix="${prefix}"][lnClass="${lnClass}"],
+     :scope>LDevice[inst="${ldInst}"]> LN[prefix="${prefix}"][lnClass="${lnClass}"][inst="${lnInst}"]`,
+  );
+
+  const lnType = ln?.getAttribute('lnType');
+
+  if (!ln || !lnType) {
+    return [];
+  }
+
+  const lNodeType = server
+    .closest('SCL')
+    ?.querySelector(`:scope>DataTypeTemplates>LNodeType[id="${lnType}"]`);
+
+  if (!lNodeType) {
+    return [];
+  }
+
+  let doNames = doName.replace(/\(\d+\)/g, '').split('.');
+  if (!doNames?.length) {
+    return [];
+  }
+
+  let doElement = lNodeType.querySelector(
+    `:scope>DO[name="${doNames.shift()}"]`,
+  );
+  let doTypeElement: Element | null = null;
+  while (doElement) {
+    const doType = doElement.getAttribute('type');
+    if (!doType) {
+      break;
+    }
+    const newDoTypeElement =
+      doElement
+        .closest('DataTypeTemplates')
+        ?.querySelector(`:scope>DOType[id="${doType}"]`) ?? null;
+    if (!newDoTypeElement) {
+      break;
+    }
+    doTypeElement = newDoTypeElement;
+    const sdoName = doNames.shift();
+    if (!sdoName) {
+      break;
+    }
+    doElement = doTypeElement.querySelector(`:scope>SDO[name="${sdoName}"]`);
+  }
+
+  if (!doElement) {
+    return [];
+  }
+
+  if (daName) {
+    const daNames = daName.replace(/\(\d+\)/g, '').split('.');
+    if (!daNames?.length) {
+      return [];
+    }
+
+    let daElement = doTypeElement?.querySelector(
+      `:scope>DA[name="${daNames.shift()}"]`,
+    );
+
+    while (daElement) {
+      const daType = daElement.getAttribute('type');
+      if (!daType) {
+        break;
+      }
+      const daTypeElement = daElement
+        .closest('DataTypeTemplates')
+        ?.querySelector(`:scope>DAType[id="${daType}"]`);
+      if (!daTypeElement) {
+        break;
+      }
+      const bdaName = daNames.shift();
+      if (!bdaName) {
+        break;
+      }
+      daElement = daTypeElement.querySelector(`:scope>BDA[name="${bdaName}"]`);
+    }
+    if (daElement) {
+      references.push(daElement);
+    } else {
+      return [];
+    }
+  } else if (fc) {
+    references.push(
+      ...Array.from(doElement.querySelectorAll(`:scope>DA[fc="${fc}"]`)),
+    );
+  }
+
+  doNames = doName.replace(/\(\d+\)/g, '').split('.');
+  const doi = ln.querySelector(`:scope>DOI[name="${doNames?.shift()}"]`);
+
+  if (doi) {
+    let sdi = doi as Element | null;
+    let sdiName = doNames?.shift();
+    while (sdi && sdiName) {
+      sdi = sdi.querySelector(`:scope>SDI[name="${sdiName}"]`);
+      sdiName = doNames?.shift();
+    }
+    const daNames = daName?.replace(/\(\d+\)/g, '').split('.');
+    if (daNames?.length) {
+      sdiName = daNames.shift();
+      while (sdi && sdiName) {
+        sdi = sdi.querySelector(
+          `:scope>SDI[name="${sdiName}"], :scope>DAI[name="${sdiName}"]`,
+        );
+        sdiName = daNames.shift();
+      }
+    }
+    if (sdi) {
+      references.push(sdi);
+    }
+  }
+
+  return references;
+}
+
+const referenceLookups: Record<string, (e: Element) => Element[]> = {
+  FCDA: findFCDAReferences,
+};
 
 export function findReferences(element: Element): Element[] {
   const referencedElements = [] as Element[];
@@ -113,16 +254,7 @@ const identifiers: Record<string, string[]> = {
   DAI: ['name', 'ix'],
   SMV: ['ldInst', 'cbName'],
   LNode: ['iedName', 'ldInst', 'prefix', 'lnClass', 'lnInst', 'lnType'],
-  FCDA: [
-    'ldInst',
-    'prefix',
-    'lnClass',
-    'lnInst',
-    'doName',
-    'daName',
-    'fc',
-    'ix',
-  ],
+  // FCDA: ['ldInst', 'prefix', 'lnClass', 'lnInst', 'doName', 'daName', 'fc'],
   ConnectedAP: ['iedName', 'apName'],
   ExtRef: [
     'iedName',
