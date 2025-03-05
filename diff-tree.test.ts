@@ -36,8 +36,8 @@ export const sclDocString = `<SCL xmlns="http://www.iec.ch/61850/2003/SCL">
 const createSclDoc = (sclString: string) =>
   new DOMParser().parseFromString(sclString, 'application/xml');
 
-describe('when our selector and their selector both point to a single element, ignore the identity and compare.', () => {
-  it('displays no action button', async () => {
+describe('diff-tree', () => {
+  it('allows elements with different identities to be compared', async () => {
     const ours = createSclDoc(sclDocString).querySelector('IED[name="IED1"]')!;
     const theirs =
       createSclDoc(sclDocString).querySelector('IED[name="IED2"]')!;

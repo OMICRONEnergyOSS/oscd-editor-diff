@@ -563,24 +563,23 @@ export default class OscdDiff extends LitElement {
                       elements[id].theirs = el;
                     });
 
-                  if (
-                    Object.keys(elements).length === 2 &&
-                    Object.values(elements).every(
-                      ({ ours, theirs }) => !(ours && theirs),
-                    )
-                  ) {
-                    const ourId = Object.keys(elements).find(
-                      id => elements[id].ours,
-                    );
-                    const theirId = Object.keys(elements).find(
-                      id => elements[id].theirs,
-                    );
-                    elements = {
-                      [`${ourId} -> ${theirId}`]: {
-                        ours: elements[ourId!]?.ours,
-                        theirs: elements[theirId!]?.theirs,
-                      },
-                    };
+                  if (Object.keys(elements).length === 2) {
+                    const [
+                      { ours: ours1, theirs: theirs1 },
+                      { ours: ours2, theirs: theirs2 },
+                    ] = Object.values(elements);
+                    const ours = ours1 || ours2;
+                    const theirs = theirs1 || theirs2;
+                    const ourId = ours ? identity(ours) : false;
+                    const theirId = theirs ? identity(theirs) : false;
+                    if (ourId && theirId && ourId !== theirId) {
+                      elements = {
+                        [`${ourId} -> ${theirId}`]: {
+                          ours: elements[ourId!]?.ours,
+                          theirs: elements[theirId!]?.theirs,
+                        },
+                      };
+                    }
                   }
                   this.lastDiff = {
                     elements,
