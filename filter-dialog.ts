@@ -5,7 +5,6 @@ import type {
   MdDialog,
   MdFilledTextField,
   MdOutlinedTextField,
-  MdSwitch,
 } from '@material/web/all.js';
 
 import type { Filter } from './oscd-diff.js';
@@ -126,6 +125,50 @@ export class FilterDialog extends LitElement {
     }
   }
 
+  renderLabelAndRadioGroupRow({
+    value,
+    onChange,
+    name,
+    label,
+  }: {
+    value: boolean;
+    onChange: (val: boolean) => void;
+    name: string;
+    label: string;
+  }) {
+    return html` <div class="rule-label-row">
+      <h3>${label}</h3>
+      <div class="inclusion-radio-group">
+        <label
+          ><md-radio
+            name=${name}
+            aria-label="Include"
+            ?checked=${value}
+            @input=${() => {
+              onChange(true);
+              this.requestUpdate();
+            }}
+          >
+          </md-radio>
+          Include</label
+        >
+        <label
+          ><md-radio
+            name=${name}
+            aria-label="Exclude"
+            ?checked=${!value}
+            @input=${() => {
+              onChange(false);
+              this.requestUpdate();
+            }}
+          >
+          </md-radio>
+          Exclude</label
+        >
+      </div>
+    </div>`;
+  }
+
   render() {
     return html`
       <md-dialog
@@ -151,11 +194,11 @@ export class FilterDialog extends LitElement {
           this.resetDialog();
         }}
       >
-        <div slot="headline">Edit Filter ${this.filterName}</div>
+        <div slot="headline">Edit Comparison Rules</div>
         <form slot="content" id="filterForm" method="dialog">
-          <md-filled-text-field
-            label="Filter name"
-            style="grid-column: 1 / -1"
+          <md-outlined-text-field
+            label="Name"
+            class="details-field"
             type="text"
             id="filterName"
             required
@@ -180,11 +223,12 @@ export class FilterDialog extends LitElement {
             }}
           >
             <md-icon slot="leading-icon">filter_list</md-icon>
-          </md-filled-text-field>
+          </md-outlined-text-field>
 
-          <md-filled-text-field
+          <md-outlined-text-field
+            id="description"
             label="Description"
-            style="grid-column: 1 / -1"
+            class="details-field"
             type="textarea"
             .value="${this.filterDescription}"
             @input=${(event: Event) => {
@@ -193,44 +237,33 @@ export class FilterDialog extends LitElement {
             }}
           >
             <md-icon slot="leading-icon">description</md-icon>
-          </md-filled-text-field>
+          </md-outlined-text-field>
 
-          <md-filled-text-field
-            label="From elements"
-            type="search"
+          <md-outlined-text-field
+            label="Scope"
+            type="textarea"
+            rows="4"
+            class="details-field"
             .value=${this.ourSelector}
             @input=${(event: Event) => {
               this.ourSelector = (event.target as MdOutlinedTextField).value;
             }}
           >
             <md-icon slot="leading-icon">plagiarism</md-icon>
-          </md-filled-text-field>
-          <md-icon>compare_arrows</md-icon>
-          <md-filled-text-field
-            label="To elements"
-            style="--md-sys-color-primary: var(--oscd-secondary);"
-            type="search"
-            .value=${this.theirSelector}
-            @input=${(event: Event) => {
-              this.theirSelector = (event.target as MdOutlinedTextField).value;
-            }}
-          >
-            <md-icon slot="leading-icon">plagiarism</md-icon>
-          </md-filled-text-field>
-          <div style="grid-column: 1 / -1; height:16px;"></div>
-          <label style="grid-column: 1 / -1;"
-            >Include Elements
-            <md-switch
-              aria-label="Include Selectors"
-              icons
-              ?selected=${this.selectorsInclusive}
-              @input=${(event: InputEvent) => {
-                this.selectorsInclusive = (event.target as MdSwitch).selected;
-              }}
-            ></md-switch>
-          </label>
+          </md-outlined-text-field>
+
+          <h2 class="rules-section-header">Rules</h2>
+
+          ${this.renderLabelAndRadioGroupRow({
+            label: 'Elements',
+            value: this.selectorsInclusive,
+            onChange: val => {
+              this.selectorsInclusive = val;
+            },
+            name: 'element-selectors',
+          })}
           <md-outlined-text-field
-            label="${this.selectorsInclusive ? 'include' : 'exclude'}"
+            label="${this.selectorsInclusive ? 'Include' : 'Exclude'}"
             style="grid-column: 1 / 3"
             type="textarea"
             rows="3"
@@ -243,26 +276,25 @@ export class FilterDialog extends LitElement {
           <md-outlined-text-field
             type="textarea"
             rows="3"
-            label="except"
+            label="Except"
             .value=${this.selectorsExcept.join('\n')}
             @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.selectorsExcept = nonemptyLines(value);
             }}
           ></md-outlined-text-field>
-          <label style="grid-column: 1 / -1;"
-            >Include Attributes
-            <md-switch
-              aria-label="Include Attributes"
-              icons
-              ?selected=${this.attributesInclusive}
-              @input=${(event: InputEvent) => {
-                this.attributesInclusive = (event.target as MdSwitch).selected;
-              }}
-            ></md-switch>
-          </label>
+
+          ${this.renderLabelAndRadioGroupRow({
+            label: 'Attributes',
+            value: this.attributesInclusive,
+            onChange: val => {
+              this.attributesInclusive = val;
+            },
+            name: 'attributes-selectors',
+          })}
+
           <md-outlined-text-field
-            label="${this.attributesInclusive ? 'include' : 'exclude'}"
+            label="${this.attributesInclusive ? 'Include' : 'Exclude'}"
             style="grid-column: 1 / 3"
             type="textarea"
             rows="3"
@@ -275,26 +307,25 @@ export class FilterDialog extends LitElement {
           <md-outlined-text-field
             type="textarea"
             rows="3"
-            label="except"
+            label="Except"
             .value=${this.attributesExcept.join('\n')}
             @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
               this.attributesExcept = nonemptyLines(value);
             }}
           ></md-outlined-text-field>
-          <label style="grid-column: 1 / -1;"
-            >Include Namespaces
-            <md-switch
-              aria-label="Include Namespaces"
-              icons
-              ?selected=${this.namespacesInclusive}
-              @input=${(event: InputEvent) => {
-                this.namespacesInclusive = (event.target as MdSwitch).selected;
-              }}
-            ></md-switch>
-          </label>
+
+          ${this.renderLabelAndRadioGroupRow({
+            label: 'Namespaces',
+            value: this.namespacesInclusive,
+            onChange: val => {
+              this.namespacesInclusive = val;
+            },
+            name: 'namespaces-selectors',
+          })}
+
           <md-outlined-text-field
-            label="${this.namespacesInclusive ? 'include' : 'exclude'}"
+            label="${this.namespacesInclusive ? 'Include' : 'Exclude'}"
             style="grid-column: 1 / -1"
             type="textarea"
             rows="3"
@@ -325,7 +356,22 @@ export class FilterDialog extends LitElement {
 
     md-switch {
       vertical-align: middle;
-      margin-left: 8px;
+      margin-inline: 8px;
+      --md-switch-selected-icon-color: var(--oscd-base00);
+    }
+
+    .details-field {
+      grid-column: 1 / -1;
+      margin-bottom: 8px;
+    }
+
+    .rules-section-header {
+      grid-column: 1 / -1;
+      margin-top: 16px;
+      margin-bottom: 0;
+      padding-bottom: 8px;
+      color: var(--oscd-base00);
+      border-bottom: 1px solid var(--oscd-base00);
     }
 
     form {
@@ -336,6 +382,43 @@ export class FilterDialog extends LitElement {
       grid-template-columns: 1fr min-content 1fr;
       margin-bottom: 1em;
       align-items: center;
+    }
+
+    h2,
+    h3,
+    label,
+    legend {
+      color: var(--oscd-base00);
+      font-weight: normal;
+    }
+
+    h3 {
+      font-size: 1.25em;
+    }
+
+    .rule-label-row {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+
+    .rule-label-row h3 {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    .inclusion-radio-group {
+      display: flex;
+      gap: 16px;
+    }
+
+    md-outlined-text-field[type='textarea']:not(#description) {
+      --md-outlined-text-field-input-text-font: var(
+        --oscd-text-font-mono,
+        'Roboto Mono'
+      );
     }
   `;
 }

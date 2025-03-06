@@ -162,6 +162,8 @@ export default class OscdDiff extends LitElement {
     );
   }
 
+  @state() individuallyScoped = false;
+
   setFilters(updatedFilters: Record<string, Filter>) {
     localStorage.setItem('oscd-diff-filters', JSON.stringify(updatedFilters));
     this.filters = updatedFilters;
@@ -338,7 +340,7 @@ export default class OscdDiff extends LitElement {
     } = this.lastDiff;
     return html`
       <div id="filter-description" style="margin: 16px;">
-        <h3 style="font-weight: 400">Filter: ${filterName}</h3>
+        <h3 style="font-weight: 400">Comparison Rule: ${filterName}</h3>
         ${filter.description ? html`<em>${filter.description}</em>` : nothing}
         <p>
           Comparing
@@ -377,7 +379,7 @@ export default class OscdDiff extends LitElement {
           <md-filled-select
             required
             supporting-text=${this.selectedFilter.description}
-            label="Filter"
+            label="Comparison Rules"
             .value=${this.selectedFilterName}
             @change=${(event: Event) => {
               this.setSelectedFilterName(
@@ -490,28 +492,49 @@ export default class OscdDiff extends LitElement {
         </md-filled-select>
 
         <md-filled-text-field
-          label="From elements"
-          type="search"
+          label=${this.individuallyScoped ? 'From Scope' : 'Scope'}
+          style=${!this.individuallyScoped ? 'grid-column: 1/3;' : ''}
+          type="textarea"
+          rows="4"
           id="doc1sel"
           .value=${this.selectedFilter.ourSelector}
           .placeholder=${this.docs[this.docName1]?.documentElement.tagName ||
           ':root'}
           @change=${() => {
-            this.doc2sel!.placeholder = this.selector1;
+            if (this.doc2sel?.placeholder) {
+              this.doc2sel!.placeholder = this.selector1;
+            }
           }}
         >
           <md-icon slot="leading-icon">plagiarism</md-icon>
         </md-filled-text-field>
-        <md-filled-text-field
-          label="To elements"
-          style="--md-sys-color-primary: var(--oscd-secondary);"
-          type="search"
-          id="doc2sel"
-          .value=${this.selectedFilter.theirSelector}
-          .placeholder=${this.selector1}
-        >
-          <md-icon slot="leading-icon">plagiarism</md-icon>
-        </md-filled-text-field>
+
+        ${this.individuallyScoped
+          ? html`<md-filled-text-field
+              label="To Scope"
+              style="--md-sys-color-primary: var(--oscd-secondary);"
+              type="textarea"
+              rows="4"
+              id="doc2sel"
+              .value=${this.selectedFilter.theirSelector}
+              .placeholder=${this.selector1}
+            >
+              <md-icon slot="leading-icon">plagiarism</md-icon>
+            </md-filled-text-field>`
+          : nothing}
+
+        <label class="individually-scoped-checkbox-label">
+          <md-checkbox
+            touch-target="wrapper"
+            ?checked=${this.individuallyScoped}
+            @change=${(event: Event) => {
+              this.individuallyScoped = (
+                event.target as HTMLInputElement
+              ).checked;
+            }}
+          ></md-checkbox>
+          Separate From/To scopes
+        </label>
 
         ${until(
           promise.then(
@@ -719,6 +742,7 @@ export default class OscdDiff extends LitElement {
       display: block;
       padding: 0.5rem;
       --oscd-text-font: var(--oscd-theme-text-font, 'Roboto');
+      --oscd-text-font-mono: var(--oscd-theme-text-font-mono, 'Roboto Mono');
       --md-sys-color-primary: var(--oscd-primary);
       --md-sys-color-secondary: var(--oscd-secondary);
       --md-sys-color-secondary-container: var(--oscd-base2);
@@ -733,7 +757,7 @@ export default class OscdDiff extends LitElement {
       --md-sys-color-outline-variant: var(--oscd-base0);
     }
 
-    :host > div {
+    :host .filter-section {
       color: var(--oscd-base02);
       font-family: var(--oscd-text-font);
       display: grid;
@@ -742,6 +766,10 @@ export default class OscdDiff extends LitElement {
       margin: 16px;
       margin-bottom: 1em;
       align-items: center;
+    }
+
+    :host md-filled-select {
+      min-width: 260px;
     }
 
     #filters-import-field {
@@ -821,6 +849,28 @@ export default class OscdDiff extends LitElement {
 
     .theirs {
       color: var(--oscd-secondary);
+    }
+
+    .individually-scoped-checkbox-label {
+      grid-column: 1/3;
+      color: var(--oscd-base00);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0px;
+      margin-bottom: 12px;
+    }
+
+    .individually-scoped-checkbox-label md-checkbox {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    md-filled-text-field[type='textarea'] {
+      --md-filled-text-field-input-text-font: var(
+        --oscd-text-font-mono,
+        'Roboto Mono'
+      );
     }
 
     code,
