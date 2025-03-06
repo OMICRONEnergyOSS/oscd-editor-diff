@@ -5,7 +5,6 @@ import type {
   MdDialog,
   MdFilledTextField,
   MdOutlinedTextField,
-  MdSwitch,
 } from '@material/web/all.js';
 
 import type { Filter } from './oscd-diff.js';

@@ -491,7 +491,7 @@ export default class OscdDiff extends LitElement {
           )}
         </md-filled-select>
 
-        <md-outlined-text-field
+        <md-filled-text-field
           label=${this.individuallyScoped ? 'From Scope' : 'Scope'}
           style=${!this.individuallyScoped ? 'grid-column: 1/3;' : ''}
           type="textarea"
@@ -507,10 +507,10 @@ export default class OscdDiff extends LitElement {
           }}
         >
           <md-icon slot="leading-icon">plagiarism</md-icon>
-        </md-outlined-text-field>
+        </md-filled-text-field>
 
         ${this.individuallyScoped
-          ? html`<md-outlined-text-field
+          ? html`<md-filled-text-field
               label="To Scope"
               style="--md-sys-color-primary: var(--oscd-secondary);"
               type="textarea"
@@ -520,7 +520,7 @@ export default class OscdDiff extends LitElement {
               .placeholder=${this.selector1}
             >
               <md-icon slot="leading-icon">plagiarism</md-icon>
-            </md-outlined-text-field>`
+            </md-filled-text-field>`
           : nothing}
 
         <label class="individually-scoped-checkbox-label">
@@ -866,8 +866,8 @@ export default class OscdDiff extends LitElement {
       margin-bottom: 0;
     }
 
-    md-outlined-text-field[type='textarea'] {
-      --md-outlined-text-field-input-text-font: var(
+    md-filled-text-field[type='textarea'] {
+      --md-filled-text-field-input-text-font: var(
         --oscd-text-font-mono,
         'Roboto Mono'
       );
