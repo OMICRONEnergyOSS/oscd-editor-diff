@@ -10,7 +10,23 @@ export type Description = Record<string, string | string[]> & {
   eNS?: Record<string, Record<string, string>>;
 };
 
-const referenceLookups: Record<string, (e: Element) => Element[]> = {};
+function findConnectedAPReferences(e: Element): Element[] {
+  const iedName = e.getAttribute('iedName');
+  const apName = e.getAttribute('apName');
+  const scl = e.closest('SCL');
+  if (!iedName || !apName || !scl) {
+    return [];
+  }
+  return Array.from(
+    scl.querySelectorAll(
+      `:scope>IED[name="${iedName}"]>AccessPoint[name="${apName}"]`,
+    ) ?? [],
+  );
+}
+
+const referenceLookups: Record<string, (e: Element) => Element[]> = {
+  ConnectedAP: findConnectedAPReferences,
+};
 
 export function findReferences(element: Element): Element[] {
   const referencedElements = [] as Element[];
@@ -249,19 +265,6 @@ const references: Record<string, Reference[]> = {
       scope: 'LN0',
     },
   ],
-  /* ConnectedAP: [
-    {
-      fields: [
-        {
-          to: "name",
-          from: "iedName",
-        },
-      ],
-      to: ":scope>IED",
-      from: ":scope>Communication>SubNetwork>ConnectedAP",
-      scope: "SCL",
-    },
-  ], */
   DO: [
     {
       fields: [
@@ -875,20 +878,21 @@ export function hasher(
 
   function describeReferences(e: Element) {
     const description: Record<string, string[]> = {};
-    if (!(e.tagName in references)) {
-      return description;
-    }
 
     findReferences(e)
       .filter(shouldHashElement)
       .forEach(element => {
-        const tag = element.tagName;
+        const tag = `@${element.tagName}`;
         if (!(tag in description)) {
           description[tag] = [];
         }
         description[tag].push(hash(element));
         description[tag].sort();
       });
+
+    if (!(e.tagName in references)) {
+      return description;
+    }
 
     references[e.tagName].forEach(({ fields, to, scope }) => {
       const candidates = Array.from(

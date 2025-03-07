@@ -270,4 +270,28 @@ describe('hash', () => {
     const ap2 = scl('AccessPoint', { name: 'AP1' }, []);
     expect(hash(ap1)).not.to.equal(hash(ap2));
   });
+
+  it('dereferences ConnectedAPs', () => {
+    const connectedAP = scl('ConnectedAP', { iedName: 'IED1', apName: 'AP1' });
+    const subNetwork = scl('SubNetwork', { name: 'SN1' }, [connectedAP]);
+    const communication = scl('Communication', {}, [subNetwork]);
+    const ied1 = scl('IED', { name: 'IED1' }, [
+      scl('AccessPoint', { name: 'AP1' }),
+    ]);
+    const ied2 = scl('IED', { name: 'IED1' }, [
+      scl('AccessPoint', { name: 'AP1' }, [
+        scl('Server', {}, [scl('LDevice', { inst: 'ldInst1' })]),
+      ]),
+    ]);
+    const sclDoc1 = scl('SCL', {}, [communication, ied1]);
+    const sclDoc2 = scl('SCL', {}, [communication, ied2]);
+    ['ConnectedAP', 'SubNetwork', 'Communication'].forEach(tagName => {
+      const a = sclDoc1.querySelector(tagName);
+      const b = sclDoc2.querySelector(tagName);
+      if (!a || !b) {
+        throw new Error(`${tagName} not found`);
+      }
+      expect(hash(a)).to.not.equal(hash(b));
+    });
+  });
 });
