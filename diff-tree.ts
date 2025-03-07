@@ -2,7 +2,7 @@ import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { identity } from '@openenergytools/scl-lib';
 
-import { Description } from './hash.js';
+import { Description, findReferences } from './hash.js';
 import type { newHasher } from './hash.js';
 import { getDisplayIcon } from './icons.js';
 import { getFcdaInstDesc } from './util.js';
@@ -15,7 +15,10 @@ function filterObject(
 }
 
 function getDiff(ours: Description, theirs: Description) {
-  const diff: Record<string, { ours?: any; theirs?: any }> = {};
+  const diff: Record<
+    string,
+    { ours?: string | string[]; theirs?: string | string[] }
+  > = {};
 
   const keys = new Set([...Object.keys(ours), ...Object.keys(theirs)]);
 
@@ -184,33 +187,40 @@ export class DiffTree extends LitElement {
         const tag = key.slice(1);
         const elementDiff: Record<
           string,
-          { ours?: Element; theirs?: Element }
+          { ourElement?: Element; theirElement?: Element }
         > = {};
         ours.forEach((digest: string) => {
-          const element = Array.from(this.ours?.children ?? []).find(
-            e => e.tagName === tag && this.ourHasher?.hash(e) === digest,
+          const element = [
+            ...Array.from(this.ours?.children ?? []),
+            ...(this.ours ? findReferences(this.ours) : []),
+          ].find(
+            e => e.tagName === tag && this.ourHasher?.eDb.e2h.get(e) === digest,
           );
           if (!element) {
             return;
           }
           const id = identity(element as Element);
           elementDiff[id] ??= {};
-          elementDiff[id].ours = element;
+          elementDiff[id].ourElement = element;
         });
         theirs.forEach((digest: string) => {
-          const element = Array.from(this.theirs?.children ?? []).find(
-            e => e.tagName === tag && this.theirHasher?.hash(e) === digest,
+          const element = [
+            ...Array.from(this.theirs?.children ?? []),
+            ...(this.theirs ? findReferences(this.theirs) : []),
+          ].find(
+            e =>
+              e.tagName === tag && this.theirHasher?.eDb.e2h.get(e) === digest,
           );
           if (!element) {
             return;
           }
           const id = identity(element as Element);
           elementDiff[id] ??= {};
-          elementDiff[id].theirs = element;
+          elementDiff[id].theirElement = element;
         });
         const expanded = this.childCount <= 1;
         return Object.values(elementDiff).map(
-          ({ ours: o, theirs: t }, i: number) =>
+          ({ ourElement: o, theirElement: t }, i: number) =>
             html`<diff-tree
               .ours=${o}
               .theirs=${t}
