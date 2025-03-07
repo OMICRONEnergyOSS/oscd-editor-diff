@@ -270,4 +270,12 @@ describe('hash', () => {
     const ap2 = scl('AccessPoint', { name: 'AP1' }, []);
     expect(hash(ap1)).not.to.equal(hash(ap2));
   });
+
+  it('TODO: dereferences FCDAs', () => {
+    // TODO(ca-d): add tests
+  });
+
+  it('TODO: dereferences FCDAs', () => {
+    // TODO(ca-d): add tests
+  });
 });
