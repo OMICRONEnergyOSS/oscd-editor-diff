@@ -24491,7 +24491,7 @@ See www.iec.ch/CCv1 for copyright details
               >`)}
         </md-filled-select>
 
-        <md-outlined-text-field
+        <md-filled-text-field
           label=${this.individuallyScoped?"From Scope":"Scope"}
           style=${this.individuallyScoped?"":"grid-column: 1/3;"}
           type="textarea"
@@ -24502,9 +24502,9 @@ See www.iec.ch/CCv1 for copyright details
           @change=${()=>{this.doc2sel?.placeholder&&(this.doc2sel.placeholder=this.selector1)}}
         >
           <md-icon slot="leading-icon">plagiarism</md-icon>
-        </md-outlined-text-field>
+        </md-filled-text-field>
 
-        ${this.individuallyScoped?p`<md-outlined-text-field
+        ${this.individuallyScoped?p`<md-filled-text-field
               label="To Scope"
               style="--md-sys-color-primary: var(--oscd-secondary);"
               type="textarea"
@@ -24514,7 +24514,7 @@ See www.iec.ch/CCv1 for copyright details
               .placeholder=${this.selector1}
             >
               <md-icon slot="leading-icon">plagiarism</md-icon>
-            </md-outlined-text-field>`:C}
+            </md-filled-text-field>`:C}
 
         <label class="individually-scoped-checkbox-label">
           <md-checkbox
@@ -24732,8 +24732,8 @@ See www.iec.ch/CCv1 for copyright details
       margin-bottom: 0;
     }
 
-    md-outlined-text-field[type='textarea'] {
-      --md-outlined-text-field-input-text-font: var(
+    md-filled-text-field[type='textarea'] {
+      --md-filled-text-field-input-text-font: var(
         --oscd-text-font-mono,
         'Roboto Mono'
       );
