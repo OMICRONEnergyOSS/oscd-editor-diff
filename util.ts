@@ -105,3 +105,20 @@ export function getFcdaInstDesc(fcda: Element): fcdaDesc {
 
   return descs;
 }
+
+export async function loadResource(url: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    fetch(url)
+      .then(async response => {
+        if (!response.ok) {
+          reject(new Error(''));
+        } else {
+          const content = await response.text();
+          resolve(content);
+        }
+      })
+      .catch(() => {
+        reject(new Error(''));
+      });
+  });
+}

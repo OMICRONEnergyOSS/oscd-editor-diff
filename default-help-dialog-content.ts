@@ -1,0 +1,229 @@
+export const DefaultHelpDialogContent = `
+  <h3>Basic metadata</h3>
+<ul>
+  <li>Name - appears in the filter drop-down list.</li>
+  <li>
+    Description (optional) - additional information on the filter settings or
+    intended usage.
+  </li>
+</ul>
+<h3>Scope</h3>
+<p>The scope defines the root of the comparison.</p>
+<p>For a complete comparison this may be left empty.</p>
+<p>
+  The Scope is a CSS selector (see
+  <a
+    href="https://developer.mozilla.org/en-US/docs/Web/XML/XPath/Guides/Comparison_with_CSS_selectors"
+    >MDN</a
+  >
+  for more information) and can be used to specify particular elements.
+</p>
+<p>For example between two IEDs:</p>
+
+Scope: <code>IED[name=&quot;XAT_BusA_P1&quot;]</code>
+
+<p>The &quot;Scope&quot; lines up with the &quot;To and From documents&quot;</p>
+
+<!-- Would this ever work? It's not just a pure rename. Is it any better than just having the default "Substation" filter which compares only "Substation" elements? Daniel thinks it would because if the Substation name isn't in the comparison then it should, however it doesn't seem to work properly at the moment, perhaps the Substation name attribute is incorrectly included in the comparison? -->
+<h3 id="include-and-exclude-filters">Include and Exclude Rules</h3>
+<p>
+  The five different text fields allow fine-grained comparisons. Examples are
+  given for the Substation section but could just as easily be given for IEDs.
+</p>
+<p>
+  SCL elements, attributes and namespaces used in the file can be either
+  &quot;Include&quot; or &quot;Exclude&quot; rules. By default matching elements
+  are excluded. To only include matching artifacts, click on the
+  &quot;Include&quot; radio button.
+</p>
+<p>This appears as:</p>
+<table rules="all">
+  <thead>
+    <tr>
+      <th>Exclude</th>
+      <th>Except</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>???</td>
+      <td>???</td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  To swap them around, selected the &quot;Include&quot; radio button. The
+  filters then become:
+</p>
+<table rules="all">
+  <thead>
+    <tr>
+      <th>Include</th>
+      <th>Except</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>???</td>
+      <td>???</td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  The rules are given as CSS Selector expressions. These are often more simple
+  than equivalent XPath expressions. Learn more about the differences and how to
+  use these on
+  <a
+    href="https://developer.mozilla.org/en-US/docs/Web/XML/XPath/Guides/Comparison_with_CSS_selectors"
+    >MDN</a
+  >
+  or make a start with the examples below.
+</p>
+<p>
+  It is recommended to study the default rules and to create rules initially
+  with small files in an incremental manner to understand them clearly.
+</p>
+<h4 id="elements">Elements</h4>
+<p>
+  The following would include everything but exclude a particular
+  <code>VoltageLevel</code> named <code>V33</code>:
+</p>
+<table rules="all">
+  <thead>
+    <tr>
+      <th>Exclude</th>
+      <th>Except</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>VoltageLevel[name=&quot;V33&quot;]</code></td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  To swap the filter so that it only includes <em>only</em> the
+  <code>VoltageLevel</code> <code>V33</code> only would click on the
+  &quot;Include&quot; radio button.
+</p>
+<p>Now the meaning of the text boxes have changed to:</p>
+<table rules="all">
+  <thead>
+    <tr>
+      <th>Include</th>
+      <th>Except</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>VoltageLevel[name=&quot;V33&quot;]</code></td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  The &quot;Except&quot; input is especially useful when querying a broad
+  &quot;outer element&quot;. For instance, imagine a user wanting to compare all
+  <code>VoltageLevel</code> elements but not one specific one:
+</p>
+<table rules="all">
+  <thead>
+    <tr>
+      <th>Include</th>
+      <th>Except</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>VoltageLevel</code></td>
+      <td><code>VoltageLevel[name=&quot;V33]</code></td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  If your SCL had multiple <code>Substation</code> elements in it, we could
+  specify the particular one to compare using a child combinator. For example:
+</p>
+<p>
+  <code
+    >Substation[name=&quot;XAT&quot;] &gt; VoltageLevel[name=&quot;V33]</code
+  >
+</p>
+<h5 id="ensuring-elements-are-connected">Ensuring Elements are Connected</h5>
+<p>
+  If complex selectors are used then the user must ensure the there is a
+  hierarchial path between the elements.
+</p>
+<p>
+  For example, the <code>GSE</code> element within the
+  <code>Communication</code> section sits within the <code>SubNetwork</code> and
+  <code>ConnectedAP</code> elements as defined by the standard.
+</p>
+<p>
+  If specifying to &quot;Include&quot; Elements, then all ancestors of the GSE
+  element need to be included as well for the filter to function correctly.
+</p>
+<p>The filter settings would be:</p>
+<ul>
+  <li>From: <code>Communication</code></li>
+  <li>Elements: select the &quot;Include&quot; radio button</li>
+  <li>
+    Under include:
+    <pre><code>  <span class="hljs-keyword">SubNetwork
+</span>  ConnectedAP
+  GSE
+  GSE *
+</code></pre>
+  </li>
+</ul>
+<p>
+  The last selector, <code>GSE *</code> is a combination of all
+  <code>GSE</code> elements, the &quot;descendant combinator&quot; which is a
+  space and means any ancestor matching the first selector and a universal
+  selector, <code>*</code> which matches elements of any type.
+</p>
+<h5 id="other-usages">Other usages</h5>
+<p>
+  Many IEDs place information in a <code>Private</code> elements. This may not
+  be human readable in some cases. To exclude these from a comparison, place
+  <code>Private</code> in the &quot;Exclude&quot; elements field.
+</p>
+<h4 id="attributes">Attributes</h4>
+<p>
+  Attributes work much like elements in that rules can be either inclusive or
+  exclusive.
+</p>
+<p>
+  One use case could be to exclude descriptions. In SCL many elements have a
+  <code>desc</code> attribute but this is sometimes overwritten by an IED
+  Configuration Tool (ICT). To ignore these differences, on an exclusive rule,
+  enter <code>desc</code> in the &quot;Exclude&quot; field.
+</p>
+<h4 id="namespaces">Namespaces</h4>
+<p>By default all namespaces are included.</p>
+<p>
+  This plugin requires namespaces to be entered as their fully qualified URLs.
+</p>
+<p>To exclude other manufacturers, enter their fully qualified namespace:</p>
+<p>
+  <a href="http://www.ManufacturerA.com/Some/More/Detail"
+    >http://www.ManufacturerA.com/Some/More/Detail</a
+  >
+</p>
+<h4 id="namespaced-elements">Namespaced Elements</h4>
+<p>
+  Namespaced elements can be included in the Elements field in the following
+  form:
+</p>
+<pre><code><span class="hljs-symbol">https:</span><span class="hljs-comment">//a.com:DO</span>
+</code></pre>
+<p>
+  Where this means a DO element in the <code>https://a.com</code> namespace.
+</p>
+<h2 id="other-notes">Other Notes</h2>
+<p>
+  Extension namespace information within <code>Private</code> elements cannot be
+  interpreted by this plugin except by string comparison as their structure is
+  unknown (not defined by IEC 61850-6).
+</p>
+
+`;

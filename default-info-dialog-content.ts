@@ -1,0 +1,82 @@
+export const DefaultInfoDialogContent = `
+<p>
+  The compare plugin allows for a complete comparison of two SCL documents and
+  gives a hierarchial list of differences using the SCL structure shown in IEC
+  61850-6.
+</p>
+<p>
+  Users may compare only particular elements and specify these in considerable
+  detail. Comparisons can occur between one or more documents. Pre-defined
+  comparison rules are available for common use cases and users may create new
+  comparison rules as well as export and import rules to allow them to be shared
+  (the rules are saved as JSON files)
+</p>
+<p>
+  Comparisons on large files may take a considerable time - 10-15 minutes on a
+  high powered machine with 16 Gb RAM and no other browser tabs or applications
+  open. SCL files for even small substations can have many hundreds of thousands
+  of elements. Comparisons between files with only a small number of IEDs should
+  take &lt; 10 seconds.
+</p>
+<p>
+  It is recommended to create filters to ensure performant queries and targeted
+  results.
+</p>
+<p>
+  While the comparison is being done the user interface may become unresponsive,
+  and a message asking whether the user would like to wait may come up. Either
+  the user can click &quot;Wait&quot; or just ignore this message - the
+  comparison will continue to occur in the background.
+</p>
+<p>
+  Once a comparison is complete, click on the print icon on the left to either
+  print or export to PDF. The full-screen button maximises the view to take up
+  the full browser window.
+</p>
+<h2 id="quick-start">Quick Start</h2>
+<p>
+  At the top top, a set of predefined comparison rules for common tasks are
+  provided. Click the three dots on the right to duplicate/delete or to
+  import/export the filters.
+</p>
+<p>
+  If using small files with only a few IEDs (e.g. SSD, ICD and CID files or SCD
+  files with just a few IEDs) then choose the &quot;Complete&quot; filter.
+</p>
+<p>Then select the 'From' and 'To' documents.</p>
+<p>
+  The colours of the document icons here are used to show where the changes are,
+  if changes are only in the first document colour it indicates removals and if
+  changes are in the second document colour it indicates additions.
+</p>
+<p>
+  Finally the &quot;Scope&quot; can be entered. On a predefined filters these
+  can usually be left blank or at the filter defaults. By ticking the checkbox
+  &quot;Separate From/To scopes&quot; the user can specify different scopes for
+  the "From" and "To" documents.
+</p>
+<p>
+  Click on &quot;Compare&quot; and wait for the comparison to be presented.
+  Changing to another tab may mean the comparison is effectively paused so
+  leaving the the window in focus is recommended.
+</p>
+<p>The output is shown in the normal SCL file structure:</p>
+<pre><code><span class="hljs-built_in">Header</span>
+Substation
+Communication
+IED (one <span class="hljs-keyword">or</span> more)
+DataTypeTemplates
+</code></pre>
+<p>
+  To understand each element it is recommended to look these up in IEC 61850-6
+  or each manufacturer&#39;s documentation.
+</p>
+<h2 id="creating-filters">Creating comparison rules</h2>
+<p>
+  To create your own comparison rule, choose a similar rule and select the
+  &quot;More&quot; option adjacent to the comparison rule selector (the three
+  dots). Click on &quot;Duplicate&quot;. Then click on the &quot;More&quot;
+  option and select &quot;Edit&quot;.
+</p>
+
+`;
