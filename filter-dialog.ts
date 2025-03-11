@@ -7,7 +7,10 @@ import type {
   MdOutlinedTextField,
 } from '@material/web/all.js';
 
-import type { Filter } from './oscd-diff.js';
+import { HELP_CONTENT_URL, type Filter } from './oscd-diff.js';
+import { InfoDialog } from './info-dialog.js';
+import { loadResource } from './util.js';
+import { DefaultHelpDialogContent } from './default-help-dialog-content.js';
 
 export type OscdDiffFilterSaveEventDetail = {
   oldName: string;
@@ -69,6 +72,8 @@ export class FilterDialog extends LitElement {
 
   @query('#filterName') filterNameInput?: MdOutlinedTextField;
 
+  @query('info-dialog') infoDialog?: InfoDialog;
+
   #oldFilter?: Filter;
 
   get filter() {
@@ -122,6 +127,18 @@ export class FilterDialog extends LitElement {
     }
     if (this.dialog) {
       this.dialog.returnValue = '';
+    }
+  }
+
+  async showHelpDialog() {
+    if (this.infoDialog) {
+      try {
+        const content = await loadResource(HELP_CONTENT_URL);
+        this.infoDialog.contentText = content;
+      } catch {
+        this.infoDialog.contentText = DefaultHelpDialogContent;
+      }
+      this.infoDialog.open = true;
     }
   }
 
@@ -194,7 +211,10 @@ export class FilterDialog extends LitElement {
           this.resetDialog();
         }}
       >
-        <div slot="headline">Edit Comparison Rules</div>
+        <div slot="headline">
+          <div>Edit Comparison Rules</div>
+          <md-icon @click=${() => this.showHelpDialog()}>help</md-icon>
+        </div>
         <form slot="content" id="filterForm" method="dialog">
           <md-outlined-text-field
             label="Name"
@@ -349,6 +369,7 @@ export class FilterDialog extends LitElement {
           >
         </div>
       </md-dialog>
+      <info-dialog heading="Editing comparison rules"></info-dialog>
     `;
   }
 
@@ -356,6 +377,12 @@ export class FilterDialog extends LitElement {
     md-dialog {
       max-height: 100vh;
       max-width: 100vw;
+    }
+
+    div[slot='headline'] {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     md-switch {

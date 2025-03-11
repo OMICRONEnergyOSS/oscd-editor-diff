@@ -16,8 +16,15 @@ import {
 
 import './diff-tree.js';
 import './filter-dialog.js';
+import './info-dialog.js';
 import type { FilterDialog, OscdDiffFilterSaveEvent } from './filter-dialog.js';
+import type { InfoDialog } from './info-dialog.js';
 import { defaultFilters } from './default-filters.js';
+import { DefaultInfoDialogContent } from './default-info-dialog-content.js';
+import { loadResource } from './util.js';
+
+const INFO_CONTENT_URL = './oscd-diff-info-content.html';
+export const HELP_CONTENT_URL = './oscd-diff-help-content.html';
 
 export type Filter = HasherOptions & {
   description: string;
@@ -142,6 +149,8 @@ export default class OscdDiff extends LitElement {
   @query('#doc2sel') doc2sel?: HTMLInputElement;
 
   @query('filter-dialog') filterDialog?: FilterDialog;
+
+  @query('info-dialog') infoDialog?: InfoDialog;
 
   @query('md-menu') filterMenu?: MdMenu;
 
@@ -289,6 +298,18 @@ export default class OscdDiff extends LitElement {
     }
   }
 
+  async showInfoDialog() {
+    if (this.infoDialog) {
+      try {
+        const infoContent = await loadResource(INFO_CONTENT_URL);
+        this.infoDialog.contentText = infoContent;
+      } catch {
+        this.infoDialog.contentText = DefaultInfoDialogContent;
+      }
+      this.infoDialog.open = true;
+    }
+  }
+
   uniqueFilterName(): string {
     let i = 1;
     const filterName = this.selectedFilterName.replace(/\s*\d+$/, '');
@@ -374,284 +395,295 @@ export default class OscdDiff extends LitElement {
       }),
     );
 
-    return html`<div class="filter-section">
-        <div id="filter-selector-row">
+    return html`<div>
+        <div class="filter-section">
+          <div id="filter-selector-row">
+            <md-filled-select
+              required
+              supporting-text=${this.selectedFilter.description}
+              label="Comparison Rules"
+              .value=${this.selectedFilterName}
+              @change=${(event: Event) => {
+                this.setSelectedFilterName(
+                  (event.target as MdFilledSelect).value,
+                );
+              }}
+            >
+              <md-icon slot="leading-icon">filter_list</md-icon>
+              ${Object.keys(this.filters).map(
+                (filterName: string) =>
+                  html`<md-select-option
+                    value=${filterName}
+                    ?selected=${this.selectedFilterName === filterName}
+                  >
+                    ${filterName}</md-select-option
+                  >`,
+              )}
+            </md-filled-select>
+            <span class="filter-menu-button">
+              <input
+                type="file"
+                accept="application/json"
+                id="filters-import-field"
+                @change=${this.handleImportFieldChanged}
+              />
+              <md-icon-button
+                id="filter-menu-button"
+                @click=${() => {
+                  if (this.filterMenu) {
+                    this.filterMenu.open = !this.filterMenu.open;
+                  }
+                }}
+                ><md-icon>more_vert</md-icon></md-icon-button
+              >
+              <md-menu anchor="filter-menu-button">
+                <md-menu-item
+                  type="button"
+                  href="#"
+                  @click=${() => this.showFilterDialog()}
+                >
+                  <md-icon slot="start">edit</md-icon>
+                  <div slot="headline">Edit</div>
+                </md-menu-item>
+                <md-menu-item
+                  type="button"
+                  href="#"
+                  @click=${() => this.duplicateFilter()}
+                >
+                  <md-icon slot="start">content_copy</md-icon>
+                  <div slot="headline">Duplicate</div>
+                </md-menu-item>
+                <md-menu-item
+                  type="button"
+                  href="#"
+                  @click=${() => this.deleteFilter(this.selectedFilterName)}
+                  style="--md-menu-item-leading-icon-color:var(--oscd-error); --md-menu-item-label-text-color:var(--oscd-error)"
+                >
+                  <md-icon slot="start">delete</md-icon>
+                  <div slot="headline">Delete</div>
+                </md-menu-item>
+                <md-divider></md-divider>
+                <md-menu-item
+                  type="button"
+                  href="#"
+                  @click=${() => this.importFilters()}
+                >
+                  <md-icon slot="start">publish</md-icon>
+                  <div slot="headline">Import Filters</div>
+                </md-menu-item>
+                <md-menu-item
+                  type="button"
+                  href="#"
+                  @click=${() => this.exportFilters()}
+                >
+                  <md-icon slot="start">download</md-icon>
+                  <div slot="headline">Export Filters</div>
+                </md-menu-item>
+              </md-menu>
+            </span>
+          </div>
+
           <md-filled-select
             required
-            supporting-text=${this.selectedFilter.description}
-            label="Comparison Rules"
-            .value=${this.selectedFilterName}
-            @change=${(event: Event) => {
-              this.setSelectedFilterName(
-                (event.target as MdFilledSelect).value,
-              );
-            }}
+            id="doc1"
+            label="From document"
+            @change=${() => this.requestUpdate()}
           >
-            <md-icon slot="leading-icon">filter_list</md-icon>
-            ${Object.keys(this.filters).map(
-              (filterName: string) =>
-                html`<md-select-option
-                  value=${filterName}
-                  ?selected=${this.selectedFilterName === filterName}
-                >
-                  ${filterName}</md-select-option
+            <md-icon slot="leading-icon">draft</md-icon>
+            ${Object.keys(this.docs).map(
+              name =>
+                html`<md-select-option value="${name}"
+                  >${name}</md-select-option
                 >`,
             )}
           </md-filled-select>
-          <span class="filter-menu-button">
-            <input
-              type="file"
-              accept="application/json"
-              id="filters-import-field"
-              @change=${this.handleImportFieldChanged}
-            />
-            <md-icon-button
-              id="filter-menu-button"
-              @click=${() => {
-                if (this.filterMenu) {
-                  this.filterMenu.open = !this.filterMenu.open;
-                }
-              }}
-              ><md-icon>more_vert</md-icon></md-icon-button
-            >
-            <md-menu anchor="filter-menu-button">
-              <md-menu-item
-                type="button"
-                href="#"
-                @click=${() => this.showFilterDialog()}
-              >
-                <md-icon slot="start">edit</md-icon>
-                <div slot="headline">Edit</div>
-              </md-menu-item>
-              <md-menu-item
-                type="button"
-                href="#"
-                @click=${() => this.duplicateFilter()}
-              >
-                <md-icon slot="start">content_copy</md-icon>
-                <div slot="headline">Duplicate</div>
-              </md-menu-item>
-              <md-menu-item
-                type="button"
-                href="#"
-                @click=${() => this.deleteFilter(this.selectedFilterName)}
-                style="--md-menu-item-leading-icon-color:var(--oscd-error); --md-menu-item-label-text-color:var(--oscd-error)"
-              >
-                <md-icon slot="start">delete</md-icon>
-                <div slot="headline">Delete</div>
-              </md-menu-item>
-              <md-divider></md-divider>
-              <md-menu-item
-                type="button"
-                href="#"
-                @click=${() => this.importFilters()}
-              >
-                <md-icon slot="start">publish</md-icon>
-                <div slot="headline">Import Filters</div>
-              </md-menu-item>
-              <md-menu-item
-                type="button"
-                href="#"
-                @click=${() => this.exportFilters()}
-              >
-                <md-icon slot="start">download</md-icon>
-                <div slot="headline">Export Filters</div>
-              </md-menu-item>
-            </md-menu>
-          </span>
-        </div>
-
-        <md-filled-select
-          required
-          id="doc1"
-          label="From document"
-          @change=${() => this.requestUpdate()}
-        >
-          <md-icon slot="leading-icon">draft</md-icon>
-          ${Object.keys(this.docs).map(
-            name =>
-              html`<md-select-option value="${name}"
-                >${name}</md-select-option
-              >`,
-          )}
-        </md-filled-select>
-        <md-filled-select
-          required
-          id="doc2"
-          label="To document"
-          @change=${() => this.requestUpdate()}
-          style="--md-sys-color-primary: var(--oscd-secondary)"
-        >
-          <md-icon slot="leading-icon">draft</md-icon>
-          ${Object.keys(this.docs).map(
-            name =>
-              html`<md-select-option value="${name}"
-                >${name}</md-select-option
-              >`,
-          )}
-        </md-filled-select>
-
-        <md-filled-text-field
-          label=${this.individuallyScoped ? 'From Scope' : 'Scope'}
-          style=${!this.individuallyScoped ? 'grid-column: 1/3;' : ''}
-          type="textarea"
-          rows="4"
-          id="doc1sel"
-          .value=${this.selectedFilter.ourSelector}
-          .placeholder=${this.docs[this.docName1]?.documentElement.tagName ||
-          ':root'}
-          @change=${() => {
-            if (this.doc2sel?.placeholder) {
-              this.doc2sel!.placeholder = this.selector1;
-            }
-          }}
-        >
-          <md-icon slot="leading-icon">plagiarism</md-icon>
-        </md-filled-text-field>
-
-        ${this.individuallyScoped
-          ? html`<md-filled-text-field
-              label="To Scope"
-              style="--md-sys-color-primary: var(--oscd-secondary);"
-              type="textarea"
-              rows="4"
-              id="doc2sel"
-              .value=${this.selectedFilter.theirSelector}
-              .placeholder=${this.selector1}
-            >
-              <md-icon slot="leading-icon">plagiarism</md-icon>
-            </md-filled-text-field>`
-          : nothing}
-
-        <label class="individually-scoped-checkbox-label">
-          <md-checkbox
-            touch-target="wrapper"
-            ?checked=${this.individuallyScoped}
-            @change=${(event: Event) => {
-              this.individuallyScoped = (
-                event.target as HTMLInputElement
-              ).checked;
-            }}
-          ></md-checkbox>
-          Separate From/To scopes
-        </label>
-
-        ${until(
-          promise.then(
-            () =>
-              html`<md-filled-button
-                ?disabled=${!this.docName1 || !this.docName2}
-                style="grid-column: 1/3;"
-                @click=${() => {
-                  const doc1 = this.docs[this.docName1];
-                  const doc2 = this.docs[this.docName2];
-                  if (!doc1 || !doc2) {
-                    return;
-                  }
-                  const options = {
-                    attributes: this.selectedFilter.attributes,
-                    selectors: this.selectedFilter.selectors,
-                    namespaces: this.selectedFilter.namespaces,
-                  };
-                  const ourHasher = newHasher(options);
-                  const theirHasher = newHasher(options);
-                  let elements: Record<
-                    string,
-                    { ours?: Element; theirs?: Element }
-                  > = {};
-
-                  const shouldDiffElement = createHashElementPredicate(options);
-
-                  Array.from(
-                    this.docs[this.docName1]?.querySelectorAll(this.selector1),
-                  )
-                    .filter(shouldDiffElement)
-                    .forEach(el => {
-                      const id = identity(el);
-                      if (!elements[id]) {
-                        elements[id] = {};
-                      }
-                      elements[id].ours = el;
-                    });
-
-                  Array.from(
-                    this.docs[this.docName2]?.querySelectorAll(this.selector2),
-                  )
-                    .filter(shouldDiffElement)
-                    .forEach(el => {
-                      const id = identity(el);
-                      if (!elements[id]) {
-                        elements[id] = {};
-                      }
-                      elements[id].theirs = el;
-                    });
-
-                  if (Object.keys(elements).length === 2) {
-                    const [
-                      { ours: ours1, theirs: theirs1 },
-                      { ours: ours2, theirs: theirs2 },
-                    ] = Object.values(elements);
-                    const ours = ours1 || ours2;
-                    const theirs = theirs1 || theirs2;
-                    const ourId = ours ? identity(ours) : false;
-                    const theirId = theirs ? identity(theirs) : false;
-                    if (ourId && theirId && ourId !== theirId) {
-                      elements = {
-                        [`${ourId} -> ${theirId}`]: {
-                          ours: elements[ourId!]?.ours,
-                          theirs: elements[theirId!]?.theirs,
-                        },
-                      };
-                    }
-                  }
-                  this.lastDiff = {
-                    elements,
-                    ourHasher,
-                    theirHasher,
-                    filter: this.selectedFilter,
-                    filterName: this.selectedFilterName,
-                    ourSelector: this.selector1,
-                    theirSelector: this.selector2,
-                    ourDocName: this.docName1,
-                    theirDocName: this.docName2,
-                  };
-                }}
-              >
-                Compare
-                <md-icon slot="icon">difference</md-icon>
-              </md-filled-button>`,
-          ),
-          html`<md-filled-button
-            disabled
-            style="grid-column: 1/3; --md-filled-button-icon-size: 32px;"
+          <md-filled-select
+            required
+            id="doc2"
+            label="To document"
+            @change=${() => this.requestUpdate()}
+            style="--md-sys-color-primary: var(--oscd-secondary)"
           >
-            Compare
-            <md-circular-progress
-              style="--md-circular-progress-active-indicator-color: var(--oscd-base00);"
-              slot="icon"
-              indeterminate
-            ></md-circular-progress>
-          </md-filled-button>`,
-        )}
+            <md-icon slot="leading-icon">draft</md-icon>
+            ${Object.keys(this.docs).map(
+              name =>
+                html`<md-select-option value="${name}"
+                  >${name}</md-select-option
+                >`,
+            )}
+          </md-filled-select>
 
-        <filter-dialog
-          filterName="${this.selectedFilterName}"
-          .existingFilterNames=${Object.keys(this.filters).filter(
-            name => name !== this.selectedFilterName,
+          <md-filled-text-field
+            label=${this.individuallyScoped ? 'From Scope' : 'Scope'}
+            style=${!this.individuallyScoped ? 'grid-column: 1/3;' : ''}
+            type="textarea"
+            rows="4"
+            id="doc1sel"
+            .value=${this.selectedFilter.ourSelector}
+            .placeholder=${this.docs[this.docName1]?.documentElement.tagName ||
+            ':root'}
+            @change=${() => {
+              if (this.doc2sel?.placeholder) {
+                this.doc2sel!.placeholder = this.selector1;
+              }
+            }}
+          >
+            <md-icon slot="leading-icon">plagiarism</md-icon>
+          </md-filled-text-field>
+
+          ${this.individuallyScoped
+            ? html`<md-filled-text-field
+                label="To Scope"
+                style="--md-sys-color-primary: var(--oscd-secondary);"
+                type="textarea"
+                rows="4"
+                id="doc2sel"
+                .value=${this.selectedFilter.theirSelector}
+                .placeholder=${this.selector1}
+              >
+                <md-icon slot="leading-icon">plagiarism</md-icon>
+              </md-filled-text-field>`
+            : nothing}
+
+          <label class="individually-scoped-checkbox-label">
+            <md-checkbox
+              touch-target="wrapper"
+              ?checked=${this.individuallyScoped}
+              @change=${(event: Event) => {
+                this.individuallyScoped = (
+                  event.target as HTMLInputElement
+                ).checked;
+              }}
+            ></md-checkbox>
+            Separate From/To scopes
+          </label>
+
+          ${until(
+            promise.then(
+              () =>
+                html`<md-filled-button
+                  ?disabled=${!this.docName1 || !this.docName2}
+                  style="grid-column: 1/3;"
+                  @click=${() => {
+                    const doc1 = this.docs[this.docName1];
+                    const doc2 = this.docs[this.docName2];
+                    if (!doc1 || !doc2) {
+                      return;
+                    }
+                    const options = {
+                      attributes: this.selectedFilter.attributes,
+                      selectors: this.selectedFilter.selectors,
+                      namespaces: this.selectedFilter.namespaces,
+                    };
+                    const ourHasher = newHasher(options);
+                    const theirHasher = newHasher(options);
+                    let elements: Record<
+                      string,
+                      { ours?: Element; theirs?: Element }
+                    > = {};
+
+                    const shouldDiffElement =
+                      createHashElementPredicate(options);
+
+                    Array.from(
+                      this.docs[this.docName1]?.querySelectorAll(
+                        this.selector1,
+                      ),
+                    )
+                      .filter(shouldDiffElement)
+                      .forEach(el => {
+                        const id = identity(el);
+                        if (!elements[id]) {
+                          elements[id] = {};
+                        }
+                        elements[id].ours = el;
+                      });
+
+                    Array.from(
+                      this.docs[this.docName2]?.querySelectorAll(
+                        this.selector2,
+                      ),
+                    )
+                      .filter(shouldDiffElement)
+                      .forEach(el => {
+                        const id = identity(el);
+                        if (!elements[id]) {
+                          elements[id] = {};
+                        }
+                        elements[id].theirs = el;
+                      });
+
+                    if (Object.keys(elements).length === 2) {
+                      const [
+                        { ours: ours1, theirs: theirs1 },
+                        { ours: ours2, theirs: theirs2 },
+                      ] = Object.values(elements);
+                      const ours = ours1 || ours2;
+                      const theirs = theirs1 || theirs2;
+                      const ourId = ours ? identity(ours) : false;
+                      const theirId = theirs ? identity(theirs) : false;
+                      if (ourId && theirId && ourId !== theirId) {
+                        elements = {
+                          [`${ourId} -> ${theirId}`]: {
+                            ours: elements[ourId!]?.ours,
+                            theirs: elements[theirId!]?.theirs,
+                          },
+                        };
+                      }
+                    }
+                    this.lastDiff = {
+                      elements,
+                      ourHasher,
+                      theirHasher,
+                      filter: this.selectedFilter,
+                      filterName: this.selectedFilterName,
+                      ourSelector: this.selector1,
+                      theirSelector: this.selector2,
+                      ourDocName: this.docName1,
+                      theirDocName: this.docName2,
+                    };
+                  }}
+                >
+                  Compare
+                  <md-icon slot="icon">difference</md-icon>
+                </md-filled-button>`,
+            ),
+            html`<md-filled-button
+              disabled
+              style="grid-column: 1/3; --md-filled-button-icon-size: 32px;"
+            >
+              Compare
+              <md-circular-progress
+                style="--md-circular-progress-active-indicator-color: var(--oscd-base00);"
+                slot="icon"
+                indeterminate
+              ></md-circular-progress>
+            </md-filled-button>`,
           )}
-          .filter=${this.selectedFilter}
-          @oscd-diff-filter-save=${async (event: OscdDiffFilterSaveEvent) => {
-            this.setFilters({
-              ...this.filters,
-              [event.detail.newName]: event.detail.filter,
-            });
-            if (event.detail.newName !== event.detail.oldName) {
-              this.deleteFilter(event.detail.oldName);
-              await this.updateComplete;
-              this.setSelectedFilterName(event.detail.newName);
-            }
-          }}
-        ></filter-dialog>
+
+          <filter-dialog
+            filterName="${this.selectedFilterName}"
+            .existingFilterNames=${Object.keys(this.filters).filter(
+              name => name !== this.selectedFilterName,
+            )}
+            .filter=${this.selectedFilter}
+            @oscd-diff-filter-save=${async (event: OscdDiffFilterSaveEvent) => {
+              this.setFilters({
+                ...this.filters,
+                [event.detail.newName]: event.detail.filter,
+              });
+              if (event.detail.newName !== event.detail.oldName) {
+                this.deleteFilter(event.detail.oldName);
+                await this.updateComplete;
+                this.setSelectedFilterName(event.detail.newName);
+              }
+            }}
+          ></filter-dialog>
+          <info-dialog heading="SCL Comparison Tool"></info-dialog>
+        </div>
+        <md-icon-button @click=${() => this.showInfoDialog()}
+          ><md-icon>info</md-icon></md-icon-button
+        >
       </div>
       <div
         id="diff-container"
@@ -755,6 +787,11 @@ export default class OscdDiff extends LitElement {
       --md-sys-color-surface-container-high: var(--oscd-base3);
       --md-sys-color-surface-container-highest: var(--oscd-base3);
       --md-sys-color-outline-variant: var(--oscd-base0);
+    }
+
+    div:first-child {
+      display: flex;
+      justify-content: space-between;
     }
 
     :host .filter-section {
