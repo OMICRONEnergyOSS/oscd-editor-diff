@@ -327,7 +327,9 @@ export class DiffTree extends LitElement {
       const { LDevice, LN, DOI, SDI, DAI } = getFcdaInstDesc(
         element as Element,
       );
-      desc = [LDevice, LN, DOI, ...(SDI ?? []), DAI].filter(Boolean).join(' ');
+      desc = [LDevice, LN, DOI, ...(SDI ?? []), DAI]
+        .filter(Boolean)
+        .join(' > ');
     }
     if (desc) {
       desc = `: ${desc}`;
