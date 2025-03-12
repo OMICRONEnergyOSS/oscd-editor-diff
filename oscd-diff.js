@@ -23980,7 +23980,7 @@ See www.iec.ch/CCv1 for copyright details
           color: ${t};
         }
       </style>
-      ${a}`;let n=r.getAttribute("desc")||"";if(r.tagName==="FCDA"){const{LDevice:i,LN:c,DOI:l,SDI:u,DAI:m}=qc(r);n=[i,c,l,...u??[],m].filter(Boolean).join(" ")}return n&&(n=` > ${n}`),e!==r.tagName&&(n=`${r.tagName}${n}`),p`<div class="header-row">
+      ${a}`;let n=r.getAttribute("desc")||"";if(r.tagName==="FCDA"){const{LDevice:i,LN:c,DOI:l,SDI:u,DAI:m}=qc(r);n=[i,c,l,...u??[],m].filter(Boolean).join(" > ")}return n&&(n=`: ${n}`),e!==r.tagName&&(n=`${r.tagName}${n}`),p`<div class="header-row">
         <button
           @click=${()=>{this.expanded=!this.expanded,this.dispatchEvent(new CustomEvent("diff-toggle",{bubbles:!0,composed:!0,detail:{expanded:this.expanded}}))}}
         >
@@ -24739,7 +24739,19 @@ DataTypeTemplates
           <li>${Ar(e.namespaces,"namespaces")}</li>
         </ul>
       </div>
-    `}render(){const e=Promise.all(Object.values(this.lastDiff?.elements??{}).map(({ours:t,theirs:a})=>{const s=t&&this.lastDiff?.ourHasher,n=s&&un(t,s),i=a&&this.lastDiff?.theirHasher,c=i&&un(a,i);return Promise.all([n,c])}));return p`<div>
+    `}renderViewButtons(){return Object.keys(this.lastDiff?.elements??{}).length?p`<div class="view-buttons">
+          <md-filled-icon-button @click=${()=>this.printMe()}>
+            <md-icon>print</md-icon>
+          </md-filled-icon-button>
+          <md-filled-icon-button
+            toggle
+            ?selected=${this.fullscreen}
+            @click=${async()=>{this.fullscreen?await document.exitFullscreen():await this.diffContainer?.requestFullscreen(),this.requestUpdate()}}
+          >
+            <md-icon>fullscreen</md-icon>
+            <md-icon slot="selected">fullscreen_exit</md-icon>
+          </md-filled-icon-button>
+        </div>`:C}render(){const e=Promise.all(Object.values(this.lastDiff?.elements??{}).map(({ours:t,theirs:a})=>{const s=t&&this.lastDiff?.ourHasher,n=s&&un(t,s),i=a&&this.lastDiff?.theirHasher,c=i&&un(a,i);return Promise.all([n,c])}));return p`<div>
         <div class="filter-section">
           <div id="filter-selector-row">
             <md-filled-select
@@ -24901,14 +24913,17 @@ DataTypeTemplates
           ></filter-dialog>
           <info-dialog heading="SCL Comparison Tool"></info-dialog>
         </div>
-        <md-icon-button @click=${()=>this.showInfoDialog()}
-          ><md-icon>info</md-icon></md-icon-button
-        >
+        <div class="aside-actions-container">
+          <md-icon-button @click=${()=>this.showInfoDialog()}
+            ><md-icon>info</md-icon></md-icon-button
+          >
+          ${this.fullscreen?C:this.renderViewButtons()}
+        </div>
       </div>
       <div
         id="diff-container"
         @fullscreenchange=${()=>this.requestUpdate()}
-        .class=${this.fullscreen?"fullscreen":C}
+        class=${this.fullscreen?"fullscreen":""}
       >
         <style>
           @media print {
@@ -24931,19 +24946,7 @@ DataTypeTemplates
           }
         </style>
         ${this.renderFilterDescription()}
-        ${Object.keys(this.lastDiff?.elements??{}).length?p`<div class="view-buttons">
-              <md-filled-icon-button @click=${()=>this.printMe()}>
-                <md-icon>print</md-icon>
-              </md-filled-icon-button>
-              <md-filled-icon-button
-                toggle
-                ?selected=${this.fullscreen}
-                @click=${async()=>{this.fullscreen?await document.exitFullscreen():await this.diffContainer?.requestFullscreen(),this.requestUpdate()}}
-              >
-                <md-icon>fullscreen</md-icon>
-                <md-icon slot="selected">fullscreen_exit</md-icon>
-              </md-filled-icon-button>
-            </div>`:C}
+        ${this.fullscreen?this.renderViewButtons():C}
         ${zr(e.then(()=>{let t=!0;const a=Object.keys(this.lastDiff?.elements??{}).map(s=>{const{ours:n,theirs:i}=this.lastDiff.elements[s],{ourHasher:c,theirHasher:l}=this.lastDiff,u=n&&c.hash(n),m=i&&l.hash(i);return u!==m?(t=!1,p`<diff-tree
                   .ours=${n}
                   .theirs=${i}
@@ -24959,6 +24962,7 @@ DataTypeTemplates
 
     :host {
       font-family: var(--oscd-text-font);
+      color: var(--oscd-base01);
       display: block;
       padding: 0.5rem;
       --oscd-text-font: var(--oscd-theme-text-font, 'Roboto');
@@ -24980,11 +24984,10 @@ DataTypeTemplates
     div:first-child {
       display: flex;
       justify-content: space-between;
+      max-width: calc(100vw - 32px);
     }
 
     :host .filter-section {
-      color: var(--oscd-base02);
-      font-family: var(--oscd-text-font);
       display: grid;
       gap: 12px;
       grid-template-columns: max-content max-content;
@@ -25004,6 +25007,27 @@ DataTypeTemplates
       height: 0;
     }
 
+    .aside-actions-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: end;
+    }
+
+    .aside-actions-container .view-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    #diff-container {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      background-color: var(--oscd-base2);
+      gap: 0px;
+    }
+
     #diff-container.fullscreen {
       height: 100vh;
       overflow-y: auto;
@@ -25016,22 +25040,6 @@ DataTypeTemplates
       z-index: 10001;
     }
 
-    #diff-container {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      background-color: var(--oscd-base2);
-      gap: 0px;
-    }
-
-    .view-buttons {
-      max-width: calc(100vw - 64px);
-      display: flex;
-      flex-grow: 1;
-      justify-content: end;
-      gap: 8px;
-    }
-
     #filter-description {
       display: none;
     }
@@ -25041,7 +25049,7 @@ DataTypeTemplates
     }
 
     diff-tree {
-      max-width: calc(100vw - 64px);
+      max-width: calc(100vw - 32px);
     }
 
     .fullscreen diff-tree {
