@@ -384,6 +384,31 @@ export default class OscdDiff extends LitElement {
     `;
   }
 
+  renderViewButtons() {
+    return Object.keys(this.lastDiff?.elements ?? {}).length
+      ? html`<div class="view-buttons">
+          <md-filled-icon-button @click=${() => this.printMe()}>
+            <md-icon>print</md-icon>
+          </md-filled-icon-button>
+          <md-filled-icon-button
+            toggle
+            ?selected=${this.fullscreen}
+            @click=${async () => {
+              if (this.fullscreen) {
+                await document.exitFullscreen();
+              } else {
+                await this.diffContainer?.requestFullscreen();
+              }
+              this.requestUpdate();
+            }}
+          >
+            <md-icon>fullscreen</md-icon>
+            <md-icon slot="selected">fullscreen_exit</md-icon>
+          </md-filled-icon-button>
+        </div>`
+      : nothing;
+  }
+
   render() {
     const promise = Promise.all(
       Object.values(this.lastDiff?.elements ?? {}).map(({ ours, theirs }) => {
@@ -681,14 +706,17 @@ export default class OscdDiff extends LitElement {
           ></filter-dialog>
           <info-dialog heading="SCL Comparison Tool"></info-dialog>
         </div>
-        <md-icon-button @click=${() => this.showInfoDialog()}
-          ><md-icon>info</md-icon></md-icon-button
-        >
+        <div class="aside-actions-container">
+          <md-icon-button @click=${() => this.showInfoDialog()}
+            ><md-icon>info</md-icon></md-icon-button
+          >
+          ${this.fullscreen ? nothing : this.renderViewButtons()}
+        </div>
       </div>
       <div
         id="diff-container"
         @fullscreenchange=${() => this.requestUpdate()}
-        .class=${this.fullscreen ? 'fullscreen' : nothing}
+        class=${this.fullscreen ? 'fullscreen' : ''}
       >
         <style>
           @media print {
@@ -711,28 +739,7 @@ export default class OscdDiff extends LitElement {
           }
         </style>
         ${this.renderFilterDescription()}
-        ${Object.keys(this.lastDiff?.elements ?? {}).length
-          ? html`<div class="view-buttons">
-              <md-filled-icon-button @click=${() => this.printMe()}>
-                <md-icon>print</md-icon>
-              </md-filled-icon-button>
-              <md-filled-icon-button
-                toggle
-                ?selected=${this.fullscreen}
-                @click=${async () => {
-                  if (this.fullscreen) {
-                    await document.exitFullscreen();
-                  } else {
-                    await this.diffContainer?.requestFullscreen();
-                  }
-                  this.requestUpdate();
-                }}
-              >
-                <md-icon>fullscreen</md-icon>
-                <md-icon slot="selected">fullscreen_exit</md-icon>
-              </md-filled-icon-button>
-            </div>`
-          : nothing}
+        ${this.fullscreen ? this.renderViewButtons() : nothing}
         ${until(
           promise.then(() => {
             let same = true;
@@ -771,6 +778,7 @@ export default class OscdDiff extends LitElement {
 
     :host {
       font-family: var(--oscd-text-font);
+      color: var(--oscd-base01);
       display: block;
       padding: 0.5rem;
       --oscd-text-font: var(--oscd-theme-text-font, 'Roboto');
@@ -792,11 +800,10 @@ export default class OscdDiff extends LitElement {
     div:first-child {
       display: flex;
       justify-content: space-between;
+      max-width: calc(100vw - 32px);
     }
 
     :host .filter-section {
-      color: var(--oscd-base02);
-      font-family: var(--oscd-text-font);
       display: grid;
       gap: 12px;
       grid-template-columns: max-content max-content;
@@ -816,6 +823,27 @@ export default class OscdDiff extends LitElement {
       height: 0;
     }
 
+    .aside-actions-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: end;
+    }
+
+    .aside-actions-container .view-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    #diff-container {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      background-color: var(--oscd-base2);
+      gap: 0px;
+    }
+
     #diff-container.fullscreen {
       height: 100vh;
       overflow-y: auto;
@@ -828,22 +856,6 @@ export default class OscdDiff extends LitElement {
       z-index: 10001;
     }
 
-    #diff-container {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      background-color: var(--oscd-base2);
-      gap: 0px;
-    }
-
-    .view-buttons {
-      max-width: calc(100vw - 64px);
-      display: flex;
-      flex-grow: 1;
-      justify-content: end;
-      gap: 8px;
-    }
-
     #filter-description {
       display: none;
     }
@@ -853,7 +865,7 @@ export default class OscdDiff extends LitElement {
     }
 
     diff-tree {
-      max-width: calc(100vw - 64px);
+      max-width: calc(100vw - 32px);
     }
 
     .fullscreen diff-tree {
