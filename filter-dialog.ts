@@ -267,6 +267,7 @@ export class FilterDialog extends LitElement {
             style="grid-column: 1 / 3"
             type="textarea"
             rows="3"
+            cols="48"
             .value=${this.selectorsVals.join('\n')}
             @input=${(event: Event) => {
               const { value } = event.target as MdOutlinedTextField;
@@ -276,6 +277,7 @@ export class FilterDialog extends LitElement {
           <md-outlined-text-field
             type="textarea"
             rows="3"
+            cols="48"
             label="Except"
             .value=${this.selectorsExcept.join('\n')}
             @input=${(event: Event) => {
@@ -297,6 +299,7 @@ export class FilterDialog extends LitElement {
             label="${this.attributesInclusive ? 'Include' : 'Exclude'}"
             style="grid-column: 1 / 3"
             type="textarea"
+            cols="48"
             rows="3"
             .value=${this.attributesVals.join('\n')}
             @input=${(event: Event) => {
@@ -307,6 +310,7 @@ export class FilterDialog extends LitElement {
           <md-outlined-text-field
             type="textarea"
             rows="3"
+            cols="48"
             label="Except"
             .value=${this.attributesExcept.join('\n')}
             @input=${(event: Event) => {
