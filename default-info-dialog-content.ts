@@ -35,7 +35,7 @@ export const DefaultInfoDialogContent = `
 </p>
 <h2 id="quick-start">Quick Start</h2>
 <p>
-  At the top top, a set of predefined comparison rules for common tasks are
+  At the top, a set of predefined comparison rules for common tasks are
   provided. Click the three dots on the right to duplicate/delete or to
   import/export the filters.
 </p>
