@@ -9,7 +9,7 @@ export const DefaultInfoDialogContent = `
   detail. Comparisons can occur within a document or between two documents. Pre-defined
   comparison rules are available for common use cases and users may create new
   comparison rules as well as export and import rules to allow them to be shared
-  (the rules are saved as JSON files)
+  (the rules are saved as JSON files).
 </p>
 <p>
   Comparisons on large files may take a considerable time - 10-15 minutes on a
