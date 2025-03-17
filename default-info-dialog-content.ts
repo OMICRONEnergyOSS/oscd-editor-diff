@@ -6,7 +6,7 @@ export const DefaultInfoDialogContent = `
 </p>
 <p>
   Users may compare only particular elements and specify these in considerable
-  detail. Comparisons can occur between one or more documents. Pre-defined
+  detail. Comparisons can occur within a document or between two documents. Pre-defined
   comparison rules are available for common use cases and users may create new
   comparison rules as well as export and import rules to allow them to be shared
   (the rules are saved as JSON files)
