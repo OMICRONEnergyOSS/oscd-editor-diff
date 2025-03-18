@@ -125,52 +125,6 @@ export interface ElementDB {
   h2e: Map<string, Set<Element>>;
 }
 
-const identifiers: Record<string, string[]> = {
-  DAI: ['name', 'ix'],
-  SMV: ['ldInst', 'cbName'],
-  LNode: ['iedName', 'ldInst', 'prefix', 'lnClass', 'lnInst', 'lnType'],
-  FCDA: [
-    'ldInst',
-    'prefix',
-    'lnClass',
-    'lnInst',
-    'doName',
-    'daName',
-    'fc',
-    'ix',
-  ],
-  ConnectedAP: ['iedName', 'apName'],
-  ExtRef: [
-    'iedName',
-    'intAddr',
-    'ldInst',
-    'prefix',
-    'lnClass',
-    'lnInst',
-    'doName',
-    'daName',
-    'serviceType',
-    'srcLDInst',
-    'srcPrefix',
-    'srcLNClass',
-    'srcLNInst',
-    'srcCBName',
-  ],
-  Terminal: ['connectivityNode'],
-  SDI: ['name', 'ix'],
-  LN0: ['prefix', 'lnClass', 'inst'],
-  GSE: ['ldInst', 'cbName'],
-  Hitem: ['version', 'revision'],
-  LDevice: ['IED', 'inst'],
-  IEDName: ['apRef', 'ldInst', 'prefix', 'lnClass', 'lnInst'],
-  PhysConn: ['type'],
-  Association: ['iedName', 'ldInst', 'prefix', 'lnClass', 'lnInst', 'lnType'],
-  ClientLN: ['apRef', 'iedName', 'ldInst', 'prefix', 'lnClass', 'lnInst'],
-  KDC: ['iedName', 'apName'],
-  LN: ['prefix', 'lnClass', 'inst'],
-  AccessPoint: ['name'],
-};
-
 interface Reference {
   fields: { to: string; from: string }[];
   to: string;
@@ -815,7 +769,6 @@ export function hasher(
     includedAttributes
       .filter(a => !a.namespaceURI)
       .map(a => a.localName)
-      .filter(a => !(e.tagName in identifiers && a in identifiers[e.tagName]))
       .sort()
       .forEach(name => {
         if (e.tagName in defaults && name in defaults[e.tagName]) {

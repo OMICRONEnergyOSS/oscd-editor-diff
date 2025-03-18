@@ -16,20 +16,50 @@ import {
 
 import './diff-tree.js';
 import './filter-dialog.js';
+import './base-filter-dialog.js';
 import './info-dialog.js';
 import type { FilterDialog, OscdDiffFilterSaveEvent } from './filter-dialog.js';
 import type { InfoDialog } from './info-dialog.js';
-import { defaultFilters } from './default-filters.js';
+import {
+  defaultBaseFilters,
+  defaultFilters,
+  extendFilter,
+} from './default-filters.js';
 import { DefaultInfoDialogContent } from './default-info-dialog-content.js';
 import { loadResource } from './util.js';
+import type {
+  BaseFilterDialog,
+  OscdDiffBaseFilterSaveEvent,
+} from './base-filter-dialog.js';
 
 const INFO_CONTENT_URL = './oscd-diff-info-content.html';
 export const HELP_CONTENT_URL = './oscd-diff-help-content.html';
+export const HELP_CONTENT_BASE_URL = './oscd-diff-help-base-content.html';
+
+export type BaseConfigurable = {
+  vals: string[];
+  except: string[];
+};
+export type BaseOptions = {
+  selectors: BaseConfigurable;
+  attributes: BaseConfigurable;
+  namespaces: BaseConfigurable;
+};
+
+export type BaseFilter = {
+  inclusive: BaseOptions;
+  exclusive: BaseOptions;
+};
 
 export type Filter = HasherOptions & {
   description: string;
   ourSelector: string;
   theirSelector: string;
+};
+
+export type StoredFilters = {
+  base: BaseFilter;
+  filters: Record<string, Filter>;
 };
 
 function hasPropertyOfType(
@@ -50,6 +80,35 @@ async function hashElement(el: Element, hasher: ReturnType<typeof newHasher>) {
     setTimeout(resolve, 0);
   });
   return hasher.hash(el);
+}
+
+function isValidBaseConfigurable(configurable: BaseConfigurable) {
+  return (
+    Array.isArray(configurable.vals) &&
+    Array.isArray(configurable.except) &&
+    configurable.vals.every(s => typeof s === 'string') &&
+    configurable.except.every(s => typeof s === 'string')
+  );
+}
+
+function isValidBaseOptions(options: BaseOptions) {
+  return (
+    isValidBaseConfigurable(options.selectors) &&
+    isValidBaseConfigurable(options.attributes) &&
+    isValidBaseConfigurable(options.namespaces)
+  );
+}
+
+export function isBaseFilter(obj: object): obj is BaseFilter {
+  const baseFilter = obj as BaseFilter;
+  if (!baseFilter.inclusive || !baseFilter.exclusive) {
+    return false;
+  }
+
+  return (
+    isValidBaseOptions(baseFilter.inclusive) &&
+    isValidBaseOptions(baseFilter.exclusive)
+  );
 }
 
 export function isFilter(obj: object): obj is Filter {
@@ -150,6 +209,8 @@ export default class OscdDiff extends LitElement {
 
   @query('filter-dialog') filterDialog?: FilterDialog;
 
+  @query('base-filter-dialog') baseFilterDialog?: BaseFilterDialog;
+
   @query('info-dialog') infoDialog?: InfoDialog;
 
   @query('md-menu') filterMenu?: MdMenu;
@@ -157,6 +218,8 @@ export default class OscdDiff extends LitElement {
   @query('#diff-container') diffContainer?: HTMLDivElement;
 
   @state() filters: Record<string, Filter> = defaultFilters;
+
+  @state() baseFilter: BaseFilter = defaultBaseFilters;
 
   @state()
   selectedFilterName: string = '';
@@ -174,8 +237,20 @@ export default class OscdDiff extends LitElement {
   @state() individuallyScoped = false;
 
   setFilters(updatedFilters: Record<string, Filter>) {
-    localStorage.setItem('oscd-diff-filters', JSON.stringify(updatedFilters));
     this.filters = updatedFilters;
+    this.storeFilters();
+  }
+
+  setBaseFilter(updatedBaseFilter: BaseFilter) {
+    this.baseFilter = updatedBaseFilter;
+    this.storeFilters();
+  }
+
+  storeFilters() {
+    localStorage.setItem(
+      'oscd-diff-filters',
+      JSON.stringify({ base: this.baseFilter, filters: this.filters }),
+    );
   }
 
   async deleteFilter(filterName: string) {
@@ -229,9 +304,13 @@ export default class OscdDiff extends LitElement {
     const filtersStr = localStorage.getItem('oscd-diff-filters');
     if (filtersStr) {
       try {
-        const filters = JSON.parse(filtersStr) as Record<string, Filter>;
-        if (Object.keys(filters).length > 0) {
-          this.filters = filters;
+        const storedFilters = JSON.parse(filtersStr) as StoredFilters;
+        if (
+          storedFilters.base &&
+          Object.keys(storedFilters.filters).length > 0
+        ) {
+          this.filters = storedFilters.filters;
+          this.baseFilter = storedFilters.base;
         }
       } catch (e) {
         // eslint-disable-next-line no-console
@@ -254,8 +333,28 @@ export default class OscdDiff extends LitElement {
       return;
     }
     try {
-      const importedFilters = JSON.parse(await files[0].text());
-      if (typeof importedFilters !== 'object') {
+      const importedJson = JSON.parse(await files[0].text());
+      if (typeof importedJson !== 'object') {
+        // eslint-disable-next-line no-console
+        console.error('Invalid file format', importedJson);
+        return;
+      }
+      let importedFilters;
+      let baseFilter;
+      if (importedJson.base && importedJson.filters) {
+        importedFilters = importedJson.filters;
+        if (!isBaseFilter(importedJson.base)) {
+          // eslint-disable-next-line no-console
+          console.error('Invalid base filter format');
+          return;
+        }
+        baseFilter = importedJson.base as BaseFilter;
+      } else if (Object.keys(importedJson).length > 0) {
+        importedFilters = importedJson.filters;
+        baseFilter = defaultBaseFilters;
+      } else {
+        // eslint-disable-next-line no-console
+        console.error('Invalid filter format', importedJson);
         return;
       }
       const newFilters = { ...this.filters };
@@ -266,6 +365,7 @@ export default class OscdDiff extends LitElement {
           }
         },
       );
+      this.setBaseFilter(baseFilter);
       this.setFilters(newFilters);
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -281,9 +381,18 @@ export default class OscdDiff extends LitElement {
   }
 
   exportFilters() {
-    const blob = new Blob([JSON.stringify(this.filters, null, 2)], {
-      type: 'application/json',
-    });
+    const blob = new Blob(
+      [
+        JSON.stringify(
+          { base: this.baseFilter, filters: this.filters },
+          null,
+          2,
+        ),
+      ],
+      {
+        type: 'application/json',
+      },
+    );
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -295,6 +404,12 @@ export default class OscdDiff extends LitElement {
   showFilterDialog() {
     if (this.filterDialog) {
       this.filterDialog.open = true;
+    }
+  }
+
+  showBaseFilterDialog() {
+    if (this.baseFilterDialog) {
+      this.baseFilterDialog.open = true;
     }
   }
 
@@ -483,6 +598,14 @@ export default class OscdDiff extends LitElement {
                 <md-menu-item
                   type="button"
                   href="#"
+                  @click=${() => this.showBaseFilterDialog()}
+                >
+                  <md-icon slot="start">border_color</md-icon>
+                  <div slot="headline">Edit Base Rules</div>
+                </md-menu-item>
+                <md-menu-item
+                  type="button"
+                  href="#"
                   @click=${() => this.deleteFilter(this.selectedFilterName)}
                   style="--md-menu-item-leading-icon-color:var(--oscd-error); --md-menu-item-label-text-color:var(--oscd-error)"
                 >
@@ -597,13 +720,16 @@ export default class OscdDiff extends LitElement {
                     if (!doc1 || !doc2) {
                       return;
                     }
-                    const options = {
-                      attributes: this.selectedFilter.attributes,
-                      selectors: this.selectedFilter.selectors,
-                      namespaces: this.selectedFilter.namespaces,
-                    };
+
+                    const { selectors, attributes, namespaces } = extendFilter(
+                      this.baseFilter,
+                      this.selectedFilter,
+                    );
+                    const options = { selectors, attributes, namespaces };
+
                     const ourHasher = newHasher(options);
                     const theirHasher = newHasher(options);
+
                     let elements: Record<
                       string,
                       { ours?: Element; theirs?: Element }
@@ -706,6 +832,15 @@ export default class OscdDiff extends LitElement {
               }
             }}
           ></filter-dialog>
+
+          <base-filter-dialog
+            .base=${this.baseFilter}
+            @oscd-diff-base-filter-save=${async (
+              event: OscdDiffBaseFilterSaveEvent,
+            ) => {
+              this.setBaseFilter(event.detail.base);
+            }}
+          ></base-filter-dialog>
           <info-dialog heading="SCL Comparison Tool"></info-dialog>
         </div>
         <div class="aside-actions-container">
@@ -785,6 +920,7 @@ export default class OscdDiff extends LitElement {
       padding: 0.5rem;
       --oscd-text-font: var(--oscd-theme-text-font, 'Roboto');
       --oscd-text-font-mono: var(--oscd-theme-text-font-mono, 'Roboto Mono');
+      --oscd-warning: var(--oscd-theme-warning, #b58900);
       --md-sys-color-primary: var(--oscd-primary);
       --md-sys-color-secondary: var(--oscd-secondary);
       --md-sys-color-secondary-container: var(--oscd-base2);
@@ -797,6 +933,7 @@ export default class OscdDiff extends LitElement {
       --md-sys-color-surface-container-high: var(--oscd-base3);
       --md-sys-color-surface-container-highest: var(--oscd-base3);
       --md-sys-color-outline-variant: var(--oscd-base0);
+      --md-sys-color-scrim: var(--oscd-base1);
     }
 
     :host > div:first-child {
