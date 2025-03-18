@@ -423,28 +423,30 @@ export default class OscdDiff extends LitElement {
     return html`<div>
         <div class="filter-section">
           <div id="filter-selector-row">
-            <md-filled-select
-              required
-              supporting-text=${this.selectedFilter.description}
-              label="Comparison Rules"
-              .value=${this.selectedFilterName}
-              @change=${(event: Event) => {
-                this.setSelectedFilterName(
-                  (event.target as MdFilledSelect).value,
-                );
-              }}
-            >
-              <md-icon slot="leading-icon">filter_list</md-icon>
-              ${Object.keys(this.filters).map(
-                (filterName: string) =>
-                  html`<md-select-option
-                    value=${filterName}
-                    ?selected=${this.selectedFilterName === filterName}
-                  >
-                    ${filterName}</md-select-option
-                  >`,
-              )}
-            </md-filled-select>
+            <div>
+              <md-filled-select
+                required
+                label="Comparison Rules"
+                .value=${this.selectedFilterName}
+                @change=${(event: Event) => {
+                  this.setSelectedFilterName(
+                    (event.target as MdFilledSelect).value,
+                  );
+                }}
+              >
+                <md-icon slot="leading-icon">filter_list</md-icon>
+                ${Object.keys(this.filters).map(
+                  (filterName: string) =>
+                    html`<md-select-option
+                      value=${filterName}
+                      ?selected=${this.selectedFilterName === filterName}
+                    >
+                      ${filterName}</md-select-option
+                    >`,
+                )}
+              </md-filled-select>
+              <pre>${this.selectedFilter.description}</pre>
+            </div>
             <span class="filter-menu-button">
               <input
                 type="file"
@@ -797,7 +799,7 @@ export default class OscdDiff extends LitElement {
       --md-sys-color-outline-variant: var(--oscd-base0);
     }
 
-    div:first-child {
+    :host > div:first-child {
       display: flex;
       justify-content: space-between;
       max-width: calc(100vw - 32px);
@@ -806,7 +808,7 @@ export default class OscdDiff extends LitElement {
     :host .filter-section {
       display: grid;
       gap: 12px;
-      grid-template-columns: max-content max-content;
+      grid-template-columns: 1fr 1fr;
       margin: 16px;
       margin-bottom: 1em;
       align-items: center;
@@ -877,13 +879,13 @@ export default class OscdDiff extends LitElement {
     }
 
     #filter-selector-row {
-      grid-column: 1/3;
+      grid-column: 1/-1;
       display: flex;
       gap: 8px;
       align-items: start;
     }
 
-    #filter-selector-row md-filled-select {
+    #filter-selector-row > div {
       flex-grow: 1;
     }
 
@@ -922,8 +924,13 @@ export default class OscdDiff extends LitElement {
       );
     }
 
+    pre {
+      font-family: var(--oscd-text-font, 'Roboto');
+      white-space: pre-wrap;
+      margin-block: 4px;
+    }
+
     code,
-    pre,
     tt {
       font-family: var(--oscd-text-font-mono, 'Roboto Mono');
     }
