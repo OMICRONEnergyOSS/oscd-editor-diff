@@ -86,7 +86,8 @@
       "curly": [
         "error",
         "all"
-      ]
+      ],
+      "lit-a11y/no-autofocus": "off"
     }
   },
   "prettier": {

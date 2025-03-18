@@ -23,8 +23,8 @@ import { defaultFilters } from './default-filters.js';
 import { DefaultInfoDialogContent } from './default-info-dialog-content.js';
 import { loadResource } from './util.js';
 
-const INFO_CONTENT_URL = './oscd-diff-info-content.html';
-export const HELP_CONTENT_URL = './oscd-diff-help-content.html';
+const INFO_CONTENT_URL = './plugin-assets/oscd-diff/info-content.html';
+export const HELP_CONTENT_URL = './plugin-assets/oscd-diff/help-content.html';
 
 export type Filter = HasherOptions & {
   description: string;

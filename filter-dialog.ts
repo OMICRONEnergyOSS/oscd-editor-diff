@@ -213,7 +213,11 @@ export class FilterDialog extends LitElement {
       >
         <div slot="headline">
           <div>Edit Comparison Rules</div>
-          <md-icon @click=${() => this.showHelpDialog()}>help</md-icon>
+          <md-icon-button
+            aria-label="Help"
+            @click=${() => this.showHelpDialog()}
+            ><md-icon>help</md-icon></md-icon-button
+          >
         </div>
         <form slot="content" id="filterForm" method="dialog">
           <md-outlined-text-field
@@ -222,6 +226,7 @@ export class FilterDialog extends LitElement {
             type="text"
             id="filterName"
             required
+            autofocus
             .value="${this.filterName}"
             @input=${() => {
               const value = this.filterNameInput?.value.trim() || '';
