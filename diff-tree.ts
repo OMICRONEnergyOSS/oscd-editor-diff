@@ -309,7 +309,7 @@ export class DiffTree extends LitElement {
     }
     const fullscreenStyles = this.fullscreen
       ? html`<style>
-          button {
+          .header-row {
             top: ${this.depth * 24}px;
             z-index: ${10000 - this.depth};
             position: sticky;
