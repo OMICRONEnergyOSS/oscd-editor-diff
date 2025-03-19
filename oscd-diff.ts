@@ -953,6 +953,7 @@ export default class OscdDiff extends LitElement {
 
     :host md-filled-select {
       min-width: 260px;
+      width: 100%;
     }
 
     #filters-import-field {
