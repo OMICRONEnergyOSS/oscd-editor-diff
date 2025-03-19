@@ -23970,7 +23970,7 @@ See www.iec.ch/CCv1 for copyright details
               </td>
             </tr>`))}
     </table>`}renderDiff(){return p`${this.renderAttributeDiff()}${this.renderChildDiffs()}`}render(){if(this.ourHash===this.theirHash)return C;const a=this.ours??this.theirs;if(!a)return C;let e=(j(a)||a.tagName).split(">").pop();if(this.ours&&this.theirs){const i=j(this.theirs),c=j(this.ours);i&&c&&c!==i&&(e=`${c||this.ours.tagName} -> ${i||this.theirs.tagName}`)}let t="inherit";this.ours||(t="var(--oscd-secondary, darkgreen)"),this.theirs||(t="var(--oscd-primary, darkred)");const r=this.fullscreen?p`<style>
-          button {
+          .header-row {
             top: ${this.depth*24}px;
             z-index: ${1e4-this.depth};
             position: sticky;
