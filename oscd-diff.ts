@@ -556,7 +556,7 @@ export default class OscdDiff extends LitElement {
                       value=${filterName}
                       ?selected=${this.selectedFilterName === filterName}
                     >
-                      ${filterName}</md-select-option
+                      <div slot="headline">${filterName}</div></md-select-option
                     >`,
                 )}
               </md-filled-select>
@@ -643,7 +643,7 @@ export default class OscdDiff extends LitElement {
             ${Object.keys(this.docs).map(
               name =>
                 html`<md-select-option value="${name}"
-                  >${name}</md-select-option
+                  ><div slot="headline">${name}</div></md-select-option
                 >`,
             )}
           </md-filled-select>
@@ -658,7 +658,7 @@ export default class OscdDiff extends LitElement {
             ${Object.keys(this.docs).map(
               name =>
                 html`<md-select-option value="${name}"
-                  >${name}</md-select-option
+                  ><div slot="headline">${name}</div></md-select-option
                 >`,
             )}
           </md-filled-select>
