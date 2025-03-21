@@ -398,12 +398,17 @@ export class DiffTree extends LitElement {
       color: var(--oscd-base1);
     }
 
-    :host .header-row {
-      display: flex;
-    }
-
     #expand-all-btn {
       --md-icon-button-icon-size: 16px;
+      --md-icon-button-selected-icon-color: var(
+        --md-sys-color-on-surface-variant
+      );
+      --md-icon-button-selected-hover-icon-color: var(
+        --md-sys-color-on-surface-variant
+      );
+      --md-icon-button-selected-focus-icon-color: var(
+        --md-sys-color-on-surface-variant
+      );
       height: 24px;
       width: 24px;
       margin: 4px 8px;
@@ -543,9 +548,23 @@ export class DiffTree extends LitElement {
       background: var(--oscd-base3);
       color: var(--oscd-base00);
     }
+
+    .header-row {
+      background: var(--oscd-base2);
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      height: 25px;
+      align-items: center;
+    }
+
+    :host([odd]) .header-row {
+      background: var(--oscd-base3);
+    }
+
     button {
       display: block;
-      background: var(--oscd-base2);
+      background: inherit;
       width: 100%;
       border: none;
       margin: 0;
@@ -554,9 +573,6 @@ export class DiffTree extends LitElement {
       text-align: inherit;
       font: inherit;
       appearance: none;
-    }
-    :host([odd]) button {
-      background: var(--oscd-base3);
     }
     :host(:not([expanded])) .content-row {
       display: none;

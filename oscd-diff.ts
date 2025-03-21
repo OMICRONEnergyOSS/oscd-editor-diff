@@ -934,6 +934,7 @@ export default class OscdDiff extends LitElement {
       --md-sys-color-surface-container-highest: var(--oscd-base3);
       --md-sys-color-outline-variant: var(--oscd-base0);
       --md-sys-color-scrim: var(--oscd-base1);
+      --md-menu-item-selected-label-text-color: var(--oscd-base01);
     }
 
     :host > div:first-child {
