@@ -238,7 +238,19 @@ export default class OscdDiff extends LitElement {
 
   @state() hashing = false;
 
-  @state() allExpanded = true;
+  @state() get allExpanded(): boolean {
+    const diffTrees = this.diffContainer?.querySelectorAll('diff-tree');
+    if (!diffTrees) {
+      return false;
+    }
+    let allExpanded = true;
+    diffTrees.forEach(tree => {
+      if (!tree.hasAttribute('expanded')) {
+        allExpanded = false;
+      }
+    });
+    return allExpanded;
+  }
 
   setFilters(updatedFilters: Record<string, Filter>) {
     this.filters = updatedFilters;
@@ -469,14 +481,15 @@ export default class OscdDiff extends LitElement {
   toggleExpandAllState() {
     const diffTrees = this.diffContainer?.querySelectorAll('diff-tree');
     if (diffTrees) {
+      const { allExpanded } = this;
       diffTrees.forEach(tree => {
-        if (this.allExpanded) {
+        if (allExpanded) {
           tree.removeAttribute('expanded');
         } else {
           tree.setAttribute('expanded', '');
         }
       });
-      this.allExpanded = !this.allExpanded;
+      this.requestUpdate();
     }
   }
 
@@ -522,13 +535,13 @@ export default class OscdDiff extends LitElement {
       ? html`<div class="view-buttons">
           <md-filled-icon-button
             toggle
-            ?selected=${!this.allExpanded}
+            ?selected=${this.allExpanded}
             @click=${() => {
               this.toggleExpandAllState();
             }}
           >
-            <md-icon slot="selected">expand_all</md-icon>
-            <md-icon>collapse_all</md-icon>
+            <md-icon slot="selected">collapse_all</md-icon>
+            <md-icon>expand_all</md-icon>
           </md-filled-icon-button>
           <md-filled-icon-button @click=${() => this.printMe()}>
             <md-icon>print</md-icon>
@@ -570,13 +583,8 @@ export default class OscdDiff extends LitElement {
           .theirHasher=${theirHasher}
           ?fullscreen=${this.fullscreen}
           expanded
-          @diff-toggle=${(customEvent: CustomEvent) => {
-            if (
-              customEvent.target === customEvent.currentTarget &&
-              !customEvent.detail.expanded
-            ) {
-              this.allExpanded = false;
-            }
+          @diff-toggle=${() => {
+            this.requestUpdate();
           }}
         ></diff-tree>`;
       }
