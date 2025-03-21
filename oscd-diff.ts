@@ -1,12 +1,12 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { until } from 'lit/directives/until.js';
 
 import { identity } from '@openenergytools/scl-lib';
 
 import '@material/web/all.js';
 import type { MdFilledSelect, MdMenu } from '@material/web/all.js';
 
+import { classMap } from 'lit/directives/class-map.js';
 import {
   Configurable,
   createHashElementPredicate,
@@ -236,6 +236,10 @@ export default class OscdDiff extends LitElement {
 
   @state() individuallyScoped = false;
 
+  @state() hashing = false;
+
+  @state() allExpanded = true;
+
   setFilters(updatedFilters: Record<string, Filter>) {
     this.filters = updatedFilters;
     this.storeFilters();
@@ -462,6 +466,20 @@ export default class OscdDiff extends LitElement {
     openSCD.style.display = oldDisplay;
   }
 
+  toggleExpandAllState() {
+    const diffTrees = this.diffContainer?.querySelectorAll('diff-tree');
+    if (diffTrees) {
+      diffTrees.forEach(tree => {
+        if (this.allExpanded) {
+          tree.removeAttribute('expanded');
+        } else {
+          tree.setAttribute('expanded', '');
+        }
+      });
+      this.allExpanded = !this.allExpanded;
+    }
+  }
+
   renderFilterDescription() {
     if (!this.lastDiff) {
       return nothing;
@@ -502,6 +520,16 @@ export default class OscdDiff extends LitElement {
   renderViewButtons() {
     return Object.keys(this.lastDiff?.elements ?? {}).length
       ? html`<div class="view-buttons">
+          <md-filled-icon-button
+            toggle
+            ?selected=${!this.allExpanded}
+            @click=${() => {
+              this.toggleExpandAllState();
+            }}
+          >
+            <md-icon slot="selected">expand_all</md-icon>
+            <md-icon>collapse_all</md-icon>
+          </md-filled-icon-button>
           <md-filled-icon-button @click=${() => this.printMe()}>
             <md-icon>print</md-icon>
           </md-filled-icon-button>
@@ -524,17 +552,42 @@ export default class OscdDiff extends LitElement {
       : nothing;
   }
 
-  render() {
-    const promise = Promise.all(
-      Object.values(this.lastDiff?.elements ?? {}).map(({ ours, theirs }) => {
-        const ourHasher = ours && this.lastDiff?.ourHasher;
-        const ourHash = ourHasher && hashElement(ours, ourHasher);
-        const theirHasher = theirs && this.lastDiff?.theirHasher;
-        const theirHash = theirHasher && hashElement(theirs, theirHasher);
-        return Promise.all([ourHash, theirHash]);
-      }),
-    );
+  renderDiffTrees() {
+    let same = true;
+    const elementKeys = Object.keys(this.lastDiff?.elements ?? {});
+    const trees = elementKeys.map(id => {
+      const { ours, theirs } = this.lastDiff!.elements[id];
+      const { ourHasher, theirHasher } = this.lastDiff!;
+      const ourHash = ours && ourHasher.hash(ours);
+      const theirHash = theirs && theirHasher.hash(theirs);
 
+      if (ourHash !== theirHash) {
+        same = false;
+        return html`<diff-tree
+          .ours=${ours}
+          .theirs=${theirs}
+          .ourHasher=${ourHasher}
+          .theirHasher=${theirHasher}
+          ?fullscreen=${this.fullscreen}
+          expanded
+          @diff-toggle=${(customEvent: CustomEvent) => {
+            if (
+              customEvent.target === customEvent.currentTarget &&
+              !customEvent.detail.expanded
+            ) {
+              this.allExpanded = false;
+            }
+          }}
+        ></diff-tree>`;
+      }
+      return nothing;
+    });
+    return same && trees.length !== 0
+      ? html`<div style="margin: 16px;">No differences</div>`
+      : trees;
+  }
+
+  render() {
     return html`<div>
         <div class="filter-section">
           <div id="filter-selector-row">
@@ -708,111 +761,136 @@ export default class OscdDiff extends LitElement {
             Separate From/To scopes
           </label>
 
-          ${until(
-            promise.then(
-              () =>
-                html`<md-filled-button
-                  ?disabled=${!this.docName1 || !this.docName2}
-                  style="grid-column: 1/3;"
-                  @click=${() => {
-                    const doc1 = this.docs[this.docName1];
-                    const doc2 = this.docs[this.docName2];
-                    if (!doc1 || !doc2) {
-                      return;
-                    }
+          <md-filled-button
+            ?disabled=${!this.docName1 || !this.docName2 || this.hashing}
+            class=${classMap({ 'diff-button': true, hashing: this.hashing })}
+            @click=${() => {
+              const doc1 = this.docs[this.docName1];
+              const doc2 = this.docs[this.docName2];
+              if (!doc1 || !doc2) {
+                return;
+              }
 
-                    const { selectors, attributes, namespaces } = extendFilter(
-                      this.baseFilter,
-                      this.selectedFilter,
-                    );
-                    const options = { selectors, attributes, namespaces };
+              const { selectors, attributes, namespaces } = extendFilter(
+                this.baseFilter,
+                this.selectedFilter,
+              );
+              const options = { selectors, attributes, namespaces };
 
-                    const ourHasher = newHasher(options);
-                    const theirHasher = newHasher(options);
+              const ourHasher = newHasher(options);
+              const theirHasher = newHasher(options);
 
-                    let elements: Record<
-                      string,
-                      { ours?: Element; theirs?: Element }
-                    > = {};
+              let elements: Record<
+                string,
+                { ours?: Element; theirs?: Element }
+              > = {};
 
-                    const shouldDiffElement =
-                      createHashElementPredicate(options);
+              const shouldDiffElement = createHashElementPredicate(options);
 
-                    Array.from(
-                      this.docs[this.docName1]?.querySelectorAll(
-                        nonemptyLines(this.selector1).join(', '),
-                      ),
-                    )
-                      .filter(shouldDiffElement)
-                      .forEach(el => {
-                        const id = identity(el);
-                        if (!elements[id]) {
-                          elements[id] = {};
-                        }
-                        elements[id].ours = el;
-                      });
+              Array.from(
+                this.docs[this.docName1]?.querySelectorAll(this.selector1),
+              )
+                .filter(shouldDiffElement)
+                .forEach(el => {
+                  const id = identity(el);
+                  if (!elements[id]) {
+                    elements[id] = {};
+                  }
+                  elements[id].ours = el;
+                });
+              Array.from(
+                this.docs[this.docName1]?.querySelectorAll(
+                  nonemptyLines(this.selector1).join(', '),
+                ),
+              )
+                .filter(shouldDiffElement)
+                .forEach(el => {
+                  const id = identity(el);
+                  if (!elements[id]) {
+                    elements[id] = {};
+                  }
+                  elements[id].ours = el;
+                });
 
-                    Array.from(
-                      this.docs[this.docName2]?.querySelectorAll(
-                        nonemptyLines(this.selector2).join(', '),
-                      ),
-                    )
-                      .filter(shouldDiffElement)
-                      .forEach(el => {
-                        const id = identity(el);
-                        if (!elements[id]) {
-                          elements[id] = {};
-                        }
-                        elements[id].theirs = el;
-                      });
+              Array.from(
+                this.docs[this.docName2]?.querySelectorAll(this.selector2),
+              )
+                .filter(shouldDiffElement)
+                .forEach(el => {
+                  const id = identity(el);
+                  if (!elements[id]) {
+                    elements[id] = {};
+                  }
+                  elements[id].theirs = el;
+                });
+              Array.from(
+                this.docs[this.docName2]?.querySelectorAll(
+                  nonemptyLines(this.selector2).join(', '),
+                ),
+              )
+                .filter(shouldDiffElement)
+                .forEach(el => {
+                  const id = identity(el);
+                  if (!elements[id]) {
+                    elements[id] = {};
+                  }
+                  elements[id].theirs = el;
+                });
 
-                    if (Object.keys(elements).length === 2) {
-                      const [
-                        { ours: ours1, theirs: theirs1 },
-                        { ours: ours2, theirs: theirs2 },
-                      ] = Object.values(elements);
-                      const ours = ours1 || ours2;
-                      const theirs = theirs1 || theirs2;
-                      const ourId = ours ? identity(ours) : false;
-                      const theirId = theirs ? identity(theirs) : false;
-                      if (ourId && theirId && ourId !== theirId) {
-                        elements = {
-                          [`${ourId} -> ${theirId}`]: {
-                            ours: elements[ourId!]?.ours,
-                            theirs: elements[theirId!]?.theirs,
-                          },
-                        };
-                      }
-                    }
-                    this.lastDiff = {
-                      elements,
-                      ourHasher,
-                      theirHasher,
-                      filter: this.selectedFilter,
-                      filterName: this.selectedFilterName,
-                      ourSelector: this.selector1,
-                      theirSelector: this.selector2,
-                      ourDocName: this.docName1,
-                      theirDocName: this.docName2,
-                    };
-                  }}
-                >
-                  Compare
-                  <md-icon slot="icon">difference</md-icon>
-                </md-filled-button>`,
-            ),
-            html`<md-filled-button
-              disabled
-              style="grid-column: 1/3; --md-filled-button-icon-size: 32px;"
-            >
-              Compare
-              <md-circular-progress
-                style="--md-circular-progress-active-indicator-color: var(--oscd-base00);"
-                slot="icon"
-                indeterminate
-              ></md-circular-progress>
-            </md-filled-button>`,
-          )}
+              if (Object.keys(elements).length === 2) {
+                const [
+                  { ours: ours1, theirs: theirs1 },
+                  { ours: ours2, theirs: theirs2 },
+                ] = Object.values(elements);
+                const ours = ours1 || ours2;
+                const theirs = theirs1 || theirs2;
+                const ourId = ours ? identity(ours) : false;
+                const theirId = theirs ? identity(theirs) : false;
+                if (ourId && theirId && ourId !== theirId) {
+                  elements = {
+                    [`${ourId} -> ${theirId}`]: {
+                      ours: elements[ourId!]?.ours,
+                      theirs: elements[theirId!]?.theirs,
+                    },
+                  };
+                }
+              }
+              const diff = {
+                elements,
+                ourHasher,
+                theirHasher,
+                filter: this.selectedFilter,
+                filterName: this.selectedFilterName,
+                ourSelector: this.selector1,
+                theirSelector: this.selector2,
+                ourDocName: this.docName1,
+                theirDocName: this.docName2,
+              };
+              this.lastDiff = undefined;
+              this.hashing = true;
+              Promise.all(
+                Object.values(diff.elements ?? {}).map(({ ours, theirs }) => {
+                  const ourHash =
+                    ours && ourHasher && hashElement(ours, ourHasher);
+                  const theirHash =
+                    theirs && theirHasher && hashElement(theirs, theirHasher);
+                  return Promise.all([ourHash, theirHash]);
+                }),
+              ).then(() => {
+                this.lastDiff = diff;
+                this.hashing = false;
+              });
+            }}
+          >
+            Compare
+            ${this.hashing
+              ? html`<md-circular-progress
+                  style="--md-circular-progress-active-indicator-color: var(--oscd-base00);"
+                  slot="icon"
+                  indeterminate
+                ></md-circular-progress>`
+              : html`<md-icon slot="icon">difference</md-icon>`}
+          </md-filled-button>
 
           <filter-dialog
             filterName="${this.selectedFilterName}"
@@ -877,34 +955,7 @@ export default class OscdDiff extends LitElement {
         </style>
         ${this.renderFilterDescription()}
         ${this.fullscreen ? this.renderViewButtons() : nothing}
-        ${until(
-          promise.then(() => {
-            let same = true;
-            const trees = Object.keys(this.lastDiff?.elements ?? {}).map(id => {
-              const { ours, theirs } = this.lastDiff!.elements[id];
-              const { ourHasher, theirHasher } = this.lastDiff!;
-              const ourHash = ours && ourHasher.hash(ours);
-              const theirHash = theirs && theirHasher.hash(theirs);
-              if (ourHash !== theirHash) {
-                same = false;
-                return html`<diff-tree
-                  .ours=${ours}
-                  .theirs=${theirs}
-                  .ourHasher=${ourHasher}
-                  .theirHasher=${theirHasher}
-                  ?fullscreen=${this.fullscreen}
-                  ?expanded=${Object.keys(this.lastDiff?.elements ?? {})
-                    .length === 1}
-                ></diff-tree>`;
-              }
-              return nothing;
-            });
-            return same && trees.length
-              ? html`<div style="margin: 16px;">No differences</div>`
-              : trees;
-          }),
-          nothing,
-        )}
+        ${this.lastDiff ? this.renderDiffTrees() : nothing}
       </div>`;
   }
 
@@ -975,6 +1026,15 @@ export default class OscdDiff extends LitElement {
       display: flex;
       gap: 8px;
       margin-bottom: 24px;
+    }
+
+    .diff-button {
+      grid-column: 1/-1;
+    }
+
+    .diff-button.hashing {
+      --md-filled-button-color: var(--oscd-base00);
+      --md-filled-button-icon-size: 32px;
     }
 
     #diff-container {
