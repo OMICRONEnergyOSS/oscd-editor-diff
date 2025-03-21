@@ -122,3 +122,10 @@ export async function loadResource(url: string): Promise<string> {
       });
   });
 }
+
+export function nonemptyLines(text: string) {
+  return text
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line);
+}

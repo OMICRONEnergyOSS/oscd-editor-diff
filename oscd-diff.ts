@@ -26,7 +26,7 @@ import {
   extendFilter,
 } from './default-filters.js';
 import { DefaultInfoDialogContent } from './default-info-dialog-content.js';
-import { loadResource } from './util.js';
+import { loadResource, nonemptyLines } from './util.js';
 import type {
   BaseFilterDialog,
   OscdDiffBaseFilterSaveEvent,
@@ -740,7 +740,7 @@ export default class OscdDiff extends LitElement {
 
                     Array.from(
                       this.docs[this.docName1]?.querySelectorAll(
-                        this.selector1,
+                        nonemptyLines(this.selector1).join(', '),
                       ),
                     )
                       .filter(shouldDiffElement)
@@ -754,7 +754,7 @@ export default class OscdDiff extends LitElement {
 
                     Array.from(
                       this.docs[this.docName2]?.querySelectorAll(
-                        this.selector2,
+                        nonemptyLines(this.selector2).join(', '),
                       ),
                     )
                       .filter(shouldDiffElement)

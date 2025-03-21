@@ -9,7 +9,7 @@ import type {
 
 import { HELP_CONTENT_URL, type Filter } from './oscd-diff.js';
 import { InfoDialog } from './info-dialog.js';
-import { loadResource } from './util.js';
+import { loadResource, nonemptyLines } from './util.js';
 import { DefaultHelpDialogContent } from './default-help-dialog-content.js';
 
 export type OscdDiffFilterSaveEventDetail = {
@@ -20,13 +20,6 @@ export type OscdDiffFilterSaveEventDetail = {
 
 export type OscdDiffFilterSaveEvent =
   CustomEvent<OscdDiffFilterSaveEventDetail>;
-
-function nonemptyLines(text: string) {
-  return text
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line);
-}
 
 @customElement('filter-dialog')
 export class FilterDialog extends LitElement {
