@@ -639,7 +639,7 @@ export default class OscdDiff extends LitElement {
             label="From document"
             @change=${() => this.requestUpdate()}
           >
-            <md-icon slot="leading-icon">draft</md-icon>
+            <md-icon slot="leading-icon" class="ours">draft</md-icon>
             ${Object.keys(this.docs).map(
               name =>
                 html`<md-select-option value="${name}"
@@ -654,7 +654,7 @@ export default class OscdDiff extends LitElement {
             @change=${() => this.requestUpdate()}
             style="--md-sys-color-primary: var(--oscd-secondary)"
           >
-            <md-icon slot="leading-icon">draft</md-icon>
+            <md-icon slot="leading-icon" class="theirs">draft</md-icon>
             ${Object.keys(this.docs).map(
               name =>
                 html`<md-select-option value="${name}"
