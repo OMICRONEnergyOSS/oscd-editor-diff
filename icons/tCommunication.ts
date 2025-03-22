@@ -82,4 +82,6 @@ export const staticIcons: Partial<Record<string, string | SVGTemplateResult>> =
     ConnectedAP: 'computer',
     Address: 'alternate_email',
     PhysConn: 'settings_input_hdmi',
+    MinTime: 'start',
+    MaxTime: 'vital_signs',
   };

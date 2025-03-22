@@ -9,6 +9,7 @@ import {
   gseControlPath,
   sampledValueControlPath,
   logControlPath,
+  sDPath,
 } from './tIED.js';
 
 const enumPath = svg`  <path d="m4.36 3.5c-2.08 0-3.78 1.7-3.78 3.78v10.4c0 2.08 1.7 3.78 3.78 3.78h16.3c2.08 0 3.78-1.7 3.78-3.78v-10.4c0-2.08-1.7-3.78-3.78-3.78zm0 1.7h16.3c1.16 0 2.07 0.909 2.07 2.07v10.4c0 1.16-0.909 2.08-2.07 2.08h-16.3c-1.16 0-2.07-0.909-2.07-2.08v-10.4c0-1.16 0.909-2.07 2.07-2.07z" stroke-width="1.11"/>
@@ -25,6 +26,7 @@ export const staticIcons: Partial<Record<string, string | SVGTemplateResult>> =
     DAType: iconFromPath(dAIPath), // show type somehow?
     DO: iconFromPath(dOIPath),
     DOType: iconFromPath(dOIPath), // show type somehow?
+    SDO: iconFromPath(sDPath),
     ReportControl: iconFromPath(reportControlPath),
     LogControl: iconFromPath(logControlPath),
     GSEControl: iconFromPath(gseControlPath),

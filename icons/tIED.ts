@@ -28,6 +28,11 @@ export const dOIPath = svg`<path d="m4.36 3.5c-2.08 0-3.78 1.7-3.78 3.78v10.4c0 
 <path d="m20.1 12.5q0 1.4-0.464 2.48t-1.32 1.64q-0.863 0.562-2.02 0.562-1.77 0-2.77-1.25t-0.999-3.43q0-2.17 0.999-3.38t2.79-1.22 2.79 1.22q1.01 1.22 1.01 3.37zm-1.6 0q0-1.46-0.575-2.29-0.575-0.831-1.61-0.831-1.05 0-1.63 0.824-0.575 0.818-0.575 2.29 0 1.48 0.586 2.34 0.591 0.85 1.61 0.85 1.05 0 1.63-0.831 0.575-0.831 0.575-2.36z" fill="currentColor" stroke-width="1.1"/>
 `;
 
+export const sDPath = svg`<path id="path2183" d="m4.36 3.5c-2.08 0-3.78 1.7-3.78 3.78v10.4c0 2.08 1.7 3.78 3.78 3.78h16.3c2.08 0 3.78-1.7 3.78-3.78v-10.4c0-2.08-1.7-3.78-3.78-3.78zm0 1.7h16.3c1.16 0 2.07 0.909 2.07 2.07v10.4c0 1.16-0.909 2.08-2.07 2.08h-16.3c-1.16 0-2.07-0.909-2.07-2.08v-10.4c0-1.16 0.909-2.07 2.07-2.07z" stroke-width="1" fill="currentColor"/>
+<path id="path3794" d="m11.9 14.4q0 1.3-0.767 1.99-0.762 0.685-2.24 0.685-1.35 0-2.12-0.603-0.767-0.603-0.987-1.83l1.42-0.295q0.144 0.703 0.563 1.02 0.419 0.314 1.16 0.314 1.54 0 1.54-1.18 0-0.377-0.179-0.622-0.174-0.245-0.498-0.408-0.319-0.163-1.23-0.396-0.787-0.232-1.1-0.371-0.309-0.144-0.558-0.333-0.249-0.195-0.424-0.465-0.174-0.27-0.274-0.634-0.0947-0.364-0.0947-0.835 0-1.2 0.713-1.83 0.717-0.641 2.08-0.641 1.31 0 1.96 0.515 0.658 0.515 0.847 1.7l-1.43 0.245q-0.11-0.572-0.448-0.86-0.334-0.289-0.962-0.289-1.34 0-1.34 1.06 0 0.345 0.14 0.565 0.144 0.22 0.424 0.377 0.279 0.157 1.13 0.383 1.01 0.27 1.44 0.502 0.438 0.226 0.693 0.534 0.254 0.301 0.389 0.729 0.135 0.421 0.135 0.973z" stroke-width="1" fill="currentColor"/>
+<path id="path3796" d="m19.2 12.4q0 1.37-0.429 2.39-0.424 1.02-1.21 1.56-0.777 0.54-1.78 0.54h-2.84v-8.85h2.54q1.77 0 2.75 1.13 0.972 1.12 0.972 3.23zm-1.48 0q0-1.43-0.588-2.17-0.588-0.754-1.68-0.754h-1.04v5.99h1.25q0.947 0 1.5-0.823 0.558-0.823 0.558-2.24z" stroke-width="1" fill="currentColor"/>
+`;
+
 export const clientLNPath = svg`
   <path 
     d="M21,14V4H3V14H21M21,2A2,2 0 0,1 23,4V16A2,2 0 0,1 21,18H14L16,21V22H8V21L10,18H3C1.89,18 1,17.1 1,16V4C1,2.89 1.89,2 3,2H21M4,5H15V10H4V5M16,5H20V7H16V5M20,8V13H16V8H20M4,11H9V13H4V11M10,11H15V13H10V11Z"     stroke="currentColor"
@@ -39,8 +44,8 @@ export const clientLNPath = svg`
 export const staticIcons: Partial<Record<string, string | SVGTemplateResult>> =
   {
     IED: 'developer_board',
-    Server: 'host',
-    ServerAt: 'host',
+    Server: 'dns',
+    ServerAt: 'article_shortcut',
     Services: 'design_services',
     Authentication: 'key_vertical',
     LDevice: 'device_hub',
@@ -52,30 +57,35 @@ export const staticIcons: Partial<Record<string, string | SVGTemplateResult>> =
     LN0: 'settings',
     DAI: iconFromPath(dAIPath),
     DOI: iconFromPath(dOIPath),
-    // SDI: iconFromPath(dOIPath),
+    SDI: iconFromPath(sDPath),
     ReportControl: iconFromPath(reportControlPath),
     LogControl: iconFromPath(logControlPath),
     GSEControl: iconFromPath(gseControlPath),
     SampledValueControl: iconFromPath(sampledValueControlPath),
-    DynAssociation: 'question_mark',
+    DynAssociation: 'settings_ethernet',
     GetDirectory: 'folder',
-    GetDataObjectDefinition: 'question_mark',
+    GetDataObjectDefinition: 'foundation',
     DataObjectDirectory: 'folder',
-    GetDataSetValue: 'question_mark',
-    DataSetDirectory: 'folder',
-    ConfDataSet: 'data',
-    ReadWrite: 'question_mark',
-    ConfReportControl: 'question_mark',
-    GetCBValues: 'question_mark',
+    GetDataSetValue: 'format_list_bulleted',
+    DataSetDirectory: 'format_list_bulleted',
+    ConfDataSet: 'format_list_bulleted',
+    ReadWrite: 'edit',
+    ConfReportControl: iconFromPath(reportControlPath),
+    GetCBValues: 'call_received',
     ReportSettings: iconFromPath(reportControlPath),
-    GSESettings: 'settings',
+    GSESettings: iconFromPath(gseControlPath),
     GOOSE: iconFromPath(gseControlPath),
     FileHandling: 'description',
-    ConfLNs: 'question_mark',
+    ConfLNs: 'settings',
     ClientServices: 'design_services',
     TimeSyncProt: 'schedule',
     ConfLdName: 'manufacturing',
     SupSubscription: 'vital_signs',
-    RedProt: 'question_mark',
+    RedProt: 'alt_route',
     SettingControl: 'tune',
+    SettingGroups: 'settings_input_component',
+    ValueHandling: 'label',
+    CommProt: 'stacks',
+    SMVSettings: iconFromPath(sampledValueControlPath),
+    SMVSc: iconFromPath(sampledValueControlPath),
   };

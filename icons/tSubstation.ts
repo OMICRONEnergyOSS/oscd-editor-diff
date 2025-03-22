@@ -704,6 +704,7 @@ export const staticIcons: Partial<Record<string, string | SVGTemplateResult>> =
     VoltageLevel: iconFromPath(voltageLevelPath),
     Bay: iconFromPath(bayPath),
     Substation: 'margin',
+    Terminal: 'line_end_circle',
     ConnectivityNode: iconFromPath(connectivityNodePath),
     TransformerWinding: iconFromPath(transformerWindingPath),
     PowerTransformer: iconFromPath(powerTransformerTwoWindingPath),
@@ -713,6 +714,7 @@ export const staticIcons: Partial<Record<string, string | SVGTemplateResult>> =
     EqSubFunction: 'functions',
     EqFunction: 'functions',
     SubFunction: 'functions',
+    LNode: 'bubbles',
     TapChanger: iconFromPath(tapChangerPath),
     SubEquipment: iconFromPath(generalConductingEquipmentIcon),
   };
