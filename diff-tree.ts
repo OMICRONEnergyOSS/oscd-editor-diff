@@ -338,6 +338,10 @@ export class DiffTree extends LitElement {
       desc = `${element.tagName}${desc}`;
     }
 
+    if (this.childCount > 0) {
+      desc = `${desc} (${this.childCount})`;
+    }
+
     return html`<div class="header-row">
         <button
           @click=${() => {
@@ -392,10 +396,10 @@ export class DiffTree extends LitElement {
     small {
       font-size: 0.8em;
       font-weight: 300;
-      color: var(--oscd-base0);
+      color: var(--oscd-base02);
     }
     :host([odd]) small {
-      color: var(--oscd-base1);
+      color: var(--oscd-base01);
     }
 
     #expand-all-btn {
@@ -536,7 +540,7 @@ export class DiffTree extends LitElement {
       font-family: var(--oscd-text-font);
       display: block;
       background: var(--oscd-base2);
-      color: var(--oscd-base01);
+      color: var(--oscd-base03);
     }
     :host(:last-child) {
       border-bottom: 0.25em solid var(--oscd-base3);
@@ -546,7 +550,7 @@ export class DiffTree extends LitElement {
     }
     :host([odd]) {
       background: var(--oscd-base3);
-      color: var(--oscd-base00);
+      color: var(--oscd-base02);
     }
 
     .header-row {
