@@ -25000,7 +25000,7 @@ DataTypeTemplates
             label="From document"
             @change=${()=>this.requestUpdate()}
           >
-            <md-icon slot="leading-icon">draft</md-icon>
+            <md-icon slot="leading-icon" class="ours">draft</md-icon>
             ${Object.keys(this.docs).map(t=>p`<md-select-option value="${t}"
                   ><div slot="headline">${t}</div></md-select-option
                 >`)}
@@ -25012,7 +25012,7 @@ DataTypeTemplates
             @change=${()=>this.requestUpdate()}
             style="--md-sys-color-primary: var(--oscd-secondary)"
           >
-            <md-icon slot="leading-icon">draft</md-icon>
+            <md-icon slot="leading-icon" class="theirs">draft</md-icon>
             ${Object.keys(this.docs).map(t=>p`<md-select-option value="${t}"
                   ><div slot="headline">${t}</div></md-select-option
                 >`)}
