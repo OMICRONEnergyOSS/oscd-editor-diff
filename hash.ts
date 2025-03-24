@@ -24,15 +24,49 @@ function findConnectedAPReferences(e: Element): Element[] {
   );
 }
 
-const referenceLookups: Record<string, (e: Element) => Element[]> = {
+function findAccessPointServerReferences(
+  e: Element,
+  filter: (element: Element) => boolean,
+): Element[] {
+  let server = e.querySelector(':scope>ServerAt, :scope>Server') ?? undefined;
+  let apName = server?.getAttribute('apName');
+  while (server && server.tagName !== 'Server') {
+    if (!filter(server)) {
+      return [];
+    }
+    server =
+      server
+        .closest('IED')
+        ?.querySelector(
+          `:scope>AccessPoint[name="${apName}"]>Server, :scope>AccessPoint[name="${apName}"]>ServerAt`,
+        ) ?? undefined;
+    apName = server?.getAttribute('apName');
+  }
+  if (server && !filter(server)) {
+    return [];
+  }
+  if (!server) {
+    return [];
+  }
+  return [server];
+}
+
+const referenceLookups: Record<
+  string,
+  (e: Element, filter: (element: Element) => boolean) => Element[]
+> = {
   ConnectedAP: findConnectedAPReferences,
+  AccessPoint: findAccessPointServerReferences,
 };
 
-export function findReferences(element: Element): Element[] {
+function findReferences(
+  element: Element,
+  filter: (e: Element) => boolean,
+): Element[] {
   const referencedElements = [] as Element[];
 
   if (element.tagName in referenceLookups) {
-    return referenceLookups[element.tagName](element);
+    return referenceLookups[element.tagName](element, filter);
   }
 
   if (!(element.tagName in references)) {
@@ -180,19 +214,6 @@ const references: Record<string, Reference[]> = {
       to: ':scope>DataTypeTemplates>LNodeType',
       from: ':scope>IED>AccessPoint>Server>LDevice>LN',
       scope: 'SCL',
-    },
-  ],
-  ServerAt: [
-    {
-      fields: [
-        {
-          to: 'name',
-          from: 'apName',
-        },
-      ],
-      to: ':scope>AccessPoint',
-      from: ':scope>AccessPoint>ServerAt',
-      scope: 'IED',
     },
   ],
   LogControl: [
@@ -717,17 +738,13 @@ export type HasherOptions = {
 export function hasher(
   db: HashDB,
   eDb: ElementDB,
-  { selectors, attributes, namespaces }: HasherOptions = {
+  { attributes, namespaces }: HasherOptions = {
     selectors: { inclusive: false, vals: [], except: [] },
     attributes: { inclusive: false, vals: [], except: [] },
     namespaces: { inclusive: false, vals: [], except: [] },
   },
+  shouldHashElement: (element: Element) => boolean = () => true,
 ): Hasher {
-  const shouldHashElement = createHashElementPredicate({
-    selectors,
-    namespaces,
-  });
-
   function describeAttributes(e: Element) {
     const description: Description = {};
 
@@ -832,7 +849,7 @@ export function hasher(
   function describeReferences(e: Element) {
     const description: Record<string, string[]> = {};
 
-    findReferences(e)
+    findReferences(e, shouldHashElement)
       .filter(shouldHashElement)
       .forEach(element => {
         const tag = `@${element.tagName}`;
@@ -883,6 +900,9 @@ export function hasher(
   }
 
   function describeElement(e: Element) {
+    if (e.tagName === 'AccessPoint') {
+      return describeAccessPoint(e);
+    }
     const description: Record<string, unknown> = {
       ...describeAttributes(e),
       ...describeChildren(e),
@@ -923,35 +943,14 @@ export function hasher(
     return description;
   }
 
-  function findAPServer(e: Element): Element | undefined {
-    let server = e.querySelector(':scope>ServerAt, :scope>Server') ?? undefined;
-    let apName = server?.getAttribute('apName');
-    while (server && server.tagName !== 'Server') {
-      if (!shouldHashElement(server)) {
-        return undefined;
-      }
-      server =
-        server
-          .closest('IED')
-          ?.querySelector(
-            `:scope>AccessPoint[name="${apName}"]>Server, :scope>AccessPoint[name="${apName}"]>ServerAt`,
-          ) ?? undefined;
-      apName = server?.getAttribute('apName');
-    }
-    if (server && !shouldHashElement(server)) {
-      return undefined;
-    }
-    return server;
-  }
-
   function describeAccessPoint(e: Element) {
     const description = {
       ...describeAttributes(e),
       ...describeChildren(e),
     } as Description;
-    const server = findAPServer(e);
-    if (server) {
-      description['@Server'] = [hash(server)];
+    const servers = findAccessPointServerReferences(e, shouldHashElement);
+    if (servers.length) {
+      description['@Server'] = servers.map(hash);
       delete description['@ServerAt'];
     }
     return description;
@@ -1022,8 +1021,21 @@ export function newHasher(
   hash: Hasher;
   db: HashDB;
   eDb: ElementDB;
+  findReferences: (element: Element) => Element[];
 } {
   const db: HashDB = {};
   const eDb: ElementDB = { e2h: new WeakMap(), h2e: new Map() };
-  return { hash: hasher(db, eDb, options), db, eDb };
+
+  const optionsFilter = createHashElementPredicate({
+    selectors: options.selectors,
+    namespaces: options.namespaces,
+  });
+
+  return {
+    hash: hasher(db, eDb, options, optionsFilter),
+    db,
+    eDb,
+    findReferences: (element: Element) =>
+      findReferences(element, optionsFilter),
+  };
 }

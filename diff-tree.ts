@@ -2,7 +2,7 @@ import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { identity } from '@openenergytools/scl-lib';
 
-import { Description, findReferences } from './hash.js';
+import { Description } from './hash.js';
 import type { newHasher } from './hash.js';
 import { getDisplayIcon } from './icons.js';
 import { getFcdaInstDesc } from './util.js';
@@ -192,7 +192,9 @@ export class DiffTree extends LitElement {
         ours.forEach((digest: string) => {
           const element = [
             ...Array.from(this.ours?.children ?? []),
-            ...(this.ours ? findReferences(this.ours) : []),
+            ...(this.ours && this.ourHasher
+              ? this.ourHasher.findReferences(this.ours)
+              : []),
           ].find(
             e => e.tagName === tag && this.ourHasher?.eDb.e2h.get(e) === digest,
           );
@@ -206,7 +208,9 @@ export class DiffTree extends LitElement {
         theirs.forEach((digest: string) => {
           const element = [
             ...Array.from(this.theirs?.children ?? []),
-            ...(this.theirs ? findReferences(this.theirs) : []),
+            ...(this.theirs && this.theirHasher
+              ? this.theirHasher.findReferences(this.theirs)
+              : []),
           ].find(
             e =>
               e.tagName === tag && this.theirHasher?.eDb.e2h.get(e) === digest,
