@@ -23981,7 +23981,7 @@ See www.iec.ch/CCv1 for copyright details
           color: ${t};
         }
       </style>
-      ${r}`;let n=a.getAttribute("desc")||"";if(a.tagName==="FCDA"){const{LDevice:i,LN:c,DOI:l,SDI:_,DAI:m}=ll(a);n=[i,c,l,..._??[],m].filter(Boolean).join(" > ")}return n&&(n=`: ${n}`),e!==a.tagName&&(n=`${a.tagName}${n}`),p`<div class="header-row">
+      ${r}`;let n=a.getAttribute("desc")||"";if(a.tagName==="FCDA"){const{LDevice:i,LN:c,DOI:l,SDI:_,DAI:m}=ll(a);n=[i,c,l,..._??[],m].filter(Boolean).join(" > ")}return n&&(n=`: ${n}`),e!==a.tagName&&(n=`${a.tagName}${n}`),this.childCount>0&&(n=`${n} (${this.childCount})`),p`<div class="header-row">
         <button
           @click=${()=>{this.expanded=!this.expanded,this.dispatchEvent(new CustomEvent("diff-toggle",{bubbles:!0,composed:!0,detail:{expanded:this.expanded}}))}}
         >
@@ -24002,10 +24002,10 @@ See www.iec.ch/CCv1 for copyright details
     small {
       font-size: 0.8em;
       font-weight: 300;
-      color: var(--oscd-base0);
+      color: var(--oscd-base02);
     }
     :host([odd]) small {
-      color: var(--oscd-base1);
+      color: var(--oscd-base01);
     }
 
     #expand-all-btn {
@@ -24146,7 +24146,7 @@ See www.iec.ch/CCv1 for copyright details
       font-family: var(--oscd-text-font);
       display: block;
       background: var(--oscd-base2);
-      color: var(--oscd-base01);
+      color: var(--oscd-base03);
     }
     :host(:last-child) {
       border-bottom: 0.25em solid var(--oscd-base3);
@@ -24156,7 +24156,7 @@ See www.iec.ch/CCv1 for copyright details
     }
     :host([odd]) {
       background: var(--oscd-base3);
-      color: var(--oscd-base00);
+      color: var(--oscd-base02);
     }
 
     .header-row {
