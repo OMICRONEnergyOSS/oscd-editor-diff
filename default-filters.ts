@@ -17,36 +17,11 @@ const BASE_FILTER: Filter = {
 };
 
 const identifiers: Record<string, string[]> = {
+  '*': ['name', 'id'],
   DAI: ['name', 'ix'],
   SMV: ['ldInst', 'cbName'],
   LNode: ['iedName', 'ldInst', 'prefix', 'lnClass', 'lnInst', 'lnType'],
-  FCDA: [
-    'ldInst',
-    'prefix',
-    'lnClass',
-    'lnInst',
-    'doName',
-    'daName',
-    'fc',
-    'ix',
-  ],
   ConnectedAP: ['iedName', 'apName'],
-  ExtRef: [
-    'iedName',
-    'intAddr',
-    'ldInst',
-    'prefix',
-    'lnClass',
-    'lnInst',
-    'doName',
-    'daName',
-    'serviceType',
-    'srcLDInst',
-    'srcPrefix',
-    'srcLNClass',
-    'srcLNInst',
-    'srcCBName',
-  ],
   Terminal: ['connectivityNode'],
   SDI: ['name', 'ix'],
   LN0: ['prefix', 'lnClass', 'inst'],
@@ -63,8 +38,12 @@ const identifiers: Record<string, string[]> = {
 };
 
 const excludedIdentifiers = Object.entries(identifiers)
-  .map(([tagName, attributes]) => attributes.map(a => `${tagName}.${a}`))
+  .map(([tagName, attributes]) =>
+    attributes.map(a => (tagName === '*' ? a : `${tagName}.${a}`)),
+  )
   .flat();
+
+const exceptions = ['Terminal.name', 'NeutralPoint.name', 'Log.name'];
 
 export const defaultBaseFilters: BaseFilter = {
   inclusive: {
@@ -73,7 +52,7 @@ export const defaultBaseFilters: BaseFilter = {
       except: [],
     },
     attributes: {
-      vals: [],
+      vals: exceptions,
       except: excludedIdentifiers,
     },
     namespaces: {
@@ -88,7 +67,7 @@ export const defaultBaseFilters: BaseFilter = {
     },
     attributes: {
       vals: excludedIdentifiers,
-      except: [],
+      except: exceptions,
     },
     namespaces: {
       vals: [],
