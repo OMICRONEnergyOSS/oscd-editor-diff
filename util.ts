@@ -1,3 +1,5 @@
+import { identity as sclLibIdentity } from '@openenergytools/scl-lib';
+
 export type fcdaDesc = {
   LDevice?: string | null;
   LN?: string | null;
@@ -128,4 +130,16 @@ export function nonemptyLines(text: string) {
     .split('\n')
     .map(line => line.trim())
     .filter(line => line);
+}
+
+export function identity(element: Element) {
+  if (element.tagName === 'FCDA') {
+    return `${sclLibIdentity(element.parentElement)} #${
+      Array.from(element.parentElement?.children ?? [])
+        .filter(e => e.tagName === 'FCDA')
+        .indexOf(element) + 1
+    }`;
+  }
+
+  return sclLibIdentity(element);
 }

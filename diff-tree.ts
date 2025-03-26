@@ -1,11 +1,10 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { identity } from '@openenergytools/scl-lib';
+import { getFcdaInstDesc, identity } from './util.js';
 
 import { Description } from './hash.js';
 import type { newHasher } from './hash.js';
 import { getDisplayIcon } from './icons.js';
-import { getFcdaInstDesc } from './util.js';
 
 function filterObject(
   obj: object,
