@@ -4,7 +4,7 @@ import { property, query, state } from 'lit/decorators.js';
 import { identity } from '@openenergytools/scl-lib';
 
 import '@material/web/all.js';
-import type { MdFilledSelect, MdMenu } from '@material/web/all.js';
+import type { MdDialog, MdFilledSelect, MdMenu } from '@material/web/all.js';
 
 import { classMap } from 'lit/directives/class-map.js';
 import {
@@ -216,6 +216,8 @@ export default class OscdDiff extends LitElement {
   @query('md-menu') filterMenu?: MdMenu;
 
   @query('#diff-container') diffContainer?: HTMLDivElement;
+
+  @query('#reset-warning-dialog') resetWarningDialog?: MdDialog;
 
   @state() filters: Record<string, Filter> = defaultFilters;
 
@@ -673,6 +675,15 @@ export default class OscdDiff extends LitElement {
                   <md-icon slot="start">delete</md-icon>
                   <div slot="headline">Delete</div>
                 </md-menu-item>
+                <md-menu-item
+                  type="button"
+                  href="#"
+                  @click=${() => this.resetWarningDialog?.show()}
+                  style="--md-menu-item-leading-icon-color:var(--oscd-error); --md-menu-item-label-text-color:var(--oscd-error)"
+                >
+                  <md-icon slot="start">reset_settings</md-icon>
+                  <div slot="headline">Reset Filters</div>
+                </md-menu-item>
                 <md-divider></md-divider>
                 <md-menu-item
                   type="button"
@@ -964,7 +975,36 @@ export default class OscdDiff extends LitElement {
         ${this.renderFilterDescription()}
         ${this.fullscreen ? this.renderViewButtons() : nothing}
         ${this.lastDiff ? this.renderDiffTrees() : nothing}
-      </div>`;
+      </div>
+      <md-dialog
+        type="alert"
+        id="reset-warning-dialog"
+        @closed=${(event: CustomEvent) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          const dialog = event.target as MdDialog;
+          if (dialog.returnValue === 'confirm') {
+            localStorage.removeItem('oscd-diff-filters');
+            this.setFilters(defaultFilters);
+            this.setBaseFilter(defaultBaseFilters);
+            this.setSelectedFilterName(Object.keys(defaultFilters)[0]);
+          }
+        }}
+      >
+        <div slot="headline"><md-icon>warning</md-icon>Warning</div>
+        <form slot="content" id="warning-dialog-form" method="dialog">
+          This will remove any custom filters and replace them with the latest
+          default filters. Do you wish to reset to defaults?
+        </form>
+        <div slot="actions">
+          <md-text-button form="warning-dialog-form" value="cancel"
+            >Cancel</md-text-button
+          >
+          <md-filled-button form="warning-dialog-form" value="confirm"
+            >Reset</md-filled-button
+          >
+        </div>
+      </md-dialog>`;
   }
 
   static styles = css`
@@ -1148,6 +1188,15 @@ export default class OscdDiff extends LitElement {
       font-style: normal;
       font-weight: 400;
       src: url('./fonts/RobotoMono-Regular.ttf') format('truetype');
+    }
+
+    #reset-warning-dialog div[slot='headline'] {
+      color: var(--oscd-warning);
+      border-bottom: 1px solid var(--oscd-warning);
+    }
+
+    #reset-warning-dialog md-dialog {
+      max-width: 400px;
     }
   `;
 }
