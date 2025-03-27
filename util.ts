@@ -134,7 +134,7 @@ export function nonemptyLines(text: string) {
 
 export function identity(element: Element) {
   if (element.tagName === 'FCDA') {
-    return `${sclLibIdentity(element.parentElement)} #${
+    return `${sclLibIdentity(element.parentElement)} > #${
       Array.from(element.parentElement?.children ?? [])
         .filter(e => e.tagName === 'FCDA')
         .indexOf(element) + 1

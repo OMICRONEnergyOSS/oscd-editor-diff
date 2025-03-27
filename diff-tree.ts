@@ -6,6 +6,40 @@ import { Description } from './hash.js';
 import type { newHasher } from './hash.js';
 import { getDisplayIcon } from './icons.js';
 
+type IdentitiesByTagAndHash = Record<
+  string,
+  { ours: string[]; theirs: string[] }
+>;
+
+function getIdentityLabel(element: Element) {
+  return (
+    ((identity(element) || element.tagName) as string).split('>').pop() ?? ''
+  );
+}
+
+function getElementDescription(
+  element: Element,
+  elementIdentity?: string,
+  count?: number,
+) {
+  let desc = element.getAttribute('desc') || '';
+  if (element.tagName === 'FCDA') {
+    const { LDevice, LN, DOI, SDI, DAI } = getFcdaInstDesc(element as Element);
+    desc = [LDevice, LN, DOI, ...(SDI ?? []), DAI].filter(Boolean).join(' > ');
+  }
+  if (desc) {
+    desc = `: ${desc}`;
+  }
+  if (elementIdentity !== element.tagName) {
+    desc = `${element.tagName}${desc}`;
+  }
+
+  if (count && count > 0) {
+    desc = `${desc} (${count})`;
+  }
+  return desc;
+}
+
 function filterObject(
   obj: object,
   predicate: (entry: [string, any]) => boolean,
@@ -174,6 +208,96 @@ export class DiffTree extends LitElement {
     this.childrenExpanded = new Array(this.childCount).fill(false);
   }
 
+  renderRenamedChildren() {
+    if (!this.everExpanded) {
+      return nothing;
+    }
+
+    const diffsByHash: IdentitiesByTagAndHash = {};
+
+    [
+      ...Array.from(this.ours?.children ?? []),
+      ...(this.ours && this.ourHasher
+        ? this.ourHasher.findReferences(this.ours)
+        : []),
+    ].forEach(element => {
+      const tag = element.tagName;
+      const hash = this.ourHasher?.hash(element);
+      if (!hash) {
+        return;
+      }
+      const id = getIdentityLabel(element);
+
+      const tagAndHash = `${tag}.${hash}`;
+      diffsByHash[tagAndHash] ??= { ours: [], theirs: [] };
+      diffsByHash[tagAndHash].ours.push(id);
+    });
+    [
+      ...Array.from(this.theirs?.children ?? []),
+      ...(this.theirs && this.theirHasher
+        ? this.theirHasher.findReferences(this.theirs)
+        : []),
+    ].forEach(element => {
+      const tag = element.tagName;
+      const hash = this.theirHasher?.hash(element);
+      if (!hash) {
+        return;
+      }
+      const id = getIdentityLabel(element);
+      const tagAndHash = `${tag}.${hash}`;
+      diffsByHash[tagAndHash] ??= { ours: [], theirs: [] };
+      diffsByHash[tagAndHash].theirs.push(id);
+    });
+
+    return html`<div class="renamed-children">
+      ${Object.entries(diffsByHash).map(
+        ([key, { ours: ourIdentities, theirs: thierIdentities }]) => {
+          if (ourIdentities.length === 0 || thierIdentities.length === 0) {
+            return nothing;
+          }
+          const commonIdentities = ourIdentities.filter(id =>
+            thierIdentities.includes(id),
+          );
+          const ourUniqueIdentities = ourIdentities.filter(
+            id => !commonIdentities.includes(id),
+          );
+          const theirUniqueIdentities = thierIdentities.filter(
+            id => !commonIdentities.includes(id),
+          );
+          if (
+            ourUniqueIdentities.length === 0 &&
+            theirUniqueIdentities.length === 0
+          ) {
+            return nothing;
+          }
+
+          const hash = key.split('.').pop();
+          const element = hash
+            ? Array.from(this.ourHasher?.eDb.h2e.get(hash)?.keys() ?? [])[0]
+            : undefined;
+          const desc = element
+            ? getElementDescription(element, ourIdentities[0])
+            : '';
+
+          return html`
+            ${element
+              ? html`<md-icon class="display"
+                  >${getDisplayIcon(element)}</md-icon
+                >`
+              : nothing}
+            <span class="ours">${ourIdentities.join(', ')}</span>
+            <span class="renamed-arrow"> -> </span>
+            <span>
+              <span class="theirs">${thierIdentities.join(', ')}</span>${desc
+                ? html`<small>${desc}</small>`
+                : nothing}
+            </span>
+          `;
+        },
+      )}
+    </div>`;
+  }
+
   renderChildDiffs() {
     if (!this.everExpanded) {
       return nothing;
@@ -280,7 +404,10 @@ export class DiffTree extends LitElement {
   }
 
   renderDiff() {
-    return html`${this.renderAttributeDiff()}${this.renderChildDiffs()}`;
+    return html`
+      ${this.renderAttributeDiff()} ${this.renderChildDiffs()}
+      ${this.renderRenamedChildren()}
+    `;
   }
 
   render() {
@@ -324,25 +451,8 @@ export class DiffTree extends LitElement {
         }
       </style>
       ${fullscreenStyles}`;
-    let desc = element.getAttribute('desc') || '';
-    if (element.tagName === 'FCDA') {
-      const { LDevice, LN, DOI, SDI, DAI } = getFcdaInstDesc(
-        element as Element,
-      );
-      desc = [LDevice, LN, DOI, ...(SDI ?? []), DAI]
-        .filter(Boolean)
-        .join(' > ');
-    }
-    if (desc) {
-      desc = `: ${desc}`;
-    }
-    if (id !== element.tagName) {
-      desc = `${element.tagName}${desc}`;
-    }
 
-    if (this.childCount > 0) {
-      desc = `${desc} (${this.childCount})`;
-    }
+    const desc = getElementDescription(element, id, this.childCount);
 
     return html`<div class="header-row">
         <button
@@ -582,6 +692,27 @@ export class DiffTree extends LitElement {
     }
     :host(:not([expanded])) .content-row {
       display: none;
+    }
+
+    .renamed-children {
+      display: grid;
+      gap: 4px;
+      grid-template-columns: max-content max-content 40px max-content;
+      margin-left: 28px;
+    }
+
+    .ours {
+      color: var(--oscd-primary, darkred);
+    }
+
+    .renamed-arrow {
+      justify-self: center;
+    }
+
+    .theirs {
+      color: var(--oscd-secondary, darkgreen);
+      display: inline;
+      margin-right: 8px;
     }
   `;
 }
