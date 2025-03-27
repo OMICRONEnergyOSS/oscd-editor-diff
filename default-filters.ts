@@ -371,8 +371,8 @@ export const defaultFilters: Record<string, Filter> = {
   'IED: Compare Two  IEDs': {
     description:
       'Allow comparison of two IEDs in the same or a different file (requires user modification)',
-    ourSelector: 'IED[name="XAT_BusA_P1"] *',
-    theirSelector: 'IED[name="SOM_BusA_P1"] *',
+    ourSelector: 'IED[name="Put first IED name here"]',
+    theirSelector: 'IED[name="Put second IED name here"]',
     selectors: {
       inclusive: false,
       vals: [],
