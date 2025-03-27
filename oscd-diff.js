@@ -23952,7 +23952,7 @@ See www.iec.ch/CCv1 for copyright details
               .theirs=${i}
               .ourHasher=${this.ourHasher}
               .theirHasher=${this.theirHasher}
-              @diff-toggle=${l=>{l.stopPropagation(),this.childrenExpanded[c]=l.detail.expanded,this.requestUpdate()}}
+              @diff-toggle=${l=>{l.stopPropagation(),this.childrenExpanded[c]=l.detail.expanded}}
               ?expanded=${this.childCount<=1||this.childrenExpanded[c]}
               ?fullscreen=${this.fullscreen}
               .depth=${this.depth+1}
