@@ -23947,16 +23947,16 @@ See www.iec.ch/CCv1 for copyright details
             </span>
           `})}
     </div>`}renderChildDiffs(){return this.everExpanded?p`<div id="child-diffs">
-      ${Object.entries(this.diff).map(([a,{ours:e,theirs:t}])=>{if(!a.startsWith("@"))return C;const r=a.slice(1),s={};return e.forEach(n=>{const i=[...Array.from(this.ours?.children??[]),...this.ours&&this.ourHasher?this.ourHasher.findReferences(this.ours):[]].find(m=>m.tagName===r&&this.ourHasher?.eDb.e2h.get(m)===n&&Object.values(s).every(({ourElement:b})=>b!==m));if(!i)return;let c=Ve(i);const l=Ve(i.parentElement);l&&typeof l=="string"&&typeof c=="string"&&c.startsWith(l)&&(c=c.slice(l.length).trim()),s[c]??={},s[c].ourElement=i}),t.forEach(n=>{const i=[...Array.from(this.theirs?.children??[]),...this.theirs&&this.theirHasher?this.theirHasher.findReferences(this.theirs):[]].find(m=>m.tagName===r&&this.theirHasher?.eDb.e2h.get(m)===n&&Object.values(s).every(({theirElement:b})=>b!==m));if(!i)return;let c=Ve(i);const l=Ve(i.parentElement);l&&typeof l=="string"&&typeof c=="string"&&c.startsWith(l)&&(c=c.slice(l.length).trim()),s[c]??={},s[c].theirElement=i}),Object.values(s).map(({ourElement:n,theirElement:i},c)=>p`<diff-tree
-              .ours=${n}
-              .theirs=${i}
-              .ourHasher=${this.ourHasher}
-              .theirHasher=${this.theirHasher}
-              @diff-toggle=${l=>{l.stopPropagation(),this.childrenExpanded[c]=l.detail.expanded}}
-              ?expanded=${this.childCount<=1||this.childrenExpanded[c]}
-              ?fullscreen=${this.fullscreen}
-              .depth=${this.depth+1}
-            ></diff-tree>`)})}
+      ${Object.entries(this.diff).map(([a,{ours:e,theirs:t}])=>{if(!a.startsWith("@"))return C;const r=a.slice(1),s={};e.forEach(i=>{const c=[...Array.from(this.ours?.children??[]),...this.ours&&this.ourHasher?this.ourHasher.findReferences(this.ours):[]].find(b=>b.tagName===r&&this.ourHasher?.eDb.e2h.get(b)===i&&Object.values(s).every(({ourElement:u})=>u!==b));if(!c)return;let l=Ve(c);const m=Ve(c.parentElement);m&&typeof m=="string"&&typeof l=="string"&&l.startsWith(m)&&(l=l.slice(m.length).trim()),s[l]??={},s[l].ourElement=c}),t.forEach(i=>{const c=[...Array.from(this.theirs?.children??[]),...this.theirs&&this.theirHasher?this.theirHasher.findReferences(this.theirs):[]].find(b=>b.tagName===r&&this.theirHasher?.eDb.e2h.get(b)===i&&Object.values(s).every(({theirElement:u})=>u!==b));if(!c)return;let l=Ve(c);const m=Ve(c.parentElement);m&&typeof m=="string"&&typeof l=="string"&&l.startsWith(m)&&(l=l.slice(m.length).trim()),s[l]??={},s[l].theirElement=c});const n=new Intl.Collator(void 0,{numeric:!0,sensitivity:"base"});return Object.entries(s).sort(([i],[c])=>n.compare(i,c)).map(([,{ourElement:i,theirElement:c}],l)=>p`<diff-tree
+                .ours=${i}
+                .theirs=${c}
+                .ourHasher=${this.ourHasher}
+                .theirHasher=${this.theirHasher}
+                @diff-toggle=${m=>{m.stopPropagation(),this.childrenExpanded[l]=m.detail.expanded}}
+                ?expanded=${this.childCount<=1||this.childrenExpanded[l]}
+                ?fullscreen=${this.fullscreen}
+                .depth=${this.depth+1}
+              ></diff-tree>`)})}
     </div>`:C}renderAttributeDiff(){const a=ol(this.diff,([t])=>!t.startsWith("@")&&t!=="eNS"),e=this.diff.eNS;return!Object.keys(a).length&&!e?C:p`<table>
       ${Object.entries(a).map(([t,{ours:r,theirs:s}])=>p`<tr tabindex="0">
             <th></th>
