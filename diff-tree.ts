@@ -374,23 +374,28 @@ export class DiffTree extends LitElement {
           elementDiff[id] ??= {};
           elementDiff[id].theirElement = element;
         });
-
-        return Object.values(elementDiff).map(
-          ({ ourElement: o, theirElement: t }, i: number) =>
-            html`<diff-tree
-              .ours=${o}
-              .theirs=${t}
-              .ourHasher=${this.ourHasher}
-              .theirHasher=${this.theirHasher}
-              @diff-toggle=${(event: CustomEvent<{ expanded: boolean }>) => {
-                event.stopPropagation();
-                this.childrenExpanded[i] = event.detail.expanded;
-              }}
-              ?expanded=${this.childCount <= 1 || this.childrenExpanded[i]}
-              ?fullscreen=${this.fullscreen}
-              .depth=${this.depth + 1}
-            ></diff-tree>`,
-        );
+        const collator = new Intl.Collator(undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        });
+        return Object.entries(elementDiff)
+          .sort(([a], [b]) => collator.compare(a, b))
+          .map(
+            ([, { ourElement: o, theirElement: t }], i: number) =>
+              html`<diff-tree
+                .ours=${o}
+                .theirs=${t}
+                .ourHasher=${this.ourHasher}
+                .theirHasher=${this.theirHasher}
+                @diff-toggle=${(event: CustomEvent<{ expanded: boolean }>) => {
+                  event.stopPropagation();
+                  this.childrenExpanded[i] = event.detail.expanded;
+                }}
+                ?expanded=${this.childCount <= 1 || this.childrenExpanded[i]}
+                ?fullscreen=${this.fullscreen}
+                .depth=${this.depth + 1}
+              ></diff-tree>`,
+          );
       })}
     </div>`;
   }
