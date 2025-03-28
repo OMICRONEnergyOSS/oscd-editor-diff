@@ -60,5 +60,6 @@ export class InfoDialog extends LitElement {
 
     a {
       color: var(--oscd-base02);
+    }
   `;
 }
