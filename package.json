@@ -1,94 +1,102 @@
 {
-  "name": "oscd-diff",
+  "name": "oscd-editor-diff",
   "description": "OpenSCD plugin for diffing SCL files",
-  "license": "Apache-2.0",
-  "author": "OMICRON electronics GmbH",
   "version": "0.0.0",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OMICRONEnergyOSS/oscd-editor-diff.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OMICRONEnergyOSS/oscd-editor-diff/issues"
+  },
+  "homepage": "https://openscd.org",
+  "keywords": [
+    "OpenSCD",
+    "iec81650"
+  ],
+  "author": "OMICRON Electronics GmbH",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./dist/oscd-editor-diff.js",
+    "./oscd-editor-diff.js": "./dist/oscd-editor-diff.js"
+  },
+  "files": [
+    "/dist/",
+    "!/dist/*.spec.*",
+    "!/dist/*.test.*"
+  ],
   "scripts": {
-    "lint": "eslint --ext .ts,.html . --ignore-path .gitignore && prettier \"**/*.ts\" --check --ignore-path .gitignore",
-    "format": "eslint --ext .ts,.html . --fix --ignore-path .gitignore && prettier \"**/*.ts\" --write --ignore-path .gitignore",
-    "prepare": "husky",
-    "test": "rimraf out-tsc && tsc && wtr --coverage",
-    "test:watch": "rimraf out-tsc && tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wtr --watch --coverage\"",
-    "build": "rimraf out-tsc && tsc && rimraf dist && rollup -c rollup.config.js && npm run analyze -- --exclude dist",
-    "start:build": "web-dev-server --root-dir dist --app-index index.html --open",
-    "analyze": "cem analyze --litelement",
-    "start": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"web-dev-server\"",
-    "deploy": "npm run build && gh-pages --dist dist"
+    "lint": "eslint .",
+    "format": "eslint . --fix",
+    "analyze": "cem analyze --litelement --exclude demo/* --exclude dist/* --exclude *.spec.ts --exclude *.test.ts --exclude coverage/*",
+    "copy-demo": "cp -r ./demo ./dist/",
+    "start": "npm run build && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wds --node-resolve \"",
+    "start:bundle": "npm run bundle && concurrently -k -r \"rollup -c rollup.config.js --watch\" \"wds --watch \"",
+    "build": "rimraf dist && mkdir dist && npm run copy-demo && npm run analyze -- --exclude dist && tsc ",
+    "bundle": "rimraf dist && rollup -c rollup.config.js",
+    "test": "npm run build && wtr --coverage",
+    "test:watch": "npm run build && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wtr --watch\"",
+    "prepare": "husky"
   },
   "dependencies": {
     "@material/web": "^2.2.0",
+    "@omicronenergy/oscd-api": "^0.1.1",
+    "@omicronenergy/oscd-background-editv1": "^0.0.6",
+    "@omicronenergy/oscd-menu-open": "^0.0.6",
+    "@omicronenergy/oscd-menu-save": "^0.0.1",
+    "@omicronenergy/oscd-shell": "^0.0.8",
     "@openenergytools/scl-lib": "^1.2.0",
-    "gh-pages": "^6.3.0",
-    "lit": "^3.1.4",
+    "lit": "^3.3.0",
+    "tslib": "^2.8.1",
     "xxhash-wasm": "^1.1.0"
   },
   "devDependencies": {
-    "@custom-elements-manifest/analyzer": "^0.10.3",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@custom-elements-manifest/analyzer": "^0.10.4",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.31.0",
     "@open-wc/dev-server-hmr": "^0.2.0",
-    "@open-wc/eslint-config": "^12.0.3",
-    "@open-wc/testing": "^4.0.0",
+    "@open-wc/eslint-config": "^13.0.0",
+    "@open-wc/testing": "4.0.0",
     "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@types/mocha": "^10.0.7",
-    "@typescript-eslint/eslint-plugin": "^7.16.0",
-    "@typescript-eslint/parser": "^7.16.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@types/mocha": "^10.0.10",
+    "@typescript-eslint/eslint-plugin": "^8.36.0",
+    "@typescript-eslint/parser": "^8.36.0",
     "@web/dev-server": "^0.4.6",
     "@web/rollup-plugin-html": "^2.3.0",
     "@web/rollup-plugin-import-meta-assets": "^2.2.1",
-    "@web/test-runner": "^0.18.2",
+    "@web/test-runner": "0.20.2",
+    "@web/test-runner-commands": "^0.9.0",
+    "@web/test-runner-playwright": "^0.11.1",
     "babel-plugin-template-html-minifier": "^4.1.0",
-    "concurrently": "^8.2.2",
+    "concurrently": "^9.2.0",
     "deepmerge": "^4.3.1",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.7",
-    "prettier": "^3.3.2",
-    "rimraf": "^5.0.9",
-    "rollup": "^4.18.1",
+    "eslint": "^9.31.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-html": "^8.1.3",
+    "eslint-plugin-lit": "^2.1.1",
+    "eslint-plugin-lit-a11y": "^5.1.0",
+    "eslint-plugin-no-only-tests": "^3.3.0",
+    "eslint-plugin-prettier": "^5.5.1",
+    "eslint-plugin-tsdoc": "^0.4.0",
+    "eslint-plugin-wc": "^3.0.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.45.0",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-esbuild": "^6.1.1",
     "rollup-plugin-workbox": "^8.1.0",
-    "tslib": "^2.6.3",
-    "typescript": "^5.5.3"
+    "sinon": "^21.0.0",
+    "typedoc": "^0.28.7",
+    "typescript": "^5.8.3"
   },
-  "eslintConfig": {
-    "parser": "@typescript-eslint/parser",
-    "extends": [
-      "@open-wc",
-      "prettier"
-    ],
-    "plugins": [
-      "@typescript-eslint"
-    ],
-    "rules": {
-      "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": "error",
-      "import/no-unresolved": "off",
-      "import/extensions": [
-        "error",
-        "always",
-        {
-          "ignorePackages": true
-        }
-      ],
-      "import/no-extraneous-dependencies": [
-        "error",
-        {
-          "devDependencies": [
-            "**/*.test.ts",
-            "./web-*.config.js"
-          ]
-        }
-      ],
-      "curly": [
-        "error",
-        "all"
-      ]
-    }
-  },
+  "customElements": "custom-elements.json",
   "prettier": {
     "singleQuote": true,
     "arrowParens": "avoid"
@@ -96,7 +104,8 @@
   "lint-staged": {
     "*.ts": [
       "eslint --fix",
-      "prettier --write"
+      "prettier --write",
+      "eslint"
     ]
   }
 }

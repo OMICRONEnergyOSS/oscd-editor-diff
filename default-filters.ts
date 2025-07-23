@@ -1,5 +1,5 @@
 import { Configurable } from './hash.js';
-import { BaseConfigurable, BaseFilter, Filter } from './oscd-diff.js';
+import { BaseConfigurable, BaseFilter, Filter } from './oscd-editor-diff.js';
 
 const identifiers: Record<string, string[]> = {
   '*': ['name', 'id'],

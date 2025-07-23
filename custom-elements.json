@@ -1,0 +1,1933 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "base-filter-dialog.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "BaseFilterDialog",
+          "members": [
+            {
+              "kind": "field",
+              "name": "open",
+              "attribute": "open"
+            },
+            {
+              "kind": "field",
+              "name": "inclusiveSelectorsVals",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "inclusiveSelectorsExcept",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "inclusiveAttributesVals",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "inclusiveAttributesExcept",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "inclusiveNamespacesVals",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "inclusiveNamespacesExcept",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "exclusiveSelectorsVals",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "exclusiveSelectorsExcept",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "exclusiveAttributesVals",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "exclusiveAttributesExcept",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "exclusiveNamespacesVals",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "exclusiveNamespacesExcept",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "dialog",
+              "type": {
+                "text": "MdDialog | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "infoDialog",
+              "type": {
+                "text": "InfoDialog | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "warningDialog",
+              "type": {
+                "text": "InfoDialog | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "#oldBase",
+              "privacy": "private",
+              "type": {
+                "text": "BaseFilter | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "base",
+              "attribute": "base"
+            },
+            {
+              "kind": "method",
+              "name": "dispatchSaveEvent"
+            },
+            {
+              "kind": "method",
+              "name": "resetDialog"
+            },
+            {
+              "kind": "method",
+              "name": "showHelpDialog"
+            }
+          ],
+          "events": [
+            {
+              "name": "oscd-diff-base-filter-save",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "open",
+              "fieldName": "open"
+            },
+            {
+              "name": "base",
+              "fieldName": "base"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "base-filter-dialog",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "BaseFilterDialog",
+          "declaration": {
+            "name": "BaseFilterDialog",
+            "module": "base-filter-dialog.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "base-filter-dialog",
+          "declaration": {
+            "name": "BaseFilterDialog",
+            "module": "base-filter-dialog.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "default-filters.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "defaultBaseFilters",
+          "type": {
+            "text": "BaseFilter"
+          },
+          "default": "{ inclusive: { selectors: { vals: [], except: [], }, attributes: { vals: exceptions, except: excludedIdentifiers, }, namespaces: { vals: [], except: [], }, }, exclusive: { selectors: { vals: [], except: [], }, attributes: { vals: excludedIdentifiers, except: exceptions, }, namespaces: { vals: [], except: [], }, }, }"
+        },
+        {
+          "kind": "function",
+          "name": "extendFilter",
+          "return": {
+            "type": {
+              "text": "Filter"
+            }
+          },
+          "parameters": [
+            {
+              "name": "base",
+              "type": {
+                "text": "BaseFilter"
+              }
+            },
+            {
+              "name": "filter",
+              "type": {
+                "text": "Filter"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "variable",
+          "name": "defaultFilters",
+          "type": {
+            "text": "Record<string, Filter>"
+          },
+          "default": "{ Complete: { description: 'Compare everything in all namespaces', ourSelector: '', theirSelector: '', selectors: { inclusive: false, vals: [], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, 'Complete: Without Text/desc': { description: 'Compare everything but without Text elements and desc attributes', ourSelector: '', theirSelector: '', selectors: { inclusive: false, vals: ['Text'], except: [], }, attributes: { inclusive: false, vals: ['desc'], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, 'Complete: SCL Only (no Privates)': { description: 'Compare the SCL namespace (but not Private elements or other namespaced items)', ourSelector: '', theirSelector: '', selectors: { inclusive: false, vals: ['Private'], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: true, vals: ['http://www.iec.ch/61850/2003/SCL'], except: [], }, }, Header: { description: 'Compare versioning and history items', ourSelector: 'Header', theirSelector: 'Header', selectors: { inclusive: false, vals: [], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, Substation: { description: 'Compare single line diagram and specification functionality', ourSelector: 'Substation', theirSelector: 'Substation', selectors: { inclusive: false, vals: [], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, 'Communication: Complete': { description: '', ourSelector: 'Communication', theirSelector: 'Communication', selectors: { inclusive: false, vals: [], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, 'Communication: IP Addresses and MMS Session': { description: 'Compare IP address, subnet and gateway and MMS session parameters', ourSelector: 'Communication', theirSelector: '', selectors: { inclusive: true, vals: [ 'Communication', 'Communication > SubNetwork', 'Communication > SubNetwork > ConnectedAP', 'Communication > SubNetwork > ConnectedAP > Address', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"IP\"]', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"IP\"] *', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"IP-SUBNET\"]', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"IP-SUBNET\"] *', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"IP-GATEWAY\"]', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"IP-GATEWAY\"] *', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"OSI-TSEL\"]', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"OSI-TSEL\"] *', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"OSI-SEL\"]', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"OSI-SEL\"] *', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"OSI-SSEL\"]', 'Communication > SubNetwork > ConnectedAP > Address > P[type=\"OSI-SSEL\"] *', ], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, 'Communication: Multicast Traffic Addressing': { description: 'Compare Communication GSE and SMV elements (MAC, VLAN, priority etc.)', ourSelector: 'Communication', theirSelector: '', selectors: { inclusive: true, vals: [ 'Communication', 'Communication > SubNetwork', 'Communication > SubNetwork > ConnectedAP', 'Communication > SubNetwork > ConnectedAP > GSE', 'Communication > SubNetwork > ConnectedAP > SMV', 'Communication > SubNetwork > ConnectedAP > GSE > Address', 'Communication > SubNetwork > ConnectedAP > SMV > Address', 'Communication > SubNetwork > ConnectedAP > GSE > Address > P[type=\"VLAN-ID\"]', 'Communication > SubNetwork > ConnectedAP > GSE > Address > P[type=\"VLAN-PRIORITY\"]', 'Communication > SubNetwork > ConnectedAP > GSE > Address > P[type=\"MAC-Address\"]', 'Communication > SubNetwork > ConnectedAP > SMV > Address > P[type=\"VLAN-ID\"]', 'Communication > SubNetwork > ConnectedAP > SMV > Address > P[type=\"VLAN-PRIORITY\"]', 'Communication > SubNetwork > ConnectedAP > SMV > Address > P[type=\"MAC-Address\"]', ], except: ['AccessPoint'], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, 'Communication: SCL without Privates': { description: 'Compare only the Communication section in the SCL namespace without Privates (does not de-reference to AccessPoint)', ourSelector: 'Communication', theirSelector: 'Communication', selectors: { inclusive: false, vals: ['Private', 'AccessPoint'], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: true, vals: ['http://www.iec.ch/61850/2003/SCL'], except: [], }, }, 'IED: All - Complete': { description: 'Compare all IED in all namespaces', ourSelector: 'IED', theirSelector: '', selectors: { inclusive: false, vals: [], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, 'IED: All - Only SCL namespace without DataTypes or Privates': { description: 'Compare all IEDs, only in the SCL namespace and without referencing DataTypes or look into Private elements', ourSelector: 'IED', theirSelector: '', selectors: { inclusive: false, vals: ['Private'], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: true, vals: ['http://www.iec.ch/61850/2003/SCL'], except: [], }, }, 'IED: Compare Two IEDs': { description: 'Allow comparison of two IEDs in the same or a different file (requires user modification)', ourSelector: 'IED[name=\"Put first IED name here\"]', theirSelector: 'IED[name=\"Put second IED name here\"]', selectors: { inclusive: false, vals: [], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, 'IED: Individual': { description: 'Compare a specific IED (requires user modification)', ourSelector: 'IED[name=\"Put your IED name here\"]\\n', theirSelector: '', selectors: { inclusive: false, vals: [], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, 'IED: MMS Report Content': { description: 'Compare ReportControl elements within each IED (buffered and unbuffered)', ourSelector: 'ReportControl', theirSelector: '', selectors: { inclusive: false, vals: [], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, 'IED: Subscriptions and Supervisions': { description: 'Compare subscriptions (Inputs and External References) and supervision references (LGOS and LSVS Logical Nodes)', ourSelector: 'IED\\n', theirSelector: '', selectors: { inclusive: true, vals: [ 'IED', 'IED > AccessPoint', 'IED > AccessPoint > Server', 'IED > AccessPoint > Server > LDevice', 'IED > AccessPoint > Server > LDevice > LN0', 'IED > AccessPoint > Server > LDevice > LN', 'IED > AccessPoint > Server > LDevice > LN0 > Inputs', 'IED > AccessPoint > Server > LDevice > LN > Inputs', 'IED > AccessPoint > Server > LDevice > LN0 > Inputs > ExtRef', 'IED > AccessPoint > Server > LDevice > LN > Inputs > ExtRef', 'IED > AccessPoint > Server > LDevice > LN[lnClass=\"LGOS\"]', 'IED > AccessPoint > Server > LDevice > LN[lnClass=\"LSVS\"]', 'IED > AccessPoint > Server > LDevice > LN[lnClass=\"LGOS\"] *', 'IED > AccessPoint > Server > LDevice > LN[lnClass=\"LSVS\"] *', ], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: false, vals: [], except: [], }, }, DataTypeTemplates: { description: 'Compare data type definitions (only SCL namespace)', ourSelector: 'DataTypeTemplates', theirSelector: '', selectors: { inclusive: false, vals: [], except: [], }, attributes: { inclusive: false, vals: [], except: [], }, namespaces: { inclusive: true, vals: ['http://www.iec.ch/61850/2003/SCL'], except: [], }, }, }"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "defaultBaseFilters",
+          "declaration": {
+            "name": "defaultBaseFilters",
+            "module": "default-filters.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "extendFilter",
+          "declaration": {
+            "name": "extendFilter",
+            "module": "default-filters.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "defaultFilters",
+          "declaration": {
+            "name": "defaultFilters",
+            "module": "default-filters.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "default-help-base-dialog-content.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "DefaultHelpBaseDialogContent",
+          "default": "` <h3>Base Comparison Rules Help</h3> <p>Base rules apply to all rules.</p> <p>One of the two groups of filters shown below will applied to each set of comparison rules on dependent rules. If a rule is set to \"exclusive\" mode (default), then the corresponding rule set from the \"Exclude Rules\" section will be applied. If a rule is set to \"inclusive\" mode, then the corresponding rule set from the \"Include Rules\" section will be applied.</p> <p>The default settings are to ensure that naming identifiers don't prevent comparisons between objects (e.g. IEDs with a different name for example). Use the \"Reset\" button in the footer to discard all saved changes and revert to the the defaults.</p> `"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "DefaultHelpBaseDialogContent",
+          "declaration": {
+            "name": "DefaultHelpBaseDialogContent",
+            "module": "default-help-base-dialog-content.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "default-help-dialog-content.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "DefaultHelpDialogContent",
+          "default": "` <h3>Basic metadata</h3> <ul> <li>Name - appears in the filter drop-down list.</li> <li> Description (optional) - additional information on the filter settings or intended usage. </li> </ul> <h3>Scope</h3> <p>The scope defines the root of the comparison.</p> <p>For a complete comparison this may be left empty.</p> <p> The Scope is a CSS selector (see <a href=\"https://developer.mozilla.org/en-US/docs/Web/XML/XPath/Guides/Comparison_with_CSS_selectors\" >MDN</a > for more information) and can be used to specify particular elements. </p> <p>For example between two IEDs:</p> Scope: <code>IED[name=&quot;XAT_BusA_P1&quot;]</code> <p>The &quot;Scope&quot; lines up with the &quot;To and From documents&quot;</p> <!-- Would this ever work? It's not just a pure rename. Is it any better than just having the default \"Substation\" filter which compares only \"Substation\" elements? Daniel thinks it would because if the Substation name isn't in the comparison then it should, however it doesn't seem to work properly at the moment, perhaps the Substation name attribute is incorrectly included in the comparison? --> <h3 id=\"include-and-exclude-filters\">Include and Exclude Rules</h3> <p> The five different text fields allow fine-grained comparisons. Examples are given for the Substation section but could just as easily be given for IEDs. </p> <p> SCL elements, attributes and namespaces used in the file can be either &quot;Include&quot; or &quot;Exclude&quot; rules. By default matching elements are excluded. To only include matching artifacts, click on the &quot;Include&quot; radio button. </p> <p>This appears as:</p> <table rules=\"all\"> <thead> <tr> <th>Exclude</th> <th>Except</th> </tr> </thead> <tbody> <tr> <td>???</td> <td>???</td> </tr> </tbody> </table> <p> To swap them around, selected the &quot;Include&quot; radio button. The filters then become: </p> <table rules=\"all\"> <thead> <tr> <th>Include</th> <th>Except</th> </tr> </thead> <tbody> <tr> <td>???</td> <td>???</td> </tr> </tbody> </table> <p> The rules are given as CSS Selector expressions. These are often more simple than equivalent XPath expressions. Learn more about the differences and how to use these on <a href=\"https://developer.mozilla.org/en-US/docs/Web/XML/XPath/Guides/Comparison_with_CSS_selectors\" >MDN</a > or make a start with the examples below. </p> <p> It is recommended to study the default rules and to create rules initially with small files in an incremental manner to understand them clearly. </p> <h4 id=\"elements\">Elements</h4> <p> The following would include everything but exclude a particular <code>VoltageLevel</code> named <code>V33</code>: </p> <table rules=\"all\"> <thead> <tr> <th>Exclude</th> <th>Except</th> </tr> </thead> <tbody> <tr> <td><code>VoltageLevel[name=&quot;V33&quot;]</code></td> </tr> </tbody> </table> <p> To swap the filter so that it only includes <em>only</em> the <code>VoltageLevel</code> <code>V33</code> only would click on the &quot;Include&quot; radio button. </p> <p>Now the meaning of the text boxes have changed to:</p> <table rules=\"all\"> <thead> <tr> <th>Include</th> <th>Except</th> </tr> </thead> <tbody> <tr> <td><code>VoltageLevel[name=&quot;V33&quot;]</code></td> </tr> </tbody> </table> <p> The &quot;Except&quot; input is especially useful when querying a broad &quot;outer element&quot;. For instance, imagine a user wanting to compare all <code>VoltageLevel</code> elements but not one specific one: </p> <table rules=\"all\"> <thead> <tr> <th>Include</th> <th>Except</th> </tr> </thead> <tbody> <tr> <td><code>VoltageLevel</code></td> <td><code>VoltageLevel[name=&quot;V33]</code></td> </tr> </tbody> </table> <p> If your SCL had multiple <code>Substation</code> elements in it, we could specify the particular one to compare using a child combinator. For example: </p> <p> <code >Substation[name=&quot;XAT&quot;] &gt; VoltageLevel[name=&quot;V33]</code > </p> <h5 id=\"ensuring-elements-are-connected\">Ensuring Elements are Connected</h5> <p> If complex selectors are used then the user must ensure the there is a hierarchial path between the elements. </p> <p> For example, the <code>GSE</code> element within the <code>Communication</code> section sits within the <code>SubNetwork</code> and <code>ConnectedAP</code> elements as defined by the standard. </p> <p> If specifying to &quot;Include&quot; Elements, then all ancestors of the GSE element need to be included as well for the filter to function correctly. </p> <p>The filter settings would be:</p> <ul> <li>From: <code>Communication</code></li> <li>Elements: select the &quot;Include&quot; radio button</li> <li> Under include: <pre><code> <span class=\"hljs-keyword\">SubNetwork </span> ConnectedAP GSE GSE * </code></pre> </li> </ul> <p> The last selector, <code>GSE *</code> is a combination of all <code>GSE</code> elements, the &quot;descendant combinator&quot; which is a space and means any ancestor matching the first selector and a universal selector, <code>*</code> which matches elements of any type. </p> <h5 id=\"other-usages\">Other usages</h5> <p> Many IEDs place information in a <code>Private</code> elements. This may not be human readable in some cases. To exclude these from a comparison, place <code>Private</code> in the &quot;Exclude&quot; elements field. </p> <h4 id=\"attributes\">Attributes</h4> <p> Attributes work much like elements in that rules can be either inclusive or exclusive. </p> <p> One use case could be to exclude descriptions. In SCL many elements have a <code>desc</code> attribute but this is sometimes overwritten by an IED Configuration Tool (ICT). To ignore these differences, on an exclusive rule, enter <code>desc</code> in the &quot;Exclude&quot; field. </p> <h4 id=\"namespaces\">Namespaces</h4> <p>By default all namespaces are included.</p> <p> This plugin requires namespaces to be entered as their fully qualified URLs. </p> <p>To exclude other manufacturers, enter their fully qualified namespace:</p> <p> <a href=\"http://www.ManufacturerA.com/Some/More/Detail\" >http://www.ManufacturerA.com/Some/More/Detail</a > </p> <h4 id=\"namespaced-elements\">Namespaced Elements</h4> <p> Namespaced elements can be included in the Elements field in the following form: </p> <pre><code><span class=\"hljs-symbol\">https:</span><span class=\"hljs-comment\">//a.com:DO</span> </code></pre> <p> Where this means a DO element in the <code>https://a.com</code> namespace. </p> <h2 id=\"other-notes\">Other Notes</h2> <p> Extension namespace information within <code>Private</code> elements cannot be interpreted by this plugin except by string comparison as their structure is unknown (not defined by IEC 61850-6). </p> `"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "DefaultHelpDialogContent",
+          "declaration": {
+            "name": "DefaultHelpDialogContent",
+            "module": "default-help-dialog-content.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "default-info-dialog-content.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "DefaultInfoDialogContent",
+          "default": "` <p> The compare plugin allows for a complete comparison of two SCL documents and gives a hierarchial list of differences using the SCL structure shown in IEC 61850-6. </p> <p> Users may compare only particular elements and specify these in considerable detail. Comparisons can occur within a document or between two documents. Pre-defined comparison rules are available for common use cases and users may create new comparison rules as well as export and import rules to allow them to be shared (the rules are saved as JSON files). </p> <p> Comparisons on large files may take a considerable time - 10-15 minutes on a high powered machine with 16 Gb RAM and no other browser tabs or applications open. SCL files for even small substations can have many hundreds of thousands of elements. Comparisons between files with only a small number of IEDs should take &lt; 10 seconds. </p> <p> It is recommended to create filters to ensure performant queries and targeted results. </p> <p> While the comparison is being done the user interface may become unresponsive, and a message asking whether the user would like to wait may come up. Either the user can click &quot;Wait&quot; or just ignore this message - the comparison will continue to occur in the background. </p> <p> Once a comparison is complete, click on the print icon on the left to either print or export to PDF. The full-screen button maximises the view to take up the full browser window. </p> <h2 id=\"quick-start\">Quick Start</h2> <p> At the top, a set of predefined comparison rules for common tasks are provided. Click the three dots on the right to duplicate/delete or to import/export the filters. </p> <p> If using small files with only a few IEDs (e.g. SSD, ICD and CID files or SCD files with just a few IEDs) then choose the &quot;Complete&quot; filter. </p> <p>Then select the 'From' and 'To' documents.</p> <p> The colours of the document icons here are used to show where the changes are, if changes are only in the first document colour it indicates removals and if changes are in the second document colour it indicates additions. </p> <p> Finally the &quot;Scope&quot; can be entered. On predefined filters these can usually be left blank or at the filter defaults. By ticking the checkbox &quot;Separate From/To scopes&quot; the user can specify different scopes for the \"From\" and \"To\" documents. </p> <p> Click on &quot;Compare&quot; and wait for the comparison to be presented. Changing to another tab may mean the comparison is effectively paused so leaving the the window in focus is recommended. </p> <p>The output is shown in the normal SCL file structure:</p> <pre><code><span class=\"hljs-built_in\">Header</span> Substation Communication IED (one <span class=\"hljs-keyword\">or</span> more) DataTypeTemplates </code></pre> <p> To understand each element it is recommended to look these up in IEC 61850-6 or each manufacturer&#39;s documentation. </p> <h2 id=\"creating-filters\">Creating comparison rules</h2> <p> To create your own comparison rule, choose a similar rule and select the &quot;More&quot; option adjacent to the comparison rule selector (the three dots). Click on &quot;Duplicate&quot;. Then click on the &quot;More&quot; option and select &quot;Edit&quot;. </p> `"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "DefaultInfoDialogContent",
+          "declaration": {
+            "name": "DefaultInfoDialogContent",
+            "module": "default-info-dialog-content.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "diff-tree.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "DiffTree",
+          "members": [
+            {
+              "kind": "field",
+              "name": "ours",
+              "type": {
+                "text": "Element | undefined"
+              },
+              "attribute": "ours"
+            },
+            {
+              "kind": "field",
+              "name": "theirs",
+              "type": {
+                "text": "Element | undefined"
+              },
+              "attribute": "theirs"
+            },
+            {
+              "kind": "field",
+              "name": "ourHasher",
+              "type": {
+                "text": "ReturnType<typeof newHasher> | undefined"
+              },
+              "attribute": "ourHasher"
+            },
+            {
+              "kind": "field",
+              "name": "theirHasher",
+              "type": {
+                "text": "ReturnType<typeof newHasher> | undefined"
+              },
+              "attribute": "theirHasher"
+            },
+            {
+              "kind": "field",
+              "name": "depth",
+              "type": {
+                "text": "number"
+              },
+              "default": "0",
+              "attribute": "depth"
+            },
+            {
+              "kind": "field",
+              "name": "odd",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true,
+              "attribute": "odd",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "#expanded",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "expanded",
+              "type": {
+                "text": "boolean"
+              },
+              "attribute": "expanded",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "everExpanded",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "fullscreen",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "fullscreen"
+            },
+            {
+              "kind": "field",
+              "name": "childrenExpanded",
+              "type": {
+                "text": "boolean[]"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "allChildrenExpanded",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "expandButton",
+              "type": {
+                "text": "HTMLElement"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "ourHash",
+              "type": {
+                "text": "string | undefined"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "theirHash",
+              "type": {
+                "text": "string | undefined"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "ourDescription",
+              "type": {
+                "text": "Description | undefined"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "theirDescription",
+              "type": {
+                "text": "Description | undefined"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "diff",
+              "type": {
+                "text": "Record<string, { ours?: any; theirs?: any }>"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "childCount",
+              "type": {
+                "text": "number"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "renderRenamedChildren"
+            },
+            {
+              "kind": "method",
+              "name": "renderChildDiffs"
+            },
+            {
+              "kind": "method",
+              "name": "renderAttributeDiff"
+            },
+            {
+              "kind": "method",
+              "name": "renderDiff"
+            }
+          ],
+          "events": [
+            {
+              "name": "diff-toggle",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "ours",
+              "type": {
+                "text": "Element | undefined"
+              },
+              "fieldName": "ours"
+            },
+            {
+              "name": "theirs",
+              "type": {
+                "text": "Element | undefined"
+              },
+              "fieldName": "theirs"
+            },
+            {
+              "name": "ourHasher",
+              "type": {
+                "text": "ReturnType<typeof newHasher> | undefined"
+              },
+              "fieldName": "ourHasher"
+            },
+            {
+              "name": "theirHasher",
+              "type": {
+                "text": "ReturnType<typeof newHasher> | undefined"
+              },
+              "fieldName": "theirHasher"
+            },
+            {
+              "name": "depth",
+              "type": {
+                "text": "number"
+              },
+              "default": "0",
+              "fieldName": "depth"
+            },
+            {
+              "name": "odd",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true,
+              "fieldName": "odd"
+            },
+            {
+              "name": "expanded",
+              "type": {
+                "text": "boolean"
+              },
+              "fieldName": "expanded"
+            },
+            {
+              "name": "fullscreen",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "fieldName": "fullscreen"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "diff-tree",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "DiffTree",
+          "declaration": {
+            "name": "DiffTree",
+            "module": "diff-tree.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "diff-tree",
+          "declaration": {
+            "name": "DiffTree",
+            "module": "diff-tree.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "filter-dialog.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FilterDialog",
+          "members": [
+            {
+              "kind": "field",
+              "name": "open",
+              "attribute": "open"
+            },
+            {
+              "kind": "field",
+              "name": "filterName",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "attribute": "filterName"
+            },
+            {
+              "kind": "field",
+              "name": "existingFilterNames",
+              "type": {
+                "text": "string[]"
+              },
+              "default": "[]",
+              "attribute": "existingFilterNames"
+            },
+            {
+              "kind": "field",
+              "name": "filterDescription",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "ourSelector",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "theirSelector",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "selectorsInclusive",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "selectorsVals",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "selectorsExcept",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "attributesInclusive",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "attributesVals",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "attributesExcept",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "namespacesInclusive",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "namespacesVals",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "namespacesExcept",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "dialog",
+              "type": {
+                "text": "MdDialog | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "filterNameInput",
+              "type": {
+                "text": "MdOutlinedTextField | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "infoDialog",
+              "type": {
+                "text": "InfoDialog | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "#oldFilter",
+              "privacy": "private",
+              "type": {
+                "text": "Filter | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "filter"
+            },
+            {
+              "kind": "method",
+              "name": "resetDialog"
+            },
+            {
+              "kind": "method",
+              "name": "showHelpDialog"
+            },
+            {
+              "kind": "method",
+              "name": "renderLabelAndRadioGroupRow",
+              "parameters": [
+                {
+                  "name": "{\n    value,\n    onChange,\n    name,\n    label,\n  }",
+                  "type": {
+                    "text": "{\n    value: boolean;\n    onChange: (val: boolean) => void;\n    name: string;\n    label: string;\n  }"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "oscd-diff-filter-save",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "open",
+              "fieldName": "open"
+            },
+            {
+              "name": "filterName",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "fieldName": "filterName"
+            },
+            {
+              "name": "existingFilterNames",
+              "type": {
+                "text": "string[]"
+              },
+              "default": "[]",
+              "fieldName": "existingFilterNames"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "filter-dialog",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FilterDialog",
+          "declaration": {
+            "name": "FilterDialog",
+            "module": "filter-dialog.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "filter-dialog",
+          "declaration": {
+            "name": "FilterDialog",
+            "module": "filter-dialog.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "hash.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "createHashElementPredicate",
+          "parameters": [
+            {
+              "name": "{\n  selectors,\n  namespaces,\n}",
+              "type": {
+                "text": "Pick<HasherOptions, 'selectors' | 'namespaces'>"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "hasher",
+          "return": {
+            "type": {
+              "text": "Hasher"
+            }
+          },
+          "parameters": [
+            {
+              "name": "db",
+              "type": {
+                "text": "HashDB"
+              }
+            },
+            {
+              "name": "eDb",
+              "type": {
+                "text": "ElementDB"
+              }
+            },
+            {
+              "name": "{ attributes, namespaces }",
+              "default": "{\n    selectors: { inclusive: false, vals: [], except: [] },\n    attributes: { inclusive: false, vals: [], except: [] },\n    namespaces: { inclusive: false, vals: [], except: [] },\n  }",
+              "type": {
+                "text": "HasherOptions"
+              }
+            },
+            {
+              "name": "shouldHashElement",
+              "default": "() => true",
+              "type": {
+                "text": "(element: Element) => boolean"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "newHasher",
+          "return": {
+            "type": {
+              "text": "{\n  hash: Hasher;\n  db: HashDB;\n  eDb: ElementDB;\n  findReferences: (element: Element) => Element[];\n}"
+            }
+          },
+          "parameters": [
+            {
+              "name": "options",
+              "default": "{\n    selectors: { inclusive: false, vals: [], except: [] },\n    attributes: { inclusive: false, vals: [], except: [] },\n    namespaces: { inclusive: false, vals: [], except: [] },\n  }",
+              "type": {
+                "text": "HasherOptions"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "createHashElementPredicate",
+          "declaration": {
+            "name": "createHashElementPredicate",
+            "module": "hash.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "hasher",
+          "declaration": {
+            "name": "hasher",
+            "module": "hash.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "newHasher",
+          "declaration": {
+            "name": "newHasher",
+            "module": "hash.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "icons.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "inputIcon",
+          "default": "svg`<svg style=\"width:24px;height:24px\" viewBox=\"0 0 24 24\"> <path fill=\"currentColor\" d=\"M14,12L10,8V11H2V13H10V16M20,18V6C20,4.89 19.1,4 18,4H6A2,2 0 0,0 4,6V9H6V6H18V18H6V15H4V18A2,2 0 0,0 6,20H18A2,2 0 0,0 20,18Z\" /> </svg>`"
+        },
+        {
+          "kind": "variable",
+          "name": "clientIcon",
+          "default": "svg`<svg style=\"width:24px;height:24px\" viewBox=\"0 0 24 24\"> <path fill=\"currentColor\" d=\"M21,14V4H3V14H21M21,2A2,2 0 0,1 23,4V16A2,2 0 0,1 21,18H14L16,21V22H8V21L10,18H3C1.89,18 1,17.1 1,16V4C1,2.89 1.89,2 3,2H21M4,5H15V10H4V5M16,5H20V7H16V5M20,8V13H16V8H20M4,11H9V13H4V11M10,11H15V13H10V11Z\" /> </svg>`"
+        },
+        {
+          "kind": "variable",
+          "name": "disconnect",
+          "default": "svg`<svg style=\"width:24px;height:24px\" viewBox=\"0 0 24 24\"> <path fill=\"currentColor\" d=\"M4,1C2.89,1 2,1.89 2,3V7C2,8.11 2.89,9 4,9H1V11H13V9H10C11.11,9 12,8.11 12,7V3C12,1.89 11.11,1 10,1H4M4,3H10V7H4V3M14,13C12.89,13 12,13.89 12,15V19C12,20.11 12.89,21 14,21H11V23H23V21H20C21.11,21 22,20.11 22,19V15C22,13.89 21.11,13 20,13H14M3.88,13.46L2.46,14.88L4.59,17L2.46,19.12L3.88,20.54L6,18.41L8.12,20.54L9.54,19.12L7.41,17L9.54,14.88L8.12,13.46L6,15.59L3.88,13.46M14,15H20V19H14V15Z\" /> </svg>`"
+        },
+        {
+          "kind": "function",
+          "name": "iconFromPath",
+          "return": {
+            "type": {
+              "text": "TemplateResult<2>"
+            }
+          },
+          "parameters": [
+            {
+              "name": "path",
+              "type": {
+                "text": "TemplateResult<2>"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "getDisplayIcon",
+          "return": {
+            "type": {
+              "text": "string | TemplateResult<2>"
+            }
+          },
+          "parameters": [
+            {
+              "name": "element",
+              "type": {
+                "text": "Element"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "inputIcon",
+          "declaration": {
+            "name": "inputIcon",
+            "module": "icons.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "clientIcon",
+          "declaration": {
+            "name": "clientIcon",
+            "module": "icons.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "disconnect",
+          "declaration": {
+            "name": "disconnect",
+            "module": "icons.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "iconFromPath",
+          "declaration": {
+            "name": "iconFromPath",
+            "module": "icons.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getDisplayIcon",
+          "declaration": {
+            "name": "getDisplayIcon",
+            "module": "icons.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "info-dialog.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "InfoDialog",
+          "members": [
+            {
+              "kind": "field",
+              "name": "open",
+              "attribute": "open"
+            },
+            {
+              "kind": "field",
+              "name": "heading",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "attribute": "heading"
+            },
+            {
+              "kind": "field",
+              "name": "contentText",
+              "attribute": "contentText"
+            },
+            {
+              "kind": "field",
+              "name": "dialog",
+              "type": {
+                "text": "MdDialog | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "contentDiv",
+              "type": {
+                "text": "MdDialog | undefined"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "open",
+              "fieldName": "open"
+            },
+            {
+              "name": "heading",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "fieldName": "heading"
+            },
+            {
+              "name": "contentText",
+              "fieldName": "contentText"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "info-dialog",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "InfoDialog",
+          "declaration": {
+            "name": "InfoDialog",
+            "module": "info-dialog.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "info-dialog",
+          "declaration": {
+            "name": "InfoDialog",
+            "module": "info-dialog.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "oscd-editor-diff.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "HELP_CONTENT_URL",
+          "type": {
+            "text": "string"
+          },
+          "default": "'./oscd-diff-help-content.html'"
+        },
+        {
+          "kind": "variable",
+          "name": "HELP_CONTENT_BASE_URL",
+          "type": {
+            "text": "string"
+          },
+          "default": "'./oscd-diff-help-base-content.html'"
+        },
+        {
+          "kind": "function",
+          "name": "isBaseFilter",
+          "return": {
+            "type": {
+              "text": "obj is BaseFilter"
+            }
+          },
+          "parameters": [
+            {
+              "name": "obj",
+              "type": {
+                "text": "object"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "isFilter",
+          "return": {
+            "type": {
+              "text": "obj is Filter"
+            }
+          },
+          "parameters": [
+            {
+              "name": "obj",
+              "type": {
+                "text": "object"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "OscdEditorDiff",
+          "members": [
+            {
+              "kind": "field",
+              "name": "docName",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "attribute": "docName"
+            },
+            {
+              "kind": "field",
+              "name": "doc",
+              "type": {
+                "text": "XMLDocument | undefined"
+              },
+              "attribute": "doc"
+            },
+            {
+              "kind": "field",
+              "name": "docs",
+              "type": {
+                "text": "Record<string, XMLDocument>"
+              },
+              "default": "{}",
+              "attribute": "docs"
+            },
+            {
+              "kind": "field",
+              "name": "doc1",
+              "type": {
+                "text": "HTMLSelectElement | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "filtersInputField",
+              "type": {
+                "text": "HTMLInputElement | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "doc2",
+              "type": {
+                "text": "HTMLSelectElement | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "doc1sel",
+              "type": {
+                "text": "HTMLInputElement | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "doc2sel",
+              "type": {
+                "text": "HTMLInputElement | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "filterDialog",
+              "type": {
+                "text": "FilterDialog | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "baseFilterDialog",
+              "type": {
+                "text": "BaseFilterDialog | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "infoDialog",
+              "type": {
+                "text": "InfoDialog | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "filterMenu",
+              "type": {
+                "text": "MdMenu | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "diffContainer",
+              "type": {
+                "text": "HTMLDivElement | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "resetWarningDialog",
+              "type": {
+                "text": "MdDialog | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "filters",
+              "type": {
+                "text": "Record<string, Filter>"
+              },
+              "default": "defaultFilters"
+            },
+            {
+              "kind": "field",
+              "name": "baseFilter",
+              "type": {
+                "text": "BaseFilter"
+              },
+              "default": "defaultBaseFilters"
+            },
+            {
+              "kind": "field",
+              "name": "selectedFilterName",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "lastDiff",
+              "type": {
+                "text": "StoredDiff | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "fullscreen",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "individuallyScoped",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "hashing",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "allExpanded",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "setFilters",
+              "parameters": [
+                {
+                  "name": "updatedFilters",
+                  "type": {
+                    "text": "Record<string, Filter>"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "setBaseFilter",
+              "parameters": [
+                {
+                  "name": "updatedBaseFilter",
+                  "type": {
+                    "text": "BaseFilter"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "storeFilters"
+            },
+            {
+              "kind": "method",
+              "name": "deleteFilter",
+              "parameters": [
+                {
+                  "name": "filterName",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "selectedFilter",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "setSelectedFilterName",
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "docName1",
+              "type": {
+                "text": "string"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "docName2",
+              "type": {
+                "text": "string"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "selector1",
+              "type": {
+                "text": "string"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "selector2",
+              "type": {
+                "text": "string"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "hashers",
+              "default": "new WeakMap<XMLDocument, ReturnType<typeof newHasher>>()"
+            },
+            {
+              "kind": "method",
+              "name": "handleImportFieldChanged",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "importFilters"
+            },
+            {
+              "kind": "method",
+              "name": "exportFilters"
+            },
+            {
+              "kind": "method",
+              "name": "showFilterDialog"
+            },
+            {
+              "kind": "method",
+              "name": "showBaseFilterDialog"
+            },
+            {
+              "kind": "method",
+              "name": "showInfoDialog"
+            },
+            {
+              "kind": "method",
+              "name": "uniqueFilterName",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "duplicateFilter"
+            },
+            {
+              "kind": "method",
+              "name": "printMe"
+            },
+            {
+              "kind": "method",
+              "name": "toggleExpandAllState"
+            },
+            {
+              "kind": "method",
+              "name": "renderFilterDescription"
+            },
+            {
+              "kind": "method",
+              "name": "renderViewButtons"
+            },
+            {
+              "kind": "method",
+              "name": "renderDiffTrees"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "docName",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "fieldName": "docName"
+            },
+            {
+              "name": "doc",
+              "type": {
+                "text": "XMLDocument | undefined"
+              },
+              "fieldName": "doc"
+            },
+            {
+              "name": "docs",
+              "type": {
+                "text": "Record<string, XMLDocument>"
+              },
+              "default": "{}",
+              "fieldName": "docs"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "HELP_CONTENT_URL",
+          "declaration": {
+            "name": "HELP_CONTENT_URL",
+            "module": "oscd-editor-diff.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "HELP_CONTENT_BASE_URL",
+          "declaration": {
+            "name": "HELP_CONTENT_BASE_URL",
+            "module": "oscd-editor-diff.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "isBaseFilter",
+          "declaration": {
+            "name": "isBaseFilter",
+            "module": "oscd-editor-diff.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "isFilter",
+          "declaration": {
+            "name": "isFilter",
+            "module": "oscd-editor-diff.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "OscdEditorDiff",
+          "declaration": {
+            "name": "OscdEditorDiff",
+            "module": "oscd-editor-diff.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "util.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "getFcdaInstDesc",
+          "return": {
+            "type": {
+              "text": "fcdaDesc"
+            }
+          },
+          "parameters": [
+            {
+              "name": "fcda",
+              "type": {
+                "text": "Element"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "loadResource",
+          "return": {
+            "type": {
+              "text": "Promise<string>"
+            }
+          },
+          "parameters": [
+            {
+              "name": "url",
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "nonemptyLines",
+          "parameters": [
+            {
+              "name": "text",
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "identity",
+          "parameters": [
+            {
+              "name": "element",
+              "type": {
+                "text": "Element"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "getFcdaInstDesc",
+          "declaration": {
+            "name": "getFcdaInstDesc",
+            "module": "util.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "loadResource",
+          "declaration": {
+            "name": "loadResource",
+            "module": "util.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "nonemptyLines",
+          "declaration": {
+            "name": "nonemptyLines",
+            "module": "util.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "identity",
+          "declaration": {
+            "name": "identity",
+            "module": "util.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "icons/tCommunication.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "staticIcons",
+          "type": {
+            "text": "Partial<Record<string, string | SVGTemplateResult>>"
+          },
+          "default": "{ Communication: 'lan', AccessPoint: 'present_to_all', GSE: iconFromPath(gseControlPath), SMV: iconFromPath(sampledValueControlPath), SubNetwork: 'hub', P: 'read_more', ConnectedAP: 'computer', Address: 'alternate_email', PhysConn: 'settings_input_hdmi', MinTime: 'start', MaxTime: 'vital_signs', }"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "staticIcons",
+          "declaration": {
+            "name": "staticIcons",
+            "module": "icons/tCommunication.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "icons/tDataTypeTemplates.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "staticIcons",
+          "type": {
+            "text": "Partial<Record<string, string | SVGTemplateResult>>"
+          },
+          "default": "{ DataTypeTemplates: 'database', LNodeType: iconFromPath(lnPath), BDA: 'brick', DA: iconFromPath(dAIPath), DAType: iconFromPath(dAIPath), // show type somehow? DO: iconFromPath(dOIPath), DOType: iconFromPath(dOIPath), // show type somehow? SDO: iconFromPath(sDPath), ReportControl: iconFromPath(reportControlPath), LogControl: iconFromPath(logControlPath), GSEControl: iconFromPath(gseControlPath), SampledValueControl: iconFromPath(sampledValueControlPath), EnumType: iconFromPath(enumPath), EnumVal: 'stylus', }"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "staticIcons",
+          "declaration": {
+            "name": "staticIcons",
+            "module": "icons/tDataTypeTemplates.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "icons/tHeader.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "staticIcons",
+          "type": {
+            "text": "Partial<Record<string, string | SVGTemplateResult>>"
+          },
+          "default": "{ Header: 'family_history', History: 'timeline', Hitem: 'work_history', // or save_clock? }"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "staticIcons",
+          "declaration": {
+            "name": "staticIcons",
+            "module": "icons/tHeader.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "icons/tIED.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "gseControlPath",
+          "default": "svg`<path fill=\"currentColor\" d=\"M11,7H15V9H11V15H13V11H15V15A2,2 0 0,1 13,17H11A2,2 0 0,1 9,15V9A2,2 0 0,1 11,7M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z\" />`"
+        },
+        {
+          "kind": "variable",
+          "name": "lnPath",
+          "default": "svg`<path d=\"m4.36 3.5c-2.08 0-3.78 1.7-3.78 3.78v10.4c0 2.08 1.7 3.78 3.78 3.78h16.3c2.08 0 3.78-1.7 3.78-3.78v-10.4c0-2.08-1.7-3.78-3.78-3.78zm0 1.7h16.3c1.16 0 2.07 0.909 2.07 2.07v10.4c0 1.16-0.909 2.08-2.07 2.08h-16.3c-1.16 0-2.07-0.909-2.07-2.08v-10.4c0-1.16 0.909-2.07 2.07-2.07z\" stroke-width=\"1.11\"/> <path d=\"m5.97 17v-9h1.58v7.55h4.02v1.46z\" fill=\"currentColor\"/> <path d=\"m17.2 17-3.27-6.94q0.0963 1.01 0.0963 1.62v5.31h-1.4v-9h1.79l3.32 6.99q-0.0963-0.963-0.0963-1.76v-5.24h1.4v9z\" fill=\"currentColor\"/> `"
+        },
+        {
+          "kind": "variable",
+          "name": "logControlPath",
+          "default": "svg`<path fill=\"currentColor\" d=\"M9,7H11V15H15V17H9V7M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z\" />`"
+        },
+        {
+          "kind": "variable",
+          "name": "reportControlPath",
+          "default": "svg`<path fill=\"currentColor\" d=\"M9,7H13A2,2 0 0,1 15,9V11C15,11.84 14.5,12.55 13.76,12.85L15,17H13L11.8,13H11V17H9V7M11,9V11H13V9H11M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12C4,16.41 7.58,20 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z\" />`"
+        },
+        {
+          "kind": "variable",
+          "name": "sampledValueControlPath",
+          "default": "svg`<path fill=\"currentColor\" d=\"M11,7H15V9H11V11H13A2,2 0 0,1 15,13V15A2,2 0 0,1 13,17H9V15H13V13H11A2,2 0 0,1 9,11V9A2,2 0 0,1 11,7M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z\" />`"
+        },
+        {
+          "kind": "variable",
+          "name": "dAIPath",
+          "default": "svg` <g transform=\"matrix(.9 0 0 .9 .575 3.5)\" fill=\"currentColor\" stroke-width=\"1.1\"> <path d=\"m4.2 0c-2.31 0-4.2 1.89-4.2 4.2v11.6c0 2.31 1.89 4.2 4.2 4.2h18.1c2.31 0 4.2-1.89 4.2-4.2v-11.6c0-2.31-1.89-4.2-4.2-4.2zm0 1.89h18.1c1.29 0 2.3 1.01 2.3 2.3v11.6c0 1.29-1.01 2.31-2.3 2.31h-18.1c-1.29 0-2.3-1.01-2.3-2.31v-11.6c0-1.29 1.01-2.3 2.3-2.3z\"/> <path d=\"m12.5 9.94q0 1.55-0.509 2.71-0.503 1.15-1.43 1.76-0.923 0.611-2.12 0.611h-3.37v-10h3.02q2.11 0 3.26 1.28 1.15 1.27 1.15 3.65zm-1.76 0q0-1.61-0.698-2.46-0.698-0.852-1.99-0.852h-1.24v6.77h1.48q1.12 0 1.79-0.931 0.663-0.931 0.663-2.53z\"/> <path d=\"m19.7 15-0.74-2.56h-3.18l-0.74 2.56h-1.75l3.04-10h2.06l3.03 10zm-1.13-4.13-0.823-2.88-0.379-1.46q-0.0947 0.412-0.178 0.739-0.0829 0.327-1.02 3.59z\"/> </g> `"
+        },
+        {
+          "kind": "variable",
+          "name": "dOIPath",
+          "default": "svg`<path d=\"m4.36 3.5c-2.08 0-3.78 1.7-3.78 3.78v10.4c0 2.08 1.7 3.78 3.78 3.78h16.3c2.08 0 3.78-1.7 3.78-3.78v-10.4c0-2.08-1.7-3.78-3.78-3.78zm0 1.7h16.3c1.16 0 2.07 0.909 2.07 2.07v10.4c0 1.16-0.909 2.08-2.07 2.08h-16.3c-1.16 0-2.07-0.909-2.07-2.08v-10.4c0-1.16 0.909-2.07 2.07-2.07z\" fill=\"currentColor\" stroke-width=\"1.1\"/> <path d=\"m11.6 12.4q0 1.4-0.458 2.44-0.453 1.04-1.29 1.58-0.831 0.55-1.91 0.55h-3.03v-9h2.72q1.9 0 2.93 1.15 1.04 1.14 1.04 3.28zm-1.58 0q0-1.45-0.628-2.21-0.628-0.767-1.79-0.767h-1.12v6.09h1.33q1.01 0 1.61-0.838 0.597-0.838 0.597-2.28z\" fill=\"currentColor\" stroke-width=\"1.1\"/> <path d=\"m20.1 12.5q0 1.4-0.464 2.48t-1.32 1.64q-0.863 0.562-2.02 0.562-1.77 0-2.77-1.25t-0.999-3.43q0-2.17 0.999-3.38t2.79-1.22 2.79 1.22q1.01 1.22 1.01 3.37zm-1.6 0q0-1.46-0.575-2.29-0.575-0.831-1.61-0.831-1.05 0-1.63 0.824-0.575 0.818-0.575 2.29 0 1.48 0.586 2.34 0.591 0.85 1.61 0.85 1.05 0 1.63-0.831 0.575-0.831 0.575-2.36z\" fill=\"currentColor\" stroke-width=\"1.1\"/> `"
+        },
+        {
+          "kind": "variable",
+          "name": "sDPath",
+          "default": "svg`<path id=\"path2183\" d=\"m4.36 3.5c-2.08 0-3.78 1.7-3.78 3.78v10.4c0 2.08 1.7 3.78 3.78 3.78h16.3c2.08 0 3.78-1.7 3.78-3.78v-10.4c0-2.08-1.7-3.78-3.78-3.78zm0 1.7h16.3c1.16 0 2.07 0.909 2.07 2.07v10.4c0 1.16-0.909 2.08-2.07 2.08h-16.3c-1.16 0-2.07-0.909-2.07-2.08v-10.4c0-1.16 0.909-2.07 2.07-2.07z\" stroke-width=\"1\" fill=\"currentColor\"/> <path id=\"path3794\" d=\"m11.9 14.4q0 1.3-0.767 1.99-0.762 0.685-2.24 0.685-1.35 0-2.12-0.603-0.767-0.603-0.987-1.83l1.42-0.295q0.144 0.703 0.563 1.02 0.419 0.314 1.16 0.314 1.54 0 1.54-1.18 0-0.377-0.179-0.622-0.174-0.245-0.498-0.408-0.319-0.163-1.23-0.396-0.787-0.232-1.1-0.371-0.309-0.144-0.558-0.333-0.249-0.195-0.424-0.465-0.174-0.27-0.274-0.634-0.0947-0.364-0.0947-0.835 0-1.2 0.713-1.83 0.717-0.641 2.08-0.641 1.31 0 1.96 0.515 0.658 0.515 0.847 1.7l-1.43 0.245q-0.11-0.572-0.448-0.86-0.334-0.289-0.962-0.289-1.34 0-1.34 1.06 0 0.345 0.14 0.565 0.144 0.22 0.424 0.377 0.279 0.157 1.13 0.383 1.01 0.27 1.44 0.502 0.438 0.226 0.693 0.534 0.254 0.301 0.389 0.729 0.135 0.421 0.135 0.973z\" stroke-width=\"1\" fill=\"currentColor\"/> <path id=\"path3796\" d=\"m19.2 12.4q0 1.37-0.429 2.39-0.424 1.02-1.21 1.56-0.777 0.54-1.78 0.54h-2.84v-8.85h2.54q1.77 0 2.75 1.13 0.972 1.12 0.972 3.23zm-1.48 0q0-1.43-0.588-2.17-0.588-0.754-1.68-0.754h-1.04v5.99h1.25q0.947 0 1.5-0.823 0.558-0.823 0.558-2.24z\" stroke-width=\"1\" fill=\"currentColor\"/> `"
+        },
+        {
+          "kind": "variable",
+          "name": "clientLNPath",
+          "default": "svg` <path d=\"M21,14V4H3V14H21M21,2A2,2 0 0,1 23,4V16A2,2 0 0,1 21,18H14L16,21V22H8V21L10,18H3C1.89,18 1,17.1 1,16V4C1,2.89 1.89,2 3,2H21M4,5H15V10H4V5M16,5H20V7H16V5M20,8V13H16V8H20M4,11H9V13H4V11M10,11H15V13H10V11Z\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/ >`"
+        },
+        {
+          "kind": "variable",
+          "name": "staticIcons",
+          "type": {
+            "text": "Partial<Record<string, string | SVGTemplateResult>>"
+          },
+          "default": "{ IED: 'developer_board', Server: 'dns', ServerAt: 'article_shortcut', Services: 'design_services', Authentication: 'key_vertical', LDevice: 'device_hub', DataSet: 'format_list_bulleted', FCDA: 'brick', Inputs: 'input', ExtRef: 'linear_scale', LN: iconFromPath(lnPath), // need dynamic function for different LN classes e.g. LGOS and LSVS LN0: 'settings', DAI: iconFromPath(dAIPath), DOI: iconFromPath(dOIPath), SDI: iconFromPath(sDPath), ReportControl: iconFromPath(reportControlPath), LogControl: iconFromPath(logControlPath), GSEControl: iconFromPath(gseControlPath), SampledValueControl: iconFromPath(sampledValueControlPath), DynAssociation: 'settings_ethernet', GetDirectory: 'folder', GetDataObjectDefinition: 'foundation', DataObjectDirectory: 'folder', GetDataSetValue: 'format_list_bulleted', DataSetDirectory: 'format_list_bulleted', ConfDataSet: 'format_list_bulleted', ReadWrite: 'edit', ConfReportControl: iconFromPath(reportControlPath), GetCBValues: 'call_received', ReportSettings: iconFromPath(reportControlPath), GSESettings: iconFromPath(gseControlPath), GOOSE: iconFromPath(gseControlPath), FileHandling: 'description', ConfLNs: 'settings', ClientServices: 'design_services', TimeSyncProt: 'schedule', ConfLdName: 'manufacturing', SupSubscription: 'vital_signs', RedProt: 'alt_route', SettingControl: 'tune', SettingGroups: 'settings_input_component', ValueHandling: 'label', CommProt: 'stacks', SMVSettings: iconFromPath(sampledValueControlPath), SMVSc: iconFromPath(sampledValueControlPath), }"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "gseControlPath",
+          "declaration": {
+            "name": "gseControlPath",
+            "module": "icons/tIED.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "lnPath",
+          "declaration": {
+            "name": "lnPath",
+            "module": "icons/tIED.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "logControlPath",
+          "declaration": {
+            "name": "logControlPath",
+            "module": "icons/tIED.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "reportControlPath",
+          "declaration": {
+            "name": "reportControlPath",
+            "module": "icons/tIED.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "sampledValueControlPath",
+          "declaration": {
+            "name": "sampledValueControlPath",
+            "module": "icons/tIED.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "dAIPath",
+          "declaration": {
+            "name": "dAIPath",
+            "module": "icons/tIED.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "dOIPath",
+          "declaration": {
+            "name": "dOIPath",
+            "module": "icons/tIED.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "sDPath",
+          "declaration": {
+            "name": "sDPath",
+            "module": "icons/tIED.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "clientLNPath",
+          "declaration": {
+            "name": "clientLNPath",
+            "module": "icons/tIED.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "staticIcons",
+          "declaration": {
+            "name": "staticIcons",
+            "module": "icons/tIED.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "icons/tSubstation.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "powerTransformerTwoWindingPath",
+          "default": "svg` <line x1=\"12.5\" y1=\"2\" x2=\"12.5\" y2=\"5\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" /> <circle cx=\"12.5\" cy=\"10\" r=\"5\" stroke=\"currentColor\" fill=\"none\" stroke-width=\"1.5\" stroke-linecap=\"round\" /> <circle cx=\"12.5\" cy=\"15\" r=\"5\" stroke=\"currentColor\" fill=\"none\" stroke-width=\"1.5\" stroke-linecap=\"round\" /> <line x1=\"12.5\" y1=\"20\" x2=\"12.5\" y2=\"23\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" />`"
+        },
+        {
+          "kind": "function",
+          "name": "createIcon",
+          "return": {
+            "type": {
+              "text": "string | TemplateResult<2>"
+            }
+          },
+          "parameters": [
+            {
+              "name": "element",
+              "type": {
+                "text": "Element"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "variable",
+          "name": "generalConductingEquipmentIcon",
+          "default": "svg` <path d=\"M20.41,3.59c-.78-.78-2.05-.78-2.83,0-.59.59-.73,1.47-.43,2.19l-1.49,1.49c-1.02-.79-2.29-1.27-3.67-1.27-3.31,0-6,2.69-6,6,0,1.38.48,2.66,1.27,3.67l-1.49,1.49c-.73-.31-1.6-.17-2.19.43-.78.78-.78,2.05,0,2.83.78.78,2.05.78,2.83,0,.59-.59.73-1.47.43-2.19l1.49-1.49c1.02.79,2.29,1.27,3.67,1.27,3.31,0,6-2.69,6-6,0-1.38-.48-2.66-1.27-3.67l1.49-1.49c.73.31,1.6.17,2.19-.43.78-.78.78-2.05,0-2.83ZM12,16c-2.21,0-4-1.79-4-4s1.79-4,4-4,4,1.79,4,4-1.79,4-4,4Z\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\" /> `"
+        },
+        {
+          "kind": "variable",
+          "name": "staticIcons",
+          "type": {
+            "text": "Partial<Record<string, string | SVGTemplateResult>>"
+          },
+          "default": "{ VoltageLevel: iconFromPath(voltageLevelPath), Bay: iconFromPath(bayPath), Substation: 'margin', Terminal: 'line_end_circle', ConnectivityNode: iconFromPath(connectivityNodePath), TransformerWinding: iconFromPath(transformerWindingPath), PowerTransformer: iconFromPath(powerTransformerTwoWindingPath), Process: iconFromPath(processIconPath), Line: iconFromPath(lineIconPath), Function: 'functions', EqSubFunction: 'functions', EqFunction: 'functions', SubFunction: 'functions', LNode: 'bubbles', TapChanger: iconFromPath(tapChangerPath), SubEquipment: iconFromPath(generalConductingEquipmentIcon), }"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "powerTransformerTwoWindingPath",
+          "declaration": {
+            "name": "powerTransformerTwoWindingPath",
+            "module": "icons/tSubstation.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "createIcon",
+          "declaration": {
+            "name": "createIcon",
+            "module": "icons/tSubstation.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "generalConductingEquipmentIcon",
+          "declaration": {
+            "name": "generalConductingEquipmentIcon",
+            "module": "icons/tSubstation.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "staticIcons",
+          "declaration": {
+            "name": "staticIcons",
+            "module": "icons/tSubstation.ts"
+          }
+        }
+      ]
+    }
+  ]
+}

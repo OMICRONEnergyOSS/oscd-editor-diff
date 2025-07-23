@@ -7,7 +7,7 @@ import copy from 'rollup-plugin-copy';
 import path from 'path';
 
 export default {
-  input: 'oscd-diff.ts',
+  input: 'oscd-editor-diff.ts',
   output: {
     format: 'es',
     dir: 'dist',
@@ -56,7 +56,7 @@ export default {
       // directory to match patterns against to be precached
       globDirectory: path.join('dist'),
       // cache any html js and css by default
-      globPatterns: ['**/*.{html,js,css,webmanifest}'],
+      globPatterns: ['**/*.{html,js,css,webmanifest,ttf,woff2}'],
       skipWaiting: true,
       clientsClaim: true,
       runtimeCaching: [{ urlPattern: 'polyfills/*.js', handler: 'CacheFirst' }],

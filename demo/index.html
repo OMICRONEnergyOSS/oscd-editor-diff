@@ -7,43 +7,31 @@
   rel="stylesheet"
   href="https://fonts.googleapis.com/css?family=Material+Symbols+Outlined&display=block"
 />
-<open-scd></open-scd>
+<oscd-shell></oscd-shell>
 
 <script type="module">
-  // eslint-disable-next-line import/no-unresolved
-  import 'https://ca-d.github.io/open-scd-core/open-scd.js';
+  import '@omicronenergy/oscd-shell/oscd-shell.js';
+  import { plugins } from './plugins.js';
 
-  const editor = document.querySelector('open-scd');
-
-  const plugins = await fetch('plugins.json').then(res => res.json());
+  const editor = document.querySelector('oscd-shell');
+  editor.plugins = plugins;
 
   const params = new URL(document.location).searchParams;
   for (const [name, value] of params) {
     editor.setAttribute(name, value);
   }
 
-  editor.plugins = plugins;
-
   const sample = await fetch('sample.scd').then(r => r.text());
   const sample2 = await fetch('sample2.scd').then(r => r.text());
-  editor.docs['sample.scd'] = new DOMParser().parseFromString(
-    sample,
-    'application/xml',
-  );
-  editor.docs['sample2.scd'] = new DOMParser().parseFromString(
-    sample2,
-    'application/xml',
-  );
-  editor.docName = 'sample.scd';
-</script>
+  editor.docs = {
+    ['sample.scd']: new DOMParser().parseFromString(sample, 'application/xml'),
 
-<script>
-  const _customElementsDefine = window.customElements.define;
-  window.customElements.define = (name, cl, conf) => {
-    if (!customElements.get(name)) {
-      _customElementsDefine.call(window.customElements, name, cl, conf);
-    }
+    ['sample2.scd']: new DOMParser().parseFromString(
+      sample2,
+      'application/xml',
+    ),
   };
+  editor.docName = 'sample.scd';
 </script>
 
 <style>

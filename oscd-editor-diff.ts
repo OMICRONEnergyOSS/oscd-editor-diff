@@ -69,7 +69,6 @@ function hasPropertyOfType(
 ): boolean {
   return (
     prop in obj &&
-    // eslint-disable-next-line valid-typeof
     (typeof obj[prop] === type ||
       (type === 'array' && Array.isArray(obj[prop])))
   );
@@ -190,7 +189,7 @@ function describeConfigurable(
   return html`${verb}${object}${exceptions}`;
 }
 
-export default class OscdDiff extends LitElement {
+export class OscdEditorDiff extends LitElement {
   @property() docName = '';
 
   @property() doc?: XMLDocument;
@@ -288,7 +287,6 @@ export default class OscdDiff extends LitElement {
 
   setSelectedFilterName(name: string) {
     if (!(name in this.filters)) {
-      // eslint-disable-next-line no-console
       console.error(`Filter ${name} not found`);
       return;
     }
@@ -331,7 +329,6 @@ export default class OscdDiff extends LitElement {
           this.baseFilter = storedFilters.base;
         }
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.error(e);
       }
     }
@@ -353,7 +350,6 @@ export default class OscdDiff extends LitElement {
     try {
       const importedJson = JSON.parse(await files[0].text());
       if (typeof importedJson !== 'object') {
-        // eslint-disable-next-line no-console
         console.error('Invalid file format', importedJson);
         return;
       }
@@ -362,7 +358,6 @@ export default class OscdDiff extends LitElement {
       if (importedJson.base && importedJson.filters) {
         importedFilters = importedJson.filters;
         if (!isBaseFilter(importedJson.base)) {
-          // eslint-disable-next-line no-console
           console.error('Invalid base filter format');
           return;
         }
@@ -371,7 +366,6 @@ export default class OscdDiff extends LitElement {
         importedFilters = importedJson.filters;
         baseFilter = defaultBaseFilters;
       } else {
-        // eslint-disable-next-line no-console
         console.error('Invalid filter format', importedJson);
         return;
       }
@@ -386,7 +380,6 @@ export default class OscdDiff extends LitElement {
       this.setBaseFilter(baseFilter);
       this.setFilters(newFilters);
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(err);
     }
   }

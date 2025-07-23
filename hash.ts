@@ -1,4 +1,3 @@
-/* eslint-disable no-use-before-define */
 import xxhash from 'xxhash-wasm';
 
 const xxh = await xxhash();
@@ -990,11 +989,9 @@ export function hasher(
     const description = describe(e);
     const digest = xxh.h64ToString(JSON.stringify(description));
     if (!(tag in db)) {
-      // eslint-disable-next-line no-param-reassign
       db[tag] = {};
     }
     if (!(digest in db[tag])) {
-      // eslint-disable-next-line no-param-reassign
       db[tag][digest] = description;
     }
     if (!eDb.h2e.has(digest)) {

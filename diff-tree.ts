@@ -42,6 +42,7 @@ function getElementDescription(
 
 function filterObject(
   obj: object,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   predicate: (entry: [string, any]) => boolean,
 ) {
   return Object.fromEntries(Object.entries(obj).filter(predicate));
@@ -188,6 +189,7 @@ export class DiffTree extends LitElement {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get diff(): Record<string, { ours?: any; theirs?: any }> {
     return getDiff(this.ourDescription ?? {}, this.theirDescription ?? {});
   }
@@ -522,7 +524,6 @@ export class DiffTree extends LitElement {
             this.shadowRoot
               ?.querySelectorAll<DiffTree>('diff-tree')
               .forEach((dt: DiffTree) => {
-                // eslint-disable-next-line no-param-reassign
                 dt.expanded = !this.allChildrenExpanded;
               });
             this.childrenExpanded = this.childrenExpanded.fill(

@@ -7,7 +7,7 @@ import type {
   MdOutlinedTextField,
 } from '@material/web/all.js';
 
-import { HELP_CONTENT_URL, type Filter } from './oscd-diff.js';
+import { HELP_CONTENT_URL, type Filter } from './oscd-editor-diff.js';
 import { InfoDialog } from './info-dialog.js';
 import { loadResource, nonemptyLines } from './util.js';
 import { DefaultHelpDialogContent } from './default-help-dialog-content.js';

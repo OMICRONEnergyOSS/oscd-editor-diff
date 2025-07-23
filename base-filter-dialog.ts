@@ -3,7 +3,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 
 import type { MdDialog, MdOutlinedTextField } from '@material/web/all.js';
 
-import { HELP_CONTENT_BASE_URL, BaseFilter } from './oscd-diff.js';
+import { HELP_CONTENT_BASE_URL, BaseFilter } from './oscd-editor-diff.js';
 import { InfoDialog } from './info-dialog.js';
 import { loadResource } from './util.js';
 import { DefaultHelpBaseDialogContent } from './default-help-base-dialog-content.js';
