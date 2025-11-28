@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/OMICRONEnergyOSS/oscd-editor-diff/compare/oscd-editor-diff-v0.0.1...oscd-editor-diff-v0.0.2) (2025-11-28)
+
+
+### Features
+
+* align name in package.json and files to plugin name ([e1fb9a4](https://github.com/OMICRONEnergyOSS/oscd-editor-diff/commit/e1fb9a44f52ab30f752d035c7866e9672dd45fd0))
+
 ## 0.0.1 (2025-08-05)
 
 
