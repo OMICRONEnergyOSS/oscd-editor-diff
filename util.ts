@@ -1,4 +1,4 @@
-import { identity as sclLibIdentity } from '@openenergytools/scl-lib';
+import { identity as sclLibIdentity } from '@openscd/scl-lib';
 
 export type fcdaDesc = {
   LDevice?: string | null;

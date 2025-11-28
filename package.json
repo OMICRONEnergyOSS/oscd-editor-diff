@@ -46,7 +46,7 @@
     "@omicronenergy/oscd-menu-open": "^0.0.6",
     "@omicronenergy/oscd-menu-save": "^0.0.1",
     "@omicronenergy/oscd-shell": "^0.0.8",
-    "@openenergytools/scl-lib": "^1.2.0",
+    "@openscd/scl-lib": "^2.0.0",
     "lit": "^3.3.0",
     "tslib": "^2.8.1",
     "xxhash-wasm": "^1.1.0"
