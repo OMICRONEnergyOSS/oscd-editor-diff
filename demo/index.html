@@ -24,12 +24,8 @@
   const sample = await fetch('sample.scd').then(r => r.text());
   const sample2 = await fetch('sample2.scd').then(r => r.text());
   editor.docs = {
-    ['sample.scd']: new DOMParser().parseFromString(sample, 'application/xml'),
-
-    ['sample2.scd']: new DOMParser().parseFromString(
-      sample2,
-      'application/xml',
-    ),
+    'sample.scd': new DOMParser().parseFromString(sample, 'application/xml'),
+    'sample2.scd': new DOMParser().parseFromString(sample2, 'application/xml'),
   };
   editor.docName = 'sample.scd';
 </script>
