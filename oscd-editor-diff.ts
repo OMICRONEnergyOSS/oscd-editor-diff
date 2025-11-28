@@ -1,7 +1,7 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { identity } from '@openenergytools/scl-lib';
+import { identity } from '@openscd/scl-lib';
 
 import '@material/web/all.js';
 import type { MdDialog, MdFilledSelect, MdMenu } from '@material/web/all.js';
@@ -189,7 +189,7 @@ function describeConfigurable(
   return html`${verb}${object}${exceptions}`;
 }
 
-export class OscdEditorDiff extends LitElement {
+export default class OscdEditorDiff extends LitElement {
   @property() docName = '';
 
   @property() doc?: XMLDocument;
