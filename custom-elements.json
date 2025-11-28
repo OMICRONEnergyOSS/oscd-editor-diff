@@ -1535,7 +1535,7 @@
         },
         {
           "kind": "js",
-          "name": "OscdEditorDiff",
+          "name": "default",
           "declaration": {
             "name": "OscdEditorDiff",
             "module": "oscd-editor-diff.ts"

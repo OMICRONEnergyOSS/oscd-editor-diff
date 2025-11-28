@@ -1,7 +1,6 @@
 import { hmrPlugin, presets } from '@open-wc/dev-server-hmr';
 
 export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
-  rootDir: 'dist',
   open: 'demo/index.html',
   /** Use regular watch mode if HMR is not enabled. */
   watch: true,
