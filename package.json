@@ -1,5 +1,5 @@
 {
-  "name": "oscd-editor-diff",
+  "name": "@omicronenergy/oscd-editor-diff",
   "description": "OpenSCD plugin for diffing SCL files",
   "version": "0.0.1",
   "type": "module",
