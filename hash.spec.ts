@@ -1,6 +1,11 @@
 import { expect } from '@open-wc/testing';
 
 import { newHasher } from './hash.js';
+import {
+  defaultBaseFilters,
+  defaultFilters,
+  extendFilter,
+} from './default-filters.js';
 
 const testScl = new DOMParser().parseFromString(
   `<SCL
@@ -292,6 +297,60 @@ describe('hash', () => {
         throw new Error(`${tagName} not found`);
       }
       expect(hash(a)).to.not.equal(hash(b));
+    });
+  });
+
+  describe('with the default base rules', () => {
+    const typesDoc = (lnType: string, daType: string, enumId: string) =>
+      new DOMParser().parseFromString(
+        `<SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+          <IED name="IED1">
+            <AccessPoint name="AP1">
+              <Server>
+                <Authentication />
+                <LDevice inst="ldInst1">
+                  <LN0 lnClass="LLN0" inst="" lnType="${lnType}"/>
+                </LDevice>
+              </Server>
+            </AccessPoint>
+          </IED>
+          <DataTypeTemplates>
+            <LNodeType id="LLN0" lnClass="LLN0">
+              <DO name="Mod" type="ENC"/>
+            </LNodeType>
+            <DOType id="ENC" cdc="ENC">
+              <DA name="stVal" bType="Enum" fc="ST" type="${daType}"/>
+            </DOType>
+            <EnumType id="${enumId}">
+              <EnumVal ord="1">on</EnumVal>
+            </EnumType>
+          </DataTypeTemplates>
+        </SCL>`,
+        'application/xml',
+      );
+
+    const options = extendFilter(defaultBaseFilters, defaultFilters.Complete);
+
+    it('ignores the names of referenced types', () => {
+      const a = typesDoc('LLN0', 'Mod', 'Mod').querySelector('LN0')!;
+      const b = typesDoc('LLN0', 'Mod2', 'Mod2').querySelector('LN0')!;
+      expect(newHasher(options).hash(a)).to.equal(newHasher(options).hash(b));
+    });
+
+    it('is sensitive to differing unresolved type references', () => {
+      const a = typesDoc('LLN0', 'Missing1', 'Mod').querySelector('LN0')!;
+      const b = typesDoc('LLN0', 'Missing2', 'Mod').querySelector('LN0')!;
+      expect(newHasher(options).hash(a)).to.not.equal(
+        newHasher(options).hash(b),
+      );
+    });
+
+    it('is sensitive to differing unresolved lnTypes', () => {
+      const a = typesDoc('Missing1', 'Mod', 'Mod').querySelector('LN0')!;
+      const b = typesDoc('Missing2', 'Mod', 'Mod').querySelector('LN0')!;
+      expect(newHasher(options).hash(a)).to.not.equal(
+        newHasher(options).hash(b),
+      );
     });
   });
 });

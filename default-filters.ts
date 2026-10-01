@@ -23,6 +23,19 @@ const excludedIdentifiers = Object.entries(identifiers)
   )
   .flat();
 
+/**
+ * Attributes referencing data type templates. The hasher de-references these,
+ * so the referenced type's content is compared rather than its id.
+ */
+const typeReferences = [
+  'LN.lnType',
+  'LN0.lnType',
+  'DO.type',
+  'SDO.type',
+  'DA.type',
+  'BDA.type',
+];
+
 const exceptions = [
   'Terminal.name',
   'NeutralPoint.name',
@@ -40,7 +53,7 @@ export const defaultBaseFilters: BaseFilter = {
     },
     attributes: {
       vals: exceptions,
-      except: excludedIdentifiers,
+      except: [...excludedIdentifiers, ...typeReferences],
     },
     namespaces: {
       vals: [],
@@ -53,7 +66,7 @@ export const defaultBaseFilters: BaseFilter = {
       except: [],
     },
     attributes: {
-      vals: excludedIdentifiers,
+      vals: [...excludedIdentifiers, ...typeReferences],
       except: exceptions,
     },
     namespaces: {

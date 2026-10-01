@@ -315,67 +315,56 @@ export class DiffTree extends LitElement {
           { ourElement?: Element; theirElement?: Element }
         > = {};
 
-        ours.forEach((digest: string) => {
-          const element = [
-            ...Array.from(this.ours?.children ?? []),
-            ...(this.ours && this.ourHasher
-              ? this.ourHasher.findReferences(this.ours)
-              : []),
-          ].find(
-            e =>
-              e.tagName === tag &&
-              this.ourHasher?.eDb.e2h.get(e) === digest &&
-              Object.values(elementDiff).every(
-                ({ ourElement }) => ourElement !== e,
-              ),
-          );
-          if (!element) {
-            return;
-          }
-          let id = identity(element as Element);
-          const parentId = identity(element.parentElement!);
-          if (
-            parentId &&
-            typeof parentId === 'string' &&
-            typeof id === 'string' &&
-            id.startsWith(parentId)
-          ) {
-            id = id.slice(parentId.length).trim();
-          }
-          elementDiff[id] ??= {};
-          elementDiff[id].ourElement = element;
-        });
+        const addElements = (
+          element: Element | undefined,
+          hasher: ReturnType<typeof newHasher> | undefined,
+          digests: string[],
+          side: 'ourElement' | 'theirElement',
+        ) => {
+          const children = Array.from(element?.children ?? []);
+          const references =
+            element && hasher ? hasher.findReferences(element) : [];
+          let referenceCount = 0;
+          digests.forEach(digest => {
+            const found = [...children, ...references].find(
+              e =>
+                e.tagName === tag &&
+                hasher?.eDb.e2h.get(e) === digest &&
+                Object.values(elementDiff).every(diff => diff[side] !== e),
+            );
+            if (!found) {
+              return;
+            }
+            // Referenced elements (e.g. the LNodeType of an LN) are paired by
+            // their position rather than their identity so that renamed types
+            // are compared with each other instead of shown as removed/added.
+            let id = identity(found);
+            if (!children.includes(found)) {
+              id = `${tag} reference ${referenceCount}`;
+              referenceCount += 1;
+            } else {
+              const parentId = identity(found.parentElement!);
+              if (
+                parentId &&
+                typeof parentId === 'string' &&
+                typeof id === 'string' &&
+                id.startsWith(parentId)
+              ) {
+                id = id.slice(parentId.length).trim();
+              }
+            }
+            elementDiff[id] ??= {};
+            elementDiff[id][side] = found;
+          });
+        };
 
-        theirs.forEach((digest: string) => {
-          const element = [
-            ...Array.from(this.theirs?.children ?? []),
-            ...(this.theirs && this.theirHasher
-              ? this.theirHasher.findReferences(this.theirs)
-              : []),
-          ].find(
-            e =>
-              e.tagName === tag &&
-              this.theirHasher?.eDb.e2h.get(e) === digest &&
-              Object.values(elementDiff).every(
-                ({ theirElement }) => theirElement !== e,
-              ),
-          );
-          if (!element) {
-            return;
-          }
-          let id = identity(element as Element);
-          const parentId = identity(element.parentElement!);
-          if (
-            parentId &&
-            typeof parentId === 'string' &&
-            typeof id === 'string' &&
-            id.startsWith(parentId)
-          ) {
-            id = id.slice(parentId.length).trim();
-          }
-          elementDiff[id] ??= {};
-          elementDiff[id].theirElement = element;
-        });
+        addElements(this.ours, this.ourHasher, ours ?? [], 'ourElement');
+        addElements(
+          this.theirs,
+          this.theirHasher,
+          theirs ?? [],
+          'theirElement',
+        );
         const collator = new Intl.Collator(undefined, {
           numeric: true,
           sensitivity: 'base',
@@ -455,14 +444,15 @@ export class DiffTree extends LitElement {
     if (!element) {
       return nothing;
     }
-    let id = ((identity(element) || element.tagName) as string)
-      .split('>')
-      .pop();
+    let id = getIdentityLabel(element);
     if (this.ours && this.theirs) {
-      const theirId = identity(this.theirs);
-      const ourId = identity(this.ours);
-      if (theirId && ourId && ourId !== theirId) {
-        id = `${ourId || this.ours!.tagName} -> ${theirId || this.theirs!.tagName}`;
+      // Only the last identity segment is compared so that children of a
+      // renamed parent (e.g. the DOs of a renamed LNodeType) are not
+      // themselves shown as renamed.
+      const theirId = getIdentityLabel(this.theirs);
+      const ourId = getIdentityLabel(this.ours);
+      if (ourId !== theirId) {
+        id = `${ourId} -> ${theirId}`;
       }
     }
     let color = 'inherit';

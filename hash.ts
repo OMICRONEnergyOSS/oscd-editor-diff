@@ -847,6 +847,7 @@ export function hasher(
 
   function describeReferences(e: Element) {
     const description: Record<string, string[]> = {};
+    const unresolved: Record<string, string> = {};
 
     findReferences(e, shouldHashElement)
       .filter(shouldHashElement)
@@ -867,23 +868,30 @@ export function hasher(
       const candidates = Array.from(
         e.closest(scope)?.querySelectorAll(to) ?? [],
       );
-      const hashes = candidates
-        .filter(toE => {
-          const toAttrs = fields.map(f => f.to);
-          const fromAttrs = fields.map(f => f.from);
-          const toVals = toAttrs.map(a => toE.getAttribute(a));
-          const fromVals = fromAttrs.map(a => e.getAttribute(a));
-          return fromVals.every((val, i) => toVals[i] === val) && toE;
-        })
-        .filter(shouldHashElement)
-        .map(hash)
-        .sort();
+      const referenced = candidates.filter(toE => {
+        const toAttrs = fields.map(f => f.to);
+        const fromAttrs = fields.map(f => f.from);
+        const toVals = toAttrs.map(a => toE.getAttribute(a));
+        const fromVals = fromAttrs.map(a => e.getAttribute(a));
+        return fromVals.every((val, i) => toVals[i] === val) && toE;
+      });
+      if (!referenced.length) {
+        // Keep unresolved references visible, even if the referencing
+        // attributes are excluded from comparison.
+        fields.forEach(({ from }) => {
+          const val = e.getAttribute(from);
+          if (val) {
+            unresolved[from] = val.trim();
+          }
+        });
+      }
+      const hashes = referenced.filter(shouldHashElement).map(hash).sort();
       if (hashes.length) {
         description[`@${to.split('>').pop()}`] = hashes;
       }
     });
 
-    return description;
+    return { ...unresolved, ...description };
   }
 
   function describeTextContent(e: Element) {
