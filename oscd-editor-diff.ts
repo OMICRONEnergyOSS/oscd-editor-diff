@@ -461,7 +461,9 @@ export default class OscdEditorDiff extends LitElement {
 
   printMe() {
     const { diffContainer } = this;
-    const openSCD = document.querySelector<LitElement>('open-scd');
+    const openSCD =
+      document.querySelector<LitElement>('open-scd') ||
+      document.querySelector<LitElement>('oscd-shell');
     if (!diffContainer || !openSCD) {
       return;
     }
